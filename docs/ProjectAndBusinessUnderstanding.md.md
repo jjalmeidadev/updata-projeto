@@ -30,12 +30,13 @@ _Describe the core problem addressed by the project, highlighting inefficiencies
 
 ## <a name="c2"></a>2. Partner Industry Context
 
-_Present background information on the partner’s industry, including:_
+Equiem operates in the **Property Technology (PropTech)** sector, which focuses on applying digital solutions to the management and operation of real estate assets. This industry involves owners and operators of corporate, residential, and mixed-use buildings who manage complex and distributed portfolios composed of multiple spaces, services, and stakeholders. In this context, technology plays a strategic role by enabling process integration, data standardization, and efficient coordination of operations.
 
-- _Market characteristics_  
-- _Main challenges_  
-- _Trends and opportunities_  
-- _Operational context related to onboarding and data processing_
+The PropTech market has evolved beyond operational efficiency, incorporating growing demands for user-centered experiences, greater flexibility in space utilization, and data-driven decision-making. Integrated SaaS platforms have become essential to connect building operations, space management, and occupant communication, increasing the reliance on structured and reliable data from the earliest stages of platform implementation.
+
+Within this scenario, customer onboarding becomes a critical factor, as the correct configuration of these platforms depends on the collection of large volumes of heterogeneous data, which vary in format, structure, and quality and must be consolidated prior to system activation. When this process is handled manually through emails and spreadsheets, human errors, rework, and delays frequently occur, directly impacting time-to-launch and service quality.
+
+For companies like Equiem, this represents a strategic opportunity to transform an operational bottleneck into a scalable digital process based on self-service, automation, and data validation, supporting sustainable growth and competitiveness in the PropTech market.
 
 ---
 
