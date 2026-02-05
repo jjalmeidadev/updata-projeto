@@ -85,8 +85,6 @@ _Explain each step and its relationship to the system._
 
 ## <a name="c8"></a>8. Feature Brainstorming
 
-## Feature Brainstorm
-
 ### Product Goal 1: Make onboarding easier and more scalable
 
 **MVP Features**
