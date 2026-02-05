@@ -77,11 +77,15 @@ _Map the user’s interaction flow with the product, highlighting pain points an
 
 ## <a name="c7"></a>7. Business Flow
 
-_Model the business process related to onboarding using BPMN or equivalent notation._
+This business flow illustrates the target process enabled by our proposed solution. It introduces a middleware component into the onboarding journey, positioned between customer data submission and platform provisioning. Its role is to centralize data intake, standardize validations, and structure information before it reaches internal systems, creating a more organized, scalable, and efficient onboarding experience.
 
-_Explain each step and its relationship to the system._
+<div align="center">
+<sub>FIGURE X – Business Flow</sub><br>
+  <img src="../assets/businessFlow.png" width="100%" alt="Business Flow">
+  <sup>Source: Material produced by the authors, 2026.</sup>
+</div>
 
----
+With the addition of the middleware layer, the onboarding process becomes more resilient, faster, and easier to manage. Automated validations, asynchronous processing, and structured data packaging reduce manual effort while improving data quality and operational efficiency for both customers and internal teams.
 
 ## <a name="c8"></a>8. Feature Brainstorming
 
