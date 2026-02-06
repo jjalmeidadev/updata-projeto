@@ -67,11 +67,68 @@ _Define a clear and measurable objective aligned with business efficiency, scala
 
 ### 6.1 Personas
 
-_Present realistic personas representing the main system users, including goals, frustrations, and needs._
+The following personas were developed to represent the stakeholders involved in the Equiem onboarding ecosystem. Their relevance as instruments for scope definition and requirements engineering is supported by the study “Who Uses Personas in Requirements Engineering: The Practitioners' Perspective (2024)”, which highlights how realistic user representations improve alignment between technical and real operational needs.
+
+These personas translate the complexity of the onboarding process into two complementary perspectives:
+
+- the internal operational view, represented by the Equiem Data Analyst responsible for validating and structuring customer data;
+
+- and the external customer view, represented by a client Project Manager who must provide information through the platform.
+
+Understanding their contexts allows the solution to be designed around clearer expectations of efficiency, usability, and reliability, rather than purely technical assumptions:
+
+<div align="center">
+<sub>FIGURE 1 – Persona 1 - Alex Morgan (Data Analyst – Equiem)</sub><br>
+  <img src="assets/images/persona1.png" width="100%" alt="Persona 1 - Alex Morgan (Data Analyst – Equiem)">
+  <sup>Source: Material produced by the authors, 2026.</sup>
+</div>
+
+<div align="center">
+<sub>FIGURE 2 – Persona 2 - Sophie Bennett (Client's Project Manager)</sub><br>
+  <img src="assets/images/persona2.png" width="100%" alt="Persona 2 - Sophie Bennett (Client's Project Manager)">
+  <sup>Source: Material produced by the authors, 2026.</sup>
+</div>
+
+Alex Morgan (Data Analyst – Equiem) and Sophie Bennett (Client's Project Manager) represent the two sides of the onboarding workflow. Alex operates inside Equiem, focused on data quality, validation, and preparation for production. His main concerns are structure, automation, and auditability. Sophie, on the other hand, acts as the bridge between her organization and Equiem, seeking clarity, simplicity, and guidance while coordinating multiple internal contributors.
+
+Their complementary needs reinforce the project's objective: a platform capable of reducing conflicts for customers while increasing scalability and agility for Equiem.
 
 ### 6.2 User Journey
 
-_Map the user’s interaction flow with the product, highlighting pain points and value creation moments._
+The user journeys below illustrate the interaction flows that each persona will experience when using the onboarding system. They were designed to map actions, thoughts, and emotions across the main stages of the process from initial data submission to final provisioning.
+
+By analyzing these journeys, it becomes possible to identify pain points, opportunities for automation, and moments where the platform delivers clear value to both Equiem and its customers:
+
+<div align="center">
+<sub>FIGURE 3 – User Journey 1 - Alex Morgan (Data Analyst – Equiem)</sub><br>
+  <img src="assets/images/journey1.png" width="100%" alt="User Journey 1 - Alex Morgan (Data Analyst – Equiem)">
+  <sup>Source: Material produced by the authors, 2026.</sup>
+</div>
+
+Alex’s journey centers on data and operational efficiency.
+He begins receiving files through the portal and trusting the pipeline to handle large uploads without blocking his workflow.
+
+The emotional peak occurs during the validation stage, when the system automatically detects duplicates and format issues that would previously require hours of manual Excel work. This represents the main value creation moment of the platform.
+
+The journey ends positively with the generation of a clean CSV package after receiving the corrected informations from the client, giving Alex confidence in the coherence of the data.
+
+<div align="center">
+<sub>FIGURE 4 – User Journey 2 - Sophie Bennett (Client's Project Manager)</sub><br>
+  <img src="assets/images/journey2.png" width="100%" alt="User Journey 2 - Sophie Bennett (Client's Project Manager)">
+  <sup>Source: Material produced by the authors, 2026.</sup>
+</div>
+
+Sophie’s journey reflects the perspective of a non-technical customer responsible for coordination.
+She starts with uncertainty, hoping the new platform will bring a faster exchange than previous long questionnaires. 
+
+Then Sophie assigns correction sections to colleagues, which transforms onboarding from an individual activity into a collaborative task. Anxiety reappears during data upload, but immediate feedback reassures her before submission.
+
+The journey concludes with confidence, as she submits the final package knowing that Equiem received structured and correct information given the platforms and analysts validation.
+<br>
+<br>
+Alex and Sophie’s journeys represent the entirety of the Equiem onboarding process, from customer data entry to internal revision. Their interaction validates the needs for a distributed architecture and a collaborative space.
+
+By addressing their distinct but connected expectations, the project establishes a user-centered approach capable of improving data integrity, insertion and customer experience.
 
 ---
 
