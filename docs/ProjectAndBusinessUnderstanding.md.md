@@ -68,7 +68,9 @@ _Explicitly state excluded functionalities, such as production integrations, adv
 
 ## <a name="c5"></a>5. Product Goal
 
-_Define a clear and measurable objective aligned with business efficiency, scalability, and user experience improvement._
+The product’s goal is to make Equiem’s customer onboarding process easier to scale by moving away from manual, email-based data collection toward a structured and automated approach. It’ll allows customers to provide all required onboarding informations through a guided and validated flow, ensuring the data is complete, good, and ready to be used.
+By automating data collection and validation, it will significantly reduces the operational workload of Equiem’s onboarding teams, minimizes back-and-forth communication (via email), and shortens the time required to launch new customers on the platform. At the same time, it enables multiple onboarding projects to be managed in parallel.
+Overall, the product supports Equiem’s growth by improving onboarding efficiency, offering customers a clearer and more intuitive setup experience, and freeing internal teams from manual data handling so they can focus on more valuable tasks.
 
 ---
 
