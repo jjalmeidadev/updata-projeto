@@ -24,7 +24,15 @@
 
 ## <a name="c1"></a>1. Problem Statement
 
-_Describe the core problem addressed by the project, highlighting inefficiencies, operational pain points, and their impact on the partner’s business._
+Equiem operates a SaaS platform that requires a significant amount of customer-specific data to be correctly configured before launch. This data includes information about buildings, spaces, users, permissions, branding, and operational rules, and is often provided by multiple stakeholders on the customer side. Currently, this onboarding data collection process is handled in a highly manual and fragmented way, primarily through emails and spreadsheets.
+
+This approach is inefficient because data is received in inconsistent formats, with varying levels of completeness and quality, requiring extensive manual consolidation and validation by Equiem’s onboarding team. As the volume and complexity of data increase, so does the risk of human errors, duplicated work, misconfigurations, and delays in the onboarding timeline. These issues directly impact the time required to activate the platform for new customers.
+
+The primary users affected by this problem are Equiem’s onboarding and customer experience teams, who spend a disproportionate amount of time on low-value, repetitive tasks such as data cleaning, clarification requests, and manual data transfer. On the customer side, project managers and administrators are also impacted, as they lack a clear, structured way to understand what information is required, track progress, or collaborate efficiently with other contributors during onboarding.
+
+From a business perspective, this problem limits Equiem’s ability to scale onboarding operations in parallel, creating a bottleneck that affects growth, operational efficiency, and resource allocation. From a user perspective, the onboarding experience becomes slower, more error-prone, and less transparent, negatively influencing early perceptions of the platform’s value.
+
+Addressing this problem is therefore critical to improving onboarding efficiency, reducing operational friction, and enabling Equiem to support growth without a proportional increase in manual effort, while also delivering a more reliable and predictable onboarding experience for customers.
 
 ---
 
