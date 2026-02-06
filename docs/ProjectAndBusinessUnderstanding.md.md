@@ -113,7 +113,11 @@ _Present the MVP Canvas, including:_
 ## <a name="c11"></a>11. Project Risk Matrix
 A Risk Matrix is a fundamental tool used in project management and data governance to identify, assess, and prioritize potential threats to a project. It classifies these threats in a grid based on two dimensions: Likelihood and Impact.
 
-
+<div align="center">
+<sub>FIGURE X – Risk Matrix</sub><br>
+  <img src="../assets/risk_matrix.png" width="100%" alt="Risk Matrix">
+  <sup>Source: Material produced by the authors, 2026.</sup>
+</div>
 
 | Threats | Description | Impact | Probability | Contigency Action |
 | ------- | ----------- | ------ | ----------- | ----------------- |
