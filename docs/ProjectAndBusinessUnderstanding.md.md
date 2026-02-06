@@ -79,13 +79,13 @@ Understanding their contexts allows the solution to be designed around clearer e
 
 <div align="center">
 <sub>FIGURE 1 – Persona 1 - Alex Morgan (Data Analyst – Equiem)</sub><br>
-  <img src="../assets/images/persona1.png" width="100%" alt="Persona 1 - Alex Morgan (Data Analyst – Equiem)">
+  <img src="assets/images/persona1.png" width="100%" alt="Persona 1 - Alex Morgan (Data Analyst – Equiem)">
   <sup>Source: Material produced by the authors, 2026.</sup>
 </div>
 
 <div align="center">
 <sub>FIGURE 2 – Persona 2 - Sophie Bennett (Client's Project Manager)</sub><br>
-  <img src="../assets/images/persona2.png" width="100%" alt="Persona 2 - Sophie Bennett (Client's Project Manager)">
+  <img src="assets/images/persona2.png" width="100%" alt="Persona 2 - Sophie Bennett (Client's Project Manager)">
   <sup>Source: Material produced by the authors, 2026.</sup>
 </div>
 
@@ -101,7 +101,7 @@ By analyzing these journeys, it becomes possible to identify pain points, opport
 
 <div align="center">
 <sub>FIGURE 3 – User Journey 1 - Alex Morgan (Data Analyst – Equiem)</sub><br>
-  <img src="../assets/images/journey1.png" width="100%" alt="User Journey 1 - Alex Morgan (Data Analyst – Equiem)">
+  <img src="assets/images/journey1.png" width="100%" alt="User Journey 1 - Alex Morgan (Data Analyst – Equiem)">
   <sup>Source: Material produced by the authors, 2026.</sup>
 </div>
 
@@ -114,7 +114,7 @@ The journey ends positively with the generation of a clean CSV package after rec
 
 <div align="center">
 <sub>FIGURE 4 – User Journey 2 - Sophie Bennett (Client's Project Manager)</sub><br>
-  <img src="../assets/images/journey2.png" width="100%" alt="User Journey 2 - Sophie Bennett (Client's Project Manager)">
+  <img src="assets/images/journey2.png" width="100%" alt="User Journey 2 - Sophie Bennett (Client's Project Manager)">
   <sup>Source: Material produced by the authors, 2026.</sup>
 </div>
 
