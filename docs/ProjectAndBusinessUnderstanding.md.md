@@ -58,11 +58,27 @@ _Define a high-level vision describing what the product aims to achieve and the 
 
 ### 4.1 What the Product Does
 
-_List the main capabilities included in the MVP, focusing on core onboarding, data processing, validation, and integrations._
+- The product provides authenticated access for each user involved in the onboarding process, ensuring that data submissions and reviews are associated with identifiable actors.
+
+- It organizes submitted onboarding data into structured classes, allowing information to be clearly displayed, reviewed, and exported in a consistent and standardized format.
+
+- The platform is designed to handle large files and datasets, supporting high-volume uploads without blocking user interaction.
+
+- Asynchronous processing is a core capability of the system, enabling data validation and preparation to occur in the background while users receive immediate feedback on submission status.
+
+- The system also supports the handling of multiple onboarding requests simultaneously, allowing parallel processing and improving operational scalability.
+
+---
 
 ### 4.2 What the Product Does Not Do
 
-_Explicitly state excluded functionalities, such as production integrations, advanced security layers, and enterprise-scale features._
+- The product does not generate new business data or infer information beyond what is explicitly provided by users during onboarding.
+
+- It does not include data visualization features such as charts, or analytical graphs, focusing instead on data structuring and preparation.
+
+- The platform does not perform real-time provisioning or configuration of Equiem’s production systems, operating only as a preprocessing and validation layer.
+
+- It also does not offer advanced business intelligence, reporting capabilities, or decision-support tools beyond basic data exports.
 
 ---
 
