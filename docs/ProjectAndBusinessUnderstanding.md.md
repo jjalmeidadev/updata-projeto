@@ -219,10 +219,26 @@ _Present the MVP Canvas, including:_
 ---
 
 ## <a name="c11"></a>11. Project Risk Matrix
+A Risk Matrix is a fundamental tool used in project management and data governance to identify, assess, and prioritize potential threats to a project. It classifies these threats in a grid based on two dimensions: Likelihood and Impact.
 
-_Present the risk matrix with:_
+<div align="center">
+<sub>FIGURE X – Risk Matrix</sub><br>
+  <img src="../assets/risk_matrix.png" width="100%" alt="Risk Matrix">
+  <sup>Source: Material produced by the authors, 2026.</sup>
+</div>
 
-- _Identified risks_  
-- _Probability_  
-- _Impact_  
-- _Mitigation and conting_
+| Threats | Description | Impact | Probability | Contigency Action |
+| ------- | ----------- | ------ | ----------- | ----------------- |
+| Delayed Tasks | Tasks may exceed their planned deadlines due to technical complications or underestimation of the workload. | Medium | 50% | Further complications with a task must be reported   to the group; the workload will then be redistributed among team members. |
+| Misunderstooding of the software requirements | The group may misinterpret project requirements, leading to a solution that fails to meet the partner's expectations. | High | 50% | Requirements must be cross-checked during validation sessions with the partner to ensure alignment. |
+| Comunnication ploblems with the partner | Poor communication due to linguistic differences or delays in feedback from the partner may lead to a misalignment between the group and Equiem technical expectations. | Medium | 30% | Use of transcription tools, such as Granola during meetings to bridge potential linguistic gaps. |
+| Miscommunication during dailies and closures | Miscommunication during daily meetings or closures may lead to a lack of alignment regarding task dependencies and progress. | High | 30% | Every team member must participate in all daily meetings and closures; additionally, the Scrum Master will provide daily reports in the Slack channel to ensure alignment. |
+| Incompletness in the project scope  | The team may fail to deliver core MVP features, such as the module-driven dynamic forms or the asynchronous processing pipeline, due to underestimating the complexity of the requirements. | Very High | 30% | Conduct a formal validation session of the Lean Inception with the partner to confirm the MVP scope. |
+
+Opportunities represent 'positive risks' that can be used to enhance project value. The risk matrix allows us to identify opportunities, allowing the team to look beyond problem-solving and focus on strategic growth and operational excellence.
+
+| Opportunities | Impact | Probability | 
+| ------- | ------ | ----------- | 
+| Increase revenue by being abble to onboard more clients | Very High | 70% | 
+| Add new usefull features | High | 70% | 
+| Improve the efficiency of the data processing | Very High | 50% | 
