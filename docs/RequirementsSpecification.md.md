@@ -24,13 +24,25 @@ _Describe the purpose of this document and its role in defining system behavior 
 
 ## <a name="c2"></a>2. Functional Requirements
 
-_Each requirement must follow the defined format and be uniquely identified._
+The following table presents the functional requirements of the system, 
+describing the expected behaviors and capabilities to be implemented in order to support data submission,
+validation, and user interaction in a secure and efficient manner.
 
-| ID | Description | Related Tests |
-|----|------------|---------------|
-| FR01 | The system must ... | Test-FR01 |
-| FR02 | The user must be able to ... | Test-FR02 |
+| ID   | Description                                                                 | Related Tests |
+|------|-----------------------------------------------------------------------------|---------------|
+| RF01 | The system must allow users to upload configuration files in CSV and XLSX formats. | Test-RF01    |
+| RF02 | The system must process large volumes of data asynchronously without blocking the user interface. | Test-RF02    |
+| RF03 | The system must require user authentication to access upload and configuration features. | Test-RF03    |
+| RF04 | The system must provide standardized file templates to guide users during data submission. | Test-RF04    |
+| RF05 | The system must detect and alert users about duplicate or conflicting data records. | Test-RF05    |
+| RF06 | The system must validate submitted data and display detailed warnings for invalid values. | Test-RF06    |
+| RF07 | The system must identify and list mandatory fields that were not filled in by the user. | Test-RF07    |
+| RF08 | The system must automatically save user progress during the data submission process. | Test-RF08    |
+| RF09 | The system must allow users to preview uploaded files before final validation. | Test-RF09    |
+| RF10 | The system must offer a Dark Mode option to personalize the user interface. | Test-RF10    |
 
+The requirements listed above establish the functional scope of the system and serve as the basis for development,
+testing, and validation activities, ensuring alignment between stakeholder expectations and the delivered solution.
 ---
 
 ## <a name="c3"></a>3. Non-Functional Requirements
