@@ -24,7 +24,9 @@ _Describe the purpose of this document and its role in defining system behavior 
 
 ## <a name="c2"></a>2. Functional Requirements
 
-_Each requirement must follow the defined format and be uniquely identified._
+The following table presents the functional requirements of the system, 
+describing the expected behaviors and capabilities to be implemented in order to support data submission,
+validation, and user interaction in a secure and efficient manner.
 
 | ID   | Description                                                                 | Related Tests |
 |------|-----------------------------------------------------------------------------|---------------|
@@ -39,6 +41,8 @@ _Each requirement must follow the defined format and be uniquely identified._
 | RF09 | The system must allow users to preview uploaded files before final validation. | Test-RF09    |
 | RF10 | The system must offer a Dark Mode option to personalize the user interface. | Test-RF10    |
 
+The requirements listed above establish the functional scope of the system and serve as the basis for development,
+testing, and validation activities, ensuring alignment between stakeholder expectations and the delivered solution.
 ---
 
 ## <a name="c3"></a>3. Non-Functional Requirements
