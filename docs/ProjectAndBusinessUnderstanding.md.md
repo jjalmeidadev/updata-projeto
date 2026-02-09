@@ -50,7 +50,11 @@ For companies like Equiem, this represents a strategic opportunity to transform 
 
 ## <a name="c3"></a>3. Product Vision
 
-_Define a high-level vision describing what the product aims to achieve and the value it delivers to users and the partner._
+The product aims to transform Equiem’s onboarding process by replacing manual and fragmented data collection with a structured, self-service, and asynchronous platform. 
+
+By centralizing data intake, automating validation, and providing clear feedback throughout the onboarding journey, the solution seeks to improve data quality, reduce operational effort, and create a more transparent and predictable experience for both Equiem’s internal teams and customers.
+
+Lastly, the platform supports Equiem’s scalability by enabling multiple onboarding processes to run in parallel without a proportional increase in manual workload.
 
 ---
 
