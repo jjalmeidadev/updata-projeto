@@ -89,7 +89,6 @@ _Explain each step and its relationship to the system._
 
 **MVP Features**
 - Secure user authentication to access the onboarding process
-- Guided onboarding flow to structure data submission
 - File upload functionality for onboarding documents
 - Support for very large data and file uploads
 - Ability to manage multiple onboarding processes in parallel
@@ -144,7 +143,6 @@ Users can securely access the platform and follow a guided onboarding flow. The 
 Delivered in this sprint:
 
 - Secure authentication;
-- Guided onboarding flow;
 - Clear submission interface;
 - Standardized templates.
 
