@@ -161,13 +161,11 @@ With the addition of the middleware layer, the onboarding process becomes more r
 
 **MVP Features**
 - Secure user authentication to access the onboarding process
-- Guided onboarding flow to structure data submission
 - File upload functionality for onboarding documents
 - Support for very large data and file uploads
 - Ability to manage multiple onboarding processes in parallel
 
 **Nice-to-Have Features**
-- Role-based access for different client stakeholders
 - Progress indicator to visualize onboarding completion status
 
 ---
@@ -179,9 +177,9 @@ With the addition of the middleware layer, the onboarding process becomes more r
 - Detection and warning for missing mandatory fields
 - Alerts for duplicated data entries
 - Clear error messages for invalid or inconsistent data
+- Collaborative work on onboarding data between multiple users
 
 **Nice-to-Have Features**
-- Collaborative work on onboarding data between multiple users
 - Version history to track data changes during onboarding
 
 ---
@@ -200,14 +198,59 @@ With the addition of the middleware layer, the onboarding process becomes more r
 
 ---
 
-
 ## <a name="c9"></a>9. Delivery Sequencing and Prioritization
 
-_Explain how features were prioritized and ordered for development._
+Considering that Sprint 1 is dedicated to business analysis and problem understanding, feature delivery begins in Sprint 2. The sequencing of deliveries was defined based on clear prioritization criteria aligned with the MVP objective. The main prioritization criteria adopted were:
 
-_Describe prioritization criteria such as business value, technical dependency, and MVP relevance._
+- Impact on the core problem
+- Technical dependencies
+- Data integrity and operational reliability
+- Operational scalability
+- Processing and architectural complexity
 
----
+**Sprint 2 — Core onboarding foundation**
+
+Users can securely access the platform and follow a guided onboarding flow. The interface is already structured so customers know what to submit, and templates help standardize data.
+
+Delivered in this sprint:
+
+- Secure authentication;
+- Clear submission interface;
+- Standardized templates.
+
+**Sprint 3 — Submission and data reliability**
+
+Users can upload files, preview them, and save progress. At the same time, validation ensures the data is complete and correct before submission.
+
+Delivered in this sprint
+
+- File uploads
+- File preview before submission
+- Save progress across sessions
+- Real time validation
+- Mandatory field checks
+- Duplicate detection
+- Clear error messages
+
+**Sprint 4 — Parallel work and collaboration**
+
+Multiple onboarding processes can run at the same time, and multiple stakeholders can collaborate inside each onboarding.
+
+Delivered in this sprint
+
+- Parallel onboarding processes
+- Collaborative onboarding completion
+
+**Sprint 5 — Large scale processing**
+
+The final MVP sprint focuses on technical scalability, the system becomes able to handle very large uploads and process them asynchronously without blocking the interface.
+
+Delivered in this sprint
+
+- Support for very large uploads
+- Scalable file processing
+
+After completing the must-have features, if time allows, the team may start implementing nice-to-have enhancements such as role-based access, progress indicators, version history, tooltips, and dark mode.
 
 ## <a name="c10"></a>10. MVP Canvas
 
