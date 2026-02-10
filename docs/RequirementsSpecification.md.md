@@ -47,24 +47,32 @@ testing, and validation activities, ensuring alignment between stakeholder expec
 
 ## <a name="c3"></a>3. Non-Functional Requirements
 
-_NFRs must align with ISO 25010 quality attributes._
-
-| ID | Description | ISO 25010 Attribute | Related Tests |
-|----|------------|--------------------|---------------|
-| NFR01 | The system must ... | Performance Efficiency |
-| NFR02 | The system must ... | Reliability |
-| NFR03 | The system must ... | Security |
+| ID | Description | Related Tests |
+|----|------------|---------------|
+| NFR01 | The system must process large data uploads and validation tasks asynchronously without blocking the user interface, even under multiple concurrent requests. | Test-NFR01 |
+| NFR02 | The system must ensure data integrity by consistently detecting duplicates, missing mandatory fields, and invalid values before allowing data export. | Test-NFR02 |
+| NFR03 | The system must provide immediate feedback to users after file uploads and during processing stages to maintain a responsive and predictable user experience. | Test-NFR03 |
+| NFR04 | The system must be usable by non-technical users, allowing them to complete the onboarding process intuitively without external assistance. | Test-NFR04 |
+| NFR05 | The system must restrict access to onboarding and configuration features through authenticated user access. | Test-NFR05 |
+| NFR06 | The system must support multiple onboarding processes in parallel without degradation in performance or validation accuracy. | Test-NFR06 |
+| NFR07 | The system must provide traceability of validation and processing stages, allowing internal users to understand the status and outcome of each onboarding submission. | Test-NFR07 |
 
 ---
 
 ## <a name="c4"></a>4. FR–NFR Correlation Matrix
 
-_Map which NFRs directly impact each Functional Requirement._
-
 | FR ID | Related NFRs |
 |------|-------------|
-| FR01 | NFR01, NFR02 |
-| FR02 | NFR03 |
+| FR01 | NFR01, NFR03, NFR06 |
+| FR02 | NFR01, NFR03, NFR06 |
+| FR03 | NFR05 |
+| FR04 | NFR04 |
+| FR05 | NFR02, NFR07 |
+| FR06 | NFR02, NFR07 |
+| FR07 | NFR02, NFR07 |
+| FR08 | NFR04 |
+| FR09 | NFR03, NFR04 |
+| FR10 | NFR04 |
 
 ---
 
