@@ -3,7 +3,13 @@
 ### Partner: Equiem  
 
 #### Team Members
-
+- <a href="https://www.linkedin.com/in/ana-cristina-jardim/">Ana Cristina Alves Jardim</a>
+- <a href="https://www.linkedin.com/in/debora-pereira-nogueira/">Débora Pereira Nogueira</a>
+- <a href="https://www.linkedin.com/in/jaimeandradedealmeida/">Jaime Andrade de Almeida</a>
+- <a href="https://www.linkedin.com/in/leonardoramosvieira/">Leonardo Ramos Vieira</a>
+- <a href="https://www.linkedin.com/in/matheusferreirads-/">Matheus Ferreira da Silva</a>
+- <a href="https://www.linkedin.com/in/owen-paimba-sail-5b7ba1327/">Owen Ahmed Robert Paimba-sail</a>
+- <a href="https://www.linkedin.com/in/yudi-omaki/">Yudi Nakamura Trevisani Omaki</a>
 ---
 
 ## Table of Contents
