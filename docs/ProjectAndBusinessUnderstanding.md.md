@@ -270,6 +270,15 @@ After completing the must-have features, if time allows, the team may start impl
 
 ## <a name="c10"></a>10. MVP Canvas
 
+The MVP Canvas is a visual framework designed to organize and clearly communicate, in a simple and efficient way, all the essential elements of a Minimum Viable Product. In the project developed in partnership with Equiem, this canvas was used to map the core aspects of the solution, including the value proposition, customer segments, key activities, and success metrics, ensuring alignment between business objectives, user needs, and technical feasibility.
+
+<div align="center">
+<sub>FIGURE X – MVP canvas</sub><br>
+  <img src="../assets/mvp_canvas.png" width="100%" alt="Risk Matrix">
+  <sup>Source: Material produced by the authors, 2026.</sup>
+</div>
+
+
 _Present the MVP Canvas, including:_
 
 - _Value proposition_  
