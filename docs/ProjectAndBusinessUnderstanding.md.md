@@ -290,14 +290,6 @@ The MVP Canvas is a visual framework designed to organize and clearly communicat
   <sup>Source: Material produced by the authors, 2026.</sup>
 </div>
 
-
-_Present the MVP Canvas, including:_
-
-- _Value proposition_  
-- _Customer segments_  
-- _Key activities_  
-- _Success metrics_
-
 ---
 
 ## <a name="c11"></a>11. Project Risk Matrix
