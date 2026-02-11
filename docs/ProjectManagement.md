@@ -19,97 +19,173 @@ This section presents an analysis of Sprint 1 execution. It identifies strengths
 
 ### 1.1 Strengths
 
-_Identify the elements that contributed positively to Sprint 1 outcomes._
+- **Clear understanding of the project context**  
+  The team developed a strong comprehension of Equiem’s business environment, onboarding challenges, and operational constraints.
 
-- 
-- 
-- 
+- **Well-structured analysis artifacts**  
+  Key Sprint 1 deliverables (Problem Statement, Scope Definition, Personas, User Journeys, Business Flow) were documented in a clear and logical structure.
+
+- **Strong alignment on product vision**  
+  The team established a shared understanding of the product’s objectives, ensuring coherence across discussions and decisions.
+
+- **Early identification of project risks**  
+  A Project Risk Matrix was created, enabling anticipation of potential threats related to scope, communication, and planning.
 
 ---
 
 ### 1.2 Weaknesses
 
-_Identify limitations or issues that negatively impacted Sprint 1 performance._
+- **Heavy focus on documentation activities**  
+  Sprint 1 required extensive writing, review, and validation work, increasing workload concentration.
 
-- 
-- 
-- 
+- **Initial adjustment period**  
+  The team needed time to align on tools, repository structure, and collaboration practices.
+
+- **Minor communication frictions**  
+  Some clarifications were necessary during collaborative tasks, particularly in early exchanges because of the language barrier.
+
+- **Tool learning curve**  
+  A short adaptation phase was observed when working with Git/GitLab workflows.
 
 ---
 
 ### 1.3 Improvement Actions for Sprint 2
 
-_Propose concrete and verifiable actions to improve efficiency, collaboration, and delivery in Sprint 2._
-
 | Improvement Area | Identified Issue | Proposed Action | Expected Outcome |
 |------------------|------------------|-----------------|------------------|
-|                  |                  |                 |                  |
+| Sprint planning | Some backlog items lacked precision | Refine task descriptions and acceptance criteria | Reduced ambiguity during execution |
+| Communication | Occasional misunderstandings | Structure updates during dailies and reviews | Improved team alignment |
+| Tool usage | Early workflow inconsistencies | Reinforce Git/GitLab conventions | Improved traceability |
 
 ---
 
 ### 1.4 Risk Analysis and Tracking
 
-This subsection reviews risks identified during project planning and Sprint 1 execution.
+This subsection reviews risks identified during planning and Sprint 1 execution.
 
 #### Identified Risks
+
 | Risk | Description | Probability | Impact | Mitigation / Contingency Action |
-|-----|-------------|-------------|--------|--------------------------------|
-|     |             |             |        |                                |
+|------|-------------|-------------|--------|--------------------------------|
+| Delayed Tasks | Tasks may exceed deadlines due to underestimation or technical complexity | Medium | Medium | Redistribute workload and reassess priorities |
+| Requirement Misunderstanding | Misinterpretation of expectations or needs | Medium | High | Validate assumptions during reviews |
+| Communication Gaps | Misalignment due to language barrier | Low | Medium | Reinforce structured updates |
+| Tool Misuse | Incorrect Git/GitLab practices | Low | Medium | Apply workflow guidelines |
 
 #### Risk Tracking Mechanism
-_Describe how risks will be monitored and updated across future sprints (e.g., review frequency, ownership, documentation)._
+
+Risks are reviewed at the end of each sprint. New risks are added when identified, and existing risks are reassessed based on probability and impact evolution. Ownership is shared collectively, with updates reflected in the Project Management documentation.
 
 ---
 
 ### 1.5 PMO Alignment
 
-_Explain how Sprint 1 analysis and improvement actions comply with PMO principles such as traceability, documentation quality, continuous improvement, and risk management._
+Sprint 1 analysis aligns with PMO principles by ensuring:
+
+- **Traceability** through documented artifacts and structured analysis  
+- **Continuous improvement** via Sprint 2 action planning  
+- **Risk management** through identification and monitoring mechanisms  
+- **Documentation quality** with clear and organized deliverables  
 
 ---
 
 ## 2. Sprint 2 Planning
 
-This section outlines the planning of Sprint 2, including task identification, prioritization, and workload estimation using T-shirt sizing.
+_This section outlines the planning of Sprint 2, including task identification, prioritization, and workload estimation using T-shirt sizing._
 
 ---
 
 ### 2.1 Sprint Objectives
 
-_Describe the main objectives and expected outcomes of Sprint 2._
+Objectives:
+
+- Establish a shared scope vision through a collaboratively validated UML diagram.  
+- Derive logical data models from that model.  
+- Produce UI/UX artifacts only after architectural consensus.  
+- Implement repository structure and coding standards.  
+- Prepare Sprint Review presentation within 2 days.
+
+Expected outcomes:
+
+- Agreed source of scope definition.  
+- Database design traceable to UML decisions.  
+- Visual design consistent with architecture.
+- Standardized project environment.
 
 ---
 
 ### 2.2 Sprint 2 Backlog and Task Planning
 
-| Task ID | Task Name | Description | Type | Size (XS–L) | DoR | DoD |
-|--------|-----------|-------------|------|-------------|-----|-----|
-|        |           |             |      |             |     |     |
+- **Product Owner (PO):** validates architectural decisions, accepts/declines features within artifacts.  
+- **Scrum Master (SM):** monitors engineering practices, GitFlow, and DoR/DoD applications.  
+- **Modeling & Design Team (5 members):** UML → Data Models (3 members)/UI/UX 2(members).  
+- **Review Team (2 members):** Sprint Review preparation from Wednesday, ideally.
+
+| Task ID | Task Name | Description | Type | Size | DoR | DoD |
+|---|---|---|---|---|---|---|
+| S2-01 | Collective UML Modeling | Meetings to define domain classes and relations | Design | M | Sprint 2 artifacts reviewed | UML approved by PO |
+| S2-02 | UML Documentation | Formal diagram + thought process | Docs | S | UML consensus reached | documentation.md updated |
+| S2-03 | Logical Data Model | Tables and data relations | Design | M | Conceptual model validated | Logical schema complete |
+| S2-04 | UI Structure Discussion | Collective alignment before graphics | Design | S | Final UML available | Navigation defined |
+| S2-05 | Wireframes | Low fidelity screens | Design | M | UI structure approved | Wireframes complete |
+| S2-06 | Mockups & Visual Guide | High fidelity + design system | Design | L | Wireframes approved | Projeto.md updated |
+| S2-07 | Directory Structure | Repository organization | Config | S | Stack defined | Coherent structures to the READMEs |
+| S2-08 | Coding Standards | Standards document | Docs | S | Conventions agreed | Conventions applied |
+| S2-09 | Sprint Review Prep | Slides & narrative | Design | S | Draft artifacts | Ready presentation |
+
+**Allocation logic**
+
+- Day 1: S2-01 → collective session (all members)  
+- Days 2-3: S2-02   
+- Day 3–4: S2-03  
+- After architectural approval: S2-04 → S2-05 → S2-06  
+- From Wednesday: S2-09 by 2 members and S2-07 & S2-08 supervised by SM  
+
+This flow prevents UI and DB work from diverging from the scope defined previously by the group.
 
 ---
 
 ### 2.3 Prioritization and Strategy
 
-_Explain how tasks were prioritized, considering business value, dependencies, risks, and team capacity._
+**Principles**
+
+1. **Architecture first:** UML is the base for all later artifacts  
+2. **Collective validation:** UI concepts discussed before any drawing  
+3. **Coherence:** Logical model must derive from UML  
+4. **Management:** PO as final decision maker, SM as process advisor
+
+**Risk-oriented choices**
+
+- Avoid early mockups without entity definition  
+- Reduce rework between DB and UX  
+- Centralize acceptance to prevent inconsistent visions
+
+**Time management**
+
+- Separation for modeling by mid-sprint  
+- Review preparation begins Wednesday with final scope  
+- Final two days reserved for integration
 
 ---
 
 ## 3. Group Development Process Management
 
-This section describes the working policies and team processes adopted to ensure efficient collaboration and project governance.
+This section defines collaboration and workflow policies.
 
 ---
 
 ### 3.1 Daily Meetings Policy
 
-_Describe frequency, objectives, duration, and participation._
+- **Frequency:** Daily during sprint execution  
+- **Objective:** Share progress, blockers, and next actions  
+- **Duration:** Short, time-boxed meetings  
+- **Participation:** Entire team  
 
 ---
 
 ### 3.2 Development and Collaboration Policies
 
-This subsection defines the rules related to GitHub usage, commits, and the overall team workflow.
-
-- GitHub usage rules
-- Commit conventions
-- Merge and review practices
-- Task lifecycle and workflow
+- GitHub/GitLab usage rules  
+- Commit conventions  
+- Merge and review practices  
+- Task lifecycle and workflow  
