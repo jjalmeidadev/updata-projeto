@@ -79,6 +79,7 @@ chore/update-files-structure
 ### `release/`
 
 * Used to prepare a new production version
+* A new release branch is created for each version
 * Created from: `develop`
 * Merged into: `main` and `develop`
 
