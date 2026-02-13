@@ -5,9 +5,16 @@
 ---
 
 ## Table of Contents
-1. Sprint 1 Analysis  
-2. Sprint 2 Planning  
-3. Group Development Process Management  
+1. [Sprint 1 Analysis](#1-sprint-1-analysis)
+   - [Strengths](#11-strengths)
+   - [Weaknesses](#12-weaknesses)
+   - [Improvement Actions for Sprint 2](#13-improvement-actions-for-sprint-2)
+   - [Risk Analysis and Tracking](#14-risk-analysis-and-tracking)
+   - [PMO Alignment](#15-pmo-alignment)
+2. [Sprint 2 Planning](#2-sprint-2-planning)
+   - [Sprint Objectives](#21-sprint-objectives)
+   - [Sprint 2 Backlog and Task Planning](#22-sprint-2-backlog-and-task-planning)
+3. [Group Development Process Management](#3-group-development-process-management)
 
 ---
 
@@ -185,7 +192,36 @@ This section defines collaboration and workflow policies.
 
 ### 3.2 Development and Collaboration Policies
 
-- GitHub/GitLab usage rules  
-- Commit conventions  
-- Merge and review practices  
-- Task lifecycle and workflow  
+####  GitHub/GitLab usage rules  
+All source code and documentation are versioned within the project repository. The team follows a structured branching workflow based on GitFlow, ensuring controlled feature development, isolated changes, and stable production management.
+
+#### Commit Conventions
+
+The team adopts Conventional Commits to standardize commit history and improve traceability.
+
+#### Merge and review practices  
+To ensure code quality and collaborative validation:
+
+- All merges must occur via Pull Requests (PRs);
+
+- PRs must include a clear description of implemented changes;
+
+- At least one team member review is required before approval;
+
+- Reviewers validate scope alignment, documentation updates, and adherence to standards;
+
+#### Task lifecycle and workflow  
+Project tasks follow a structured lifecycle to ensure visibility and progress tracking.
+
+Standard workflow:
+
+`
+Open -> Backlog → Doing → Waiting Review → Review -> Closed
+`
+
+Notes:
+
+- Tasks should only move to **Doing** when the Definition of Ready (DoR) is met.
+- A task can be marked **Closed** only when the Definition of Done (DoD) is satisfied.
+
+For more version control details (branch naming, PR template, and commit rules), see [ConfigurationManagement.md](ConfigurationManagement.md).
