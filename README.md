@@ -32,15 +32,18 @@
 
 ## 📝 Description
 
-Content will be added in future updates.
+This project presents the Business Analysis and Requirements Specification for an onboarding intake platform aimed at optimizing customer onboarding within Equiem’s SaaS ecosystem. It documents the problem space, defines functional and non-functional requirements, and outlines an MVP-aligned solution focused on automating data collection, improving validation, and reducing operational friction in the onboarding lifecycle.
 
 ## 📁 Project Structure
 
-Project structure details will be added in future updates.
+The repository is organized as follows:
 
-## 💻 Running the Project
-
-Instructions for running the project will be added in future updates.
+- README.md: Project overview and instructions
+- docs/: Documentation and assets
+    - assets/: Images
+    - Project.md: Business analysis and requirements specification
+    - ConfigurationManagement.md: Configuration management details
+    - ProjectManagement.md: Project management guidelines
 
 ## 🗃 Release History
 
