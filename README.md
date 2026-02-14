@@ -1,7 +1,7 @@
 # Inteli - Institute of Technology and Leadership
 
 <p align="center">
-<a href= "https://www.inteli.edu.br/"><img src="docs/assets/inteli.png" alt="Inteli - Institute of Technology and Leadership" border="0"></a>
+<a href= "https://www.inteli.edu.br/"><img src="assets/images/inteli.png" alt="Inteli - Institute of Technology and Leadership" border="0"></a>
 </p>
 
 # Project Name
