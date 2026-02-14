@@ -1,0 +1,74 @@
+# Inteli - Institute of Technology and Leadership
+
+<p align="center">
+<a href= "https://www.inteli.edu.br/"><img src="docs/assets/inteli.png" alt="Inteli - Institute of Technology and Leadership" border="0"></a>
+</p>
+
+# Project Name
+
+## Group Name
+
+## 🧑‍🎓 Team Members: 
+- <a href="https://www.linkedin.com/in/ana-cristina-jardim/">Ana Cristina Alves Jardim</a>
+- <a href="https://www.linkedin.com/in/debora-pereira-nogueira/">Débora Pereira Nogueira</a>
+- <a href="https://www.linkedin.com/in/jaimeandradedealmeida/">Jaime Andrade de Almeida</a>
+- <a href="https://www.linkedin.com/in/matheusferreirads-/">Matheus Ferreira da Silva</a>
+- <a href="https://www.linkedin.com/in/owen-paimba-sail-5b7ba1327/">Owen Ahmed Robert Paimba-sail</a>
+- <a href="https://www.linkedin.com/in/vitor-ribeiro-ms/">Vitor Ribeiro de Mattos</a>
+- <a href="https://www.linkedin.com/in/yudi-omaki/">Yudi Nakamura Trevisani Omaki</a>
+
+## 🧑‍🏫 Faculty:
+### Supervisor 
+- <a href="https://www.linkedin.com/in/hermano-peixoto-1091796/">Hermano Peixoto</a>
+
+### Instructors
+- <a href="https://www.linkedin.com/in/jefferson-o-silva/">Jefferson Silva</a>  
+- <a href="https://www.linkedin.com/in/ovidio-netto/">Ovidio Netto</a> 
+- <a href="https://www.linkedin.com/in/vanunes/">Vanessa Nunes</a> 
+- <a href="https://www.linkedin.com/in/henrique-mohallem-paiva-6854b460/">Henrique Paiva</a>
+- <a href="https://www.linkedin.com/in/heloisacandello/">Heloisa Candello</a> 
+- <a href="https://www.linkedin.com/in/filipe-gon%C3%A7alves-08a55015b/">Filipe Golçalves</a> 
+- <a href="https://www.linkedin.com/in/lisane-valdo/">Lisane Valdo</a>
+
+## 📝 Description
+
+Content will be added in future updates.
+
+## 📁 Project Structure
+
+Project structure details will be added in future updates.
+
+## 💻 Running the Project
+
+Instructions for running the project will be added in future updates.
+
+## 🗃 Release History
+
+* 1.0.0 - 10/04/2026 
+    * Project Development And Test Execution
+    * Evolutionary Project Management
+    * Project Finalization And Final Presentation
+* 0.6.0 - 27/03/2026 
+    * Project Development
+    * Test Execution And Analysis
+    * Evolutionary Project Management And Financial Viability Analysis
+    * Analytic Optimization Of System Throughput
+* 0.3.1 - 13/03/2026  
+    * Technical Infrastructure And Deployment Mapping
+    * Database Implementation
+    * Project Development
+    * Test Planning
+    * Evolutionary Project Management
+* 0.2.7 - 27/02/2026 
+    * Technical Solution (Design)
+    * Data Modeling
+    * Solution Visual Design
+    * Evolutionary Project Management
+* 0.1.3 - 13/02/2026 
+    * Project And Business Understanding
+    * Functional And Non-Functional Requirements Specification
+    * Evolutionary Project Management And Configuration Management
+    
+## 📋 License
+
+<img style="height:22px!important;margin-left:3px;vertical-align:text-bottom;" src="https://mirrors.creativecommons.org/presskit/icons/cc.svg?ref=chooser-v1"><img style="height:22px!important;margin-left:3px;vertical-align:text-bottom;" src="https://mirrors.creativecommons.org/presskit/icons/by.svg?ref=chooser-v1"><p xmlns:cc="http://creativecommons.org/ns#" xmlns:dct="http://purl.org/dc/terms/">**PROJECT NAME** by </a><a rel="cc:attributionURL dct:creator" property="cc:attributionName" href="https://github.com/Intelihub">Inteli</a>, <a href="https://www.linkedin.com/in/ana-cristina-jardim/">Ana Cristina</a>, <a href="https://www.linkedin.com/in/debora-pereira-nogueira/">Débora Pereira Nogueira</a>, <a href="https://www.linkedin.com/in/jaimeandradedealmeida/">Jaime Andrade de Almeida</a>, <a href="https://www.linkedin.com/in/vitor-ribeiro-ms/">Vitor Ribeiro</a>, <a href="https://www.linkedin.com/in/matheusferreirads-/">Matheus Ferreira da Silva</a>, <a href="https://www.linkedin.com/in/owen-paimba-sail-5b7ba1327/">Owen Ahmed Robert Paimba-sail</a>, </a> is licensed under <a href="http://creativecommons.org/licenses/by/4.0/?ref=chooser-v1" target="_blank" rel="license noopener noreferrer" style="display:inline-block;">Attribution 4.0 International</a>.</p>
