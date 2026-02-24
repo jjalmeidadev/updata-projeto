@@ -43,9 +43,9 @@ This project follows a **Three-Tier Architecture (Presentation, Business, Data)*
 ├── src/
 │ ├── presentation/
 │ ├── business/
-│ └── data/
-│ 
-├── mock-api/
+│ ├── data/
+│ └── mock-api/
+|
 ├── tests/
 ├── docs/
 ├── config/
@@ -60,7 +60,8 @@ The `src/` directory contains all application source code.
 src/
 ├── presentation/
 ├── business/
-└── data/
+├── data/
+└── mock-api/
 ```
 
 ### 1.1 Presentation Layer
@@ -141,7 +142,7 @@ data/
 - **integrations/** – External API clients (Equiem integration)  
 
 
-## 2. mock-api/
+### 1.4. mock-api/
 
 Simulated Equiem GraphQL server used for safe integration testing.
 
@@ -155,7 +156,7 @@ mock-api/
 
 - **resolvers/** – Mock implementation logic for queries and mutations, returning simulated responses.
 
-## 3. tests/
+## 2. tests/
 
 Contains unit and integration tests organized by layer.
 
@@ -166,7 +167,7 @@ tests/
 └── data/
 ```
 
-## 4. docs/
+## 3. docs/
 
 Contains project documentation.
 
@@ -183,7 +184,7 @@ docs/
 - **ProjectManagement.md** – Sprint planning and analysis
 - **ConfigurationManagement.md** – Versioning strategy, branching model, and environment configuration  
 
-## 5. config/
+## 4. config/
 
 Contains application configuration files, because separating configuration from business logic improves flexibility and maintainability.
 
