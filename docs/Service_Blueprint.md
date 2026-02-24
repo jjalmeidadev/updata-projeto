@@ -1,7 +1,7 @@
 # Swim Lanes – Equiem Onboarding Data Intake
 
 ## Physical / Digital Evidence  
-**What the user sees / interacts with**
+**What the user interacts with :** 
 
 - Onboarding Portal  
 - Login / Authentication Screen  
@@ -9,15 +9,19 @@
 - File Upload Interface (CSV / XLSX)  
 - Validation Messages (errors / success / warnings)  
 - End Notifications (processing complete)  
-- Export Confirmation (CSV / JSON)  
+- Export Confirmation (CSV / JSON)
+- Contributor Invitation Interface 
+- Role Assignment Interface
 
 ---
 
 ## Customer Actions  
-**What the user is doing**
+**What the user is doing :**
 
 - Log in to the platform  
-- Access onboarding project  
+- Access onboarding project
+- Can invite contributors to the onboarding project
+- Assign permissions to contributors  
 - Fill onboarding forms  
 - Upload CSV / XLSX files  
 - Save progress / draft  
@@ -30,10 +34,11 @@
 ---
 
 ## Frontstage (Visible Software Behavior)  
-**What the system shows**
+**What the system shows :**
 
 - Displays onboarding dashboard  
-- Shows required sections based on enabled modules  
+- Shows required sections based on enabled modules
+- Displays contributor management (invite + access control)
 - Shows upload progress  
 - Displays validation feedback  
 - Highlights missing / invalid fields  
@@ -46,10 +51,11 @@
 
 ---
 
-## Backstage (Invisible System Processes)  
-**What happens behind the scenes**
+## Backstage (Internal Processes)  
+**What happens behind the scenes :**
 
-- User authentication & session handling  
+- User authentication & session handling 
+- Role and permission validation
 - File storage in staging area  
 - Schema validation  
 - Required field validation  
@@ -67,7 +73,7 @@
 ---
 
 ## Support Processes  
-**Services used by backstage processes**
+**Services used by backstage processes :**
 
 - Cloud Storage (files / staging data)  
 - Background Job Queue / Async Processing Engine  
@@ -76,5 +82,5 @@
 - Notification Service  
 - Authentication Service  
 - External APIs (Equiem / Provisioning)  
-- Logging & Monitoring System  
+- Logging & Monitoring System
 - Retry / Resilience Mechanism  
