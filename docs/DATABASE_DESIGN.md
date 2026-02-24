@@ -315,5 +315,3 @@ Summarize how the database design:
 - Achieves at least Third Normal Form (3NF).
 - Ensures referential integrity.
 - Maintains coherence between conceptual and logical models.
-
-This document must remain aligned with project requirements and be stored in the `docs/` folder as `DATABASE_DESIGN.md`.
