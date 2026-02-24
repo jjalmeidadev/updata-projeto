@@ -5,13 +5,12 @@
 
 - Onboarding Portal  
 - Login / Authentication Screen  
+- Contributor Invitation interface
 - Dynamic Web Forms  
 - File Upload Interface (CSV / XLSX)  
 - Validation Messages (errors / success / warnings)  
 - End Notifications (processing complete)  
 - Export Confirmation (CSV / JSON)
-- Contributor Invitation Interface 
-- Role Assignment Interface
 
 ---
 
@@ -29,7 +28,7 @@
 - Re-upload corrected files  
 - Submit section for review  
 - Review feedback / comments  
-- Resubmit corrected data  
+- If the data is incorrect , resubmit corrected data  
 
 ---
 
