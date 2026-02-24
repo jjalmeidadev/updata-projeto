@@ -36,14 +36,183 @@ This project presents the Business Analysis and Requirements Specification for a
 
 ## 📁 Project Structure
 
-The repository is organized as follows:
+This project follows a **Three-Tier Architecture (Presentation, Business, Data)** to ensure clear separation of concerns, maintainability, and scalability.
 
-- README.md: Project overview and instructions
-- docs/: Documentation and assets
-    - assets/: Images
-    - Project.md: Business analysis and requirements specification
-    - ConfigurationManagement.md: Configuration management details
-    - ProjectManagement.md: Project management guidelines
+```
+│
+├── src/
+│ ├── presentation/
+│ ├── business/
+│ ├── data/
+│ └── mock-api/
+|
+├── tests/
+├── docs/
+├── config/
+└── README.md
+```
+
+## 1. src/
+
+The `src/` directory contains all application source code.
+
+```
+src/
+├── presentation/
+├── business/
+├── data/
+└── mock-api/
+```
+
+### 1.1. Presentation Layer
+
+Responsible for handling user interaction and HTTP/GraphQL requests.
+
+```
+presentation/
+├── web/
+└── api/
+```
+
+#### 1.1.1. web/
+
+Contains the **Next.js frontend application**.
+
+```
+web/
+├── components/  
+├── pages/        
+└── assets/     
+```
+
+- **components/** – Reusable UI components  
+- **pages/** – Application routes and views  
+- **assets/** – UI-specific static resources  
+
+#### 1.1.2. api/
+
+Handles incoming API requests.
+
+```
+api/
+├── controllers/     
+└── routes/         
+```
+
+- **controllers/** – Request handlers (entry points for HTTP/GraphQL requests)  
+- **routes/** – Route definitions and endpoint mapping  
+
+### 1.2. Business Layer
+
+Contains the core business logic of the middleware.
+
+```
+business/
+├── services/      
+├── validators/  
+├── queue/        
+├── workers/      
+└── dto/           
+```
+
+- **services/** – Orchestrate onboarding workflows  
+- **validators/** – Data validation and conflict detection  
+- **queue/** – Job publishing logic  
+- **workers/** – Background processors for asynchronous tasks  
+- **dto/** – Data Transfer Objects  
+
+This layer is independent from both the UI and database implementation.
+
+
+### 1.3. Data Layer
+
+Responsible for data persistence and external integrations.
+
+```
+data/
+├── models/            
+├── repositories/       
+├── database/           
+└── integrations/      
+```
+
+- **models/** – TypeORM entities  
+- **repositories/** – Data access logic  
+- **database/** – Database configuration and connection setup  
+- **integrations/** – External API clients (Equiem integration)  
+
+
+### 1.4. mock-api/
+
+Simulated Equiem GraphQL server used for safe integration testing.
+
+```
+mock-api/
+├── schema/
+└── resolvers/
+```
+
+- **schema/** – GraphQL type definitions that simulate the external Equiem API structure.
+
+- **resolvers/** – Mock implementation logic for queries and mutations, returning simulated responses.
+
+## 2. tests/
+
+Contains unit and integration tests organized by layer.
+
+```
+tests/
+├── presentation/
+├── business/
+└── data/
+```
+
+## 3. docs/
+
+Contains project documentation.
+
+```
+docs/
+├── assets/                         
+├── Project.md
+├── ProjectManagement.md
+└── ConfigurationManagement.md
+```
+ 
+- **assets/** – Documentation images
+- **Project.md** – System overview
+- **ProjectManagement.md** – Sprint planning and analysis
+- **ConfigurationManagement.md** – Versioning strategy, branching model, and environment configuration  
+
+## 4. config/
+
+Contains application configuration files, because separating configuration from business logic improves flexibility and maintainability.
+
+## Naming Conventions
+
+To ensure consistency, readability, and maintainability across the project, the following naming conventions were adopted.
+
+- Kebab-case is used for all folder and file names (e.g., user-controller.ts, mock-api/);
+
+- Folder names are strictly descriptive and responsibility-based;
+
+- File names reflect their architectural layers or functional roles.
+
+## Architectural Rationale
+
+This directory structure was designed to:
+
+- Enforce separation of concerns;  
+- Support scalability and modular growth; 
+- Enable clear dependency flow;  
+- Facilitate testing and maintainability; 
+- Align with Three-Tier architectural principles.  
+
+The exact dependency flow of the src/ directory is:
+
+```
+Presentation Layer → Business Layer → Data Layer
+```
 
 ## 🗃 Release History
 
