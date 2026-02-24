@@ -64,7 +64,7 @@ src/
 └── mock-api/
 ```
 
-### 1.1 Presentation Layer
+### 1.1. Presentation Layer
 
 Responsible for handling user interaction and HTTP/GraphQL requests.
 
@@ -74,7 +74,7 @@ presentation/
 └── api/
 ```
 
-#### 1.1.1 web/
+#### 1.1.1. web/
 
 Contains the **Next.js frontend application**.
 
@@ -89,7 +89,7 @@ web/
 - **pages/** – Application routes and views  
 - **assets/** – UI-specific static resources  
 
-#### 1.1.2 api/
+#### 1.1.2. api/
 
 Handles incoming API requests.
 
@@ -102,7 +102,7 @@ api/
 - **controllers/** – Request handlers (entry points for HTTP/GraphQL requests)  
 - **routes/** – Route definitions and endpoint mapping  
 
-### 1.2 Business Layer
+### 1.2. Business Layer
 
 Contains the core business logic of the middleware.
 
@@ -124,7 +124,7 @@ business/
 This layer is independent from both the UI and database implementation.
 
 
-### 1.3 Data Layer
+### 1.3. Data Layer
 
 Responsible for data persistence and external integrations.
 
