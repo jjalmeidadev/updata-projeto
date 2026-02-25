@@ -37,20 +37,12 @@ The system must:
 
 ### Required Folder Structure (Backend)
 
-```
-src/
-  controllers/
-  services/
-  repositories/
-  workers/
-  queue/
-  graphql/
-  entities/
-  dto/
-  utils/
-```
+The backend directory structure MUST strictly follow the structure defined in the `README.md` file (branch `develop`).  
+The directory organization was formally defined during the project architecture phase and must not be modified without team approval.
 
-This structure is mandatory and must be followed.
+All contributors must consult the `README.md` in the `develop` branch to ensure full compliance with the current official folder structure.
+
+Any structural deviation must be discussed and approved before implementation.
 
 ---
 
@@ -408,28 +400,19 @@ Use JSDoc for public functions.
 
 ## 14. Version Control & Git Practices
 
-### Branch Naming
+For detailed guidelines regarding branching strategy, commit conventions, pull request workflow, and repository governance, contributors MUST consult:
 
-```
-feature/import-service
-fix/user-validation
-chore/update-dependencies
-```
+`docs/ConfigurationManagement.md`
 
-### Commit Messages (Conventional Commits)
+This document provides the complete and authoritative reference for Version Control & Git Practices.
 
-```
-feat: add CSV validation service
-fix: handle null email field
-chore: configure ESLint rules
-```
+### Summary Rules
 
-### Pull Requests
-
-- Must include description
-- Must link to task
-- Must pass lint and tests
-- At least one reviewer approval required
+- Branch naming must follow: feature/, fix/, chore/
+- Commit messages must follow Conventional Commits
+- Pull requests must include description and linked task
+- Lint and tests must pass before merge
+- At least one reviewer approval is required
 
 ---
 
@@ -443,8 +426,4 @@ These standards are enforced through:
 - CI pipeline validation
 - Code review checklist
 
-Any pull request that does not comply with these standards will be rejected.
-
----
-
-End of Document.
+Compliance with this document ensures architectural consistency, maintainability, and long-term scalability of the Onboarding Automation Middleware project.
