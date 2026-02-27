@@ -86,8 +86,8 @@ This diagram models regulatory and safety control entities associated with build
 This diagram provides a simplified structural overview of how the four domains connect. The integration view reinforces modular separation while demonstrating overall system cohesion.
 
 <div align="center">
-<sub>FIGURE X – [5_cross_relations]</sub><br>
-  <img src="../assets/[filename].png" width="100%" alt="[Same as diagram name]">
+<sub>FIGURE X – Cross relations</sub><br>
+  <img src="./assets/5_cross_relations.jpeg" width="100%" alt="Cross relations">
   <sup>Source: Material produced by the authors, 2026.</sup>
 </div>
 
