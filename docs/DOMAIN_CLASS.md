@@ -108,10 +108,10 @@ This section defines the core structural entities that represent organizations, 
 | Attribute | Represents descriptive characteristics associated with a company. | attribute_id (PK), company_id, name, value |
 | User | Represents a platform user, such as a tenant, administrator, or property manager. | user_id (PK), name, email, company_id |
 | IsEquiem | Identifies whether a user belongs to the internal Equiem team. | is_equiem_id (PK), user_id, is_internal |
-| Building | Represents the primary operational entity where tenants operate and services are configured. | building_id (PK), name, address, status |
-| Company_Building | Represents the association between companies and buildings, allowing one company to operate in multiple buildings. | company_building_id (PK), company_id, building_id |
+| Building | Represents the primary operational entity where tenants operate and services are configured, it stands for the site where the buildings are located. | building_id (PK), name, address, status |
+| Company_Building | Represents the association between companies and buildings(site), allowing one company to operate in multiple buildings. | company_building_id (PK), company_id, building_id |
 | Levels | Represents the floors within a building. | level_id (PK), building_id, level_number |
-| Group | Logical entity within a building used to organize pricing structures, payment options, and facilities. | group_id (PK), building_id, name |
+| Group | The building unit within a building(site) used to organize pricing structures, payment options, and facilities. | group_id (PK), building_id, name |
 | Media | Represents multimedia assets linked to buildings or other related entities. | media_id (PK), building_id, file_url, media_type |
 
 ## Booking and Amenities Domain
