@@ -1,5 +1,23 @@
 # CODING_STANDARDS.md
 
+## Summary
+
+- [Introduction](#1-introduction)
+- [Architectural Principles (Middleware Pattern)](#2-architectural-principles-middleware-pattern)
+- [Naming Conventions](#3-naming-conventions)
+- [Code Formatting](#4-code-formatting)
+- [TypeScript Standards (Strict Mode Required)](#5-typescript-standards-strict-mode-required)
+- [GraphQL Standards (Apollo)](#6-graphql-standards-apollo)
+- [Asynchronous Processing Standards](#7-asynchronous-processing-standards)
+- [Database & TypeORM Standards](#8-database-typeorm-standards)
+- [AWS & Infrastructure Standards](#9-aws-infrastructure-standards)
+- [Error Handling](#10-error-handling)
+- [React & Next.js Standards](#11-react-nextjs-standards)
+- [Comments & Documentation](#12-comments-documentation)
+- [Testing Standards](#13-testing-standards)
+- [Version Control & Git Practices](#14-version-control-git-practices)
+- [Enforcement](#15-enforcement)
+
 ## 1. Introduction
 
 This document defines the official coding standards for the Onboarding Automation Middleware project developed for Equiem.
@@ -37,12 +55,20 @@ The system must:
 
 ### Required Folder Structure (Backend)
 
-The backend directory structure MUST strictly follow the structure defined in the `README.md` file (branch `develop`).  
-The directory organization was formally defined during the project architecture phase and must not be modified without team approval.
+```
+│
+├── src/
+│ ├── presentation/
+│ ├── business/
+│ ├── data/
+│ └── mock-api/
+|
+├── tests/
+├── docs/
+├── config/
+└── README.md
 
-All contributors must consult the `README.md` in the `develop` branch to ensure full compliance with the current official folder structure.
-
-Any structural deviation must be discussed and approved before implementation.
+```
 
 ---
 
@@ -408,7 +434,7 @@ This document provides the complete and authoritative reference for Version Cont
 
 ### Summary Rules
 
-- Branch naming must follow: feature/, fix/, chore/
+- Branch naming must follow: feature/, fix/, chore/, /docs, /release or hotfix/
 - Commit messages must follow Conventional Commits
 - Pull requests must include description and linked task
 - Lint and tests must pass before merge
