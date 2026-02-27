@@ -99,7 +99,7 @@ The complete Service Blueprint diagram is presented below:
   <sup>Source: Material produced by the authors, 2026.</sup>
 </div>
 
-For an interactive version of the diagram, the blueprint is also available on Miro via this [link](put link).
+For an interactive version of the diagram, the blueprint is also available on Miro via this [link](https://miro.com/welcomeonboard/OGswWUJ4SkVUZC9FZnFaUVgrT1h6UTFZWXhMVzNLbmZxSFFnR2FXR09qcWlpSHhYYU8xWkUzaHBmU0tEUkV0K3hDNEJBNGlHQXFDUnF1c3dzakJqekJTRmNxMExVdG55WW9NOUMzeWdta2NUNEZ5bEVScEU4NDZ3U2tYekgrTlZNakdSWkpBejJWRjJhRnhhb1UwcS9BPT0hdjE=?share_link_id=566209402816).
 
 --- 
 
