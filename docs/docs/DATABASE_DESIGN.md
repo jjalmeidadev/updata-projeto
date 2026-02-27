@@ -825,6 +825,8 @@ The logical model transforms the conceptual model into a structure suitable for 
 [See Full PDF](../assets/logicaldiagram.pdf) 
 </div>
 
+Visualization Link: https://dbdiagram.io/d/6812e36d1ca52373f50e75bf
+
 
 
 ---
