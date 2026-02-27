@@ -5,7 +5,7 @@
 2. [Domain Class Diagram](#2-domain-class-diagram)  
 3. [Domain Classes](#3-domain-classes)  
 4. [Relationships and Multiplicities](#4-relationships-and-multiplicities)  
-5. [Modeling Decisions](#5-modeling-decisions)  
+5. [Modeling Decisions](#section-5--key-modeling-decisions)  
 6. [Conclusion](#6-conclusion)
 
 ---
