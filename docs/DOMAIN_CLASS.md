@@ -74,8 +74,8 @@ The **Room** entity represents a reservable resource within a building. Structur
 This diagram models regulatory and safety control entities associated with buildings. It includes permit configuration and distinct compliance categories required for controlled operational activities, so all compliance structures are scoped at the building level.
 
 <div align="center">
-<sub>FIGURE X – [2_building]</sub><br>
-  <img src="../assets/[filename].png" width="100%" alt="[Same as diagram name]">
+<sub>FIGURE X – Site Details, permits and compliance</sub><br>
+  <img src="./assets/2_building.jpeg" width="100%" alt="Site Details, permits and compliance">
   <sup>Source: Material produced by the authors, 2026.</sup>
 </div>
 
