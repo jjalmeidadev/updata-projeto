@@ -41,22 +41,12 @@ relationships, and business rules:
 
 ## 2.1 Entity-Relationship Diagram (ERD)
 
-> Insert the conceptual ERD image below (Crow’s Foot or Chen notation).
-
 <div align="center">
-<sub>FIGURE X – [Insert Diagram Name Here]</sub><br>
-  <img src="../assets/[filename].png" width="100%" alt="[Same as diagram name]">
+<sub>FIGURE 1 – Conceptual Diagram</sub><br>
+  <img src="assets/conceptualdiagrampreview.png" width="100%" alt="Conceptual Diagram">
   <sup>Source: Material produced by the authors, 2026.</sup>
+[See Full PDF](assets/conceptualdatabase.drawio.pdf)
 </div>
-
-The diagram must include:
-
-- All entities
-- Primary keys
-- Attributes
-- Relationship names
-- Cardinality
-- Participation constraints
 
 ---
 
@@ -821,21 +811,15 @@ The logical model transforms the conceptual model into a structure suitable for 
 
 ## 3.1 Logical Schema Diagram
 
-> Insert the logical schema diagram below.
-
 <div align="center">
-<sub>FIGURE X – [Insert Diagram Name Here]</sub><br>
-  <img src="../assets/[filename].png" width="100%" alt="[Same as diagram name]">
+<sub>FIGURE 2 – Logical Diagram</sub><br>
+  <img src="assets/logicaldiagrampreview.png" width="100%" alt="Logical Diagram">
   <sup>Source: Material produced by the authors, 2026.</sup>
+[See Full PDF](assets/logicaldiagram.pdf)  
 </div>
 
-The diagram must include:
 
-- Tables
-- Columns
-- Primary Keys
-- Foreign Keys
-- Relationship links
+
 
 ---
 
@@ -1575,6 +1559,7 @@ To preserve integrity:
 - Updates of primary keys propagate via **ON UPDATE CASCADE**.
 
 These constraints guarantee structural consistency across the full Equiem data model.
+
 ---
 
 ## 3.5 Transformation from Conceptual to Logical Model
