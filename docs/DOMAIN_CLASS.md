@@ -62,8 +62,8 @@ This diagram models the booking ecosystem, including rooms, configurations, pric
 The **Room** entity represents a reservable resource within a building. Structurally, the Room entity maintains composition relationships with Room_Configuration and Room_Features, associates with Room_Extra_Features to support optional pricing extensions, and connects to Status_Type for booking state classification.
 
 <div align="center">
-<sub>FIGURE X – [4_room]</sub><br>
-  <img src="../assets/[filename].png" width="100%" alt="[Same as diagram name]">
+<sub>FIGURE X – Room Details</sub><br>
+  <img src="./assets/4_room.jpeg" width="100%" alt="Room Details">
   <sup>Source: Material produced by the authors, 2026.</sup>
 </div>
 
