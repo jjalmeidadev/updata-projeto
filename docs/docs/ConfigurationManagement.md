@@ -103,6 +103,12 @@ Example:
 hotfix/login-critical-fix
 ```
 
+All release and hotfix integrations follow the full GitFlow lifecycle:
+
+```
+creation → stabilization → MR into main → merge-back into develop → version tagging → branch deletion
+```
+
 ## 3. Branch Creation Procedures
 
 Branches can be created using an IDE interface or via the terminal. Since the terminal approach can be used across different environments, the procedures below describe how to manage branches through the command line.
@@ -136,15 +142,11 @@ git push origin --delete <branch-name>
 
 ### Merge a branch
 
-Example merging a feature into develop:
+### Merge a branch
 
-```
-git checkout develop
-git merge feature/<branch-name>
-git push origin develop
-```
+Local merges via terminal are not allowed for integration into protected branches.
 
-All merges must be performed through Pull Requests when possible to ensure review and traceability.
+All integrations into `develop` and `main` must occur exclusively through GitLab Merge Requests.
 
 ## 4. Branch Creation Policies
 
@@ -218,34 +220,25 @@ To ensure evolutionary project management and configuration control, the team ad
 
 ### Version Control
 
-* All code and documentation are stored in GitHub
-* Changes must occur through branches
-* Direct commits to `main` are prohibited
+- All code and documentation are stored in GitLab
+- Changes must occur through branches
+- Direct commits to `main` and `develop` are prohibited
 
-### Pull Requests
+### Merge Requests (MR)
 
-* Mandatory for merges into `develop` and `main`
-* Must include description of changes
-* Reviewed by at least one team member
+All integrations must occur through Merge Requests (MR) in GitLab.
 
-A Pull Request (PR) template is used to standardize reviews and ensure that each PR contains the minimum information required for validation and traceability.
+- Mandatory for merges into:
+  - `develop`
+  - `main`
 
-### Template for PR
+Each MR must include:
 
-```markdown
-### Description
-Short explanation of what this PR adds or changes.
+- Description of changes
+- Linked task or issue
+- Evidence of completion (artifact, diagram, or document update)
 
-### Main changes
-- 
-- 
-
-### Validation
-- 
-
-### Related work
--
-```
+At least one reviewer approval is required before merge.
 
 ### Commit Standard
 
@@ -266,6 +259,64 @@ chore: update dependencies
 ```
 
 This ensures traceability and readable history.
+
+### Release and Hotfix Lifecycle
+
+#### Release Flow
+
+- Release branches are created from `develop`
+
+Example: release/1.0.0
+
+
+- Used only for stabilization:
+  - Minor fixes
+  - Documentation adjustments
+
+- A Merge Request is opened targeting:
+
+  - `main`
+  - `develop` (merge-back)
+
+After approval:
+
+- Merged into `main`
+- Version tag created
+
+Example: v1.0.0
+
+
+- Merged back into `develop`
+- Release branch deleted
+
+---
+
+#### Hotfix Flow
+
+- Hotfix branches are created from `main`
+
+Example: hotfix/login-fix
+
+
+- Fix implemented
+- Merge Request opened targeting:
+
+  - `main`
+  - `develop`
+
+After approval:
+
+- Merged into `main`
+- Patch version tag created
+
+Example: v1.0.1
+
+- Merged back into `develop`
+- Hotfix branch deleted
+
+#### Version Tagging
+
+All releases and hotfixes are versioned using semantic versioning.
 
 ## 6. Conclusion
 

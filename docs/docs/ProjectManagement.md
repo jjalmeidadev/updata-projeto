@@ -14,214 +14,282 @@
 2. [Sprint 2 Planning](#2-sprint-2-planning)
    - [Sprint Objectives](#21-sprint-objectives)
    - [Sprint 2 Backlog and Task Planning](#22-sprint-2-backlog-and-task-planning)
-3. [Group Development Process Management](#3-group-development-process-management)
+3. [Sprint 3 Planning](#3-sprint-3-planning)
+   - [Sprint Objectives](#31-objectives)
+   - [Sprint 3 Backlog and Task Allocation](#32-backlog-and-task-allocation)
+   - [Sprint Capacity](#33-sprint-capacity)
+   - [Execution Improvements](#34-execution-improvements)
+4. [Group Development Process Management](#4-group-development-process-management)
+   - [Daily Meetings Policy](#41-daily-meetings-policy)
+   - [Development and Collaboration Policies](#42-development-and-collaboration-policies)
 
 ---
 
 ## 1. Sprint 1 Analysis
 
-This section presents an analysis of Sprint 1 execution. It identifies strengths and weaknesses observed during the sprint, proposes improvement actions for Sprint 2, and reviews project risks to ensure continuous monitoring and alignment with Project Management Office (PMO) criteria.
-
----
+This section presents an analysis of Sprint 1 execution based on observable effects on workflow and delivery.
 
 ### 1.1 Strengths
+- **Shared understanding of the project context reduced rework**  
+  - During Sprint 1, no backlog items required scope redefinition after stakeholder validation.  
+  - **Impact:** Avoided rework in core artifacts such as personas and user journeys, allowing the team to complete all planned analysis deliverables within the sprint timeframe.
 
-- **Clear understanding of the project context**  
-  The team developed a strong comprehension of Equiem’s business environment, onboarding challenges, and operational constraints.
+- **Structured documentation improved review efficiency**  
+  - Problem statement, scope definition, personas, user journeys, and business flow were produced using a consistent structure.  
+  - **Impact:** Reviews were completed in a single iteration, reducing feedback cycles and preventing delays in Sprint closure.
 
-- **Well-structured analysis artifacts**  
-  Key Sprint 1 deliverables (Problem Statement, Scope Definition, Personas, User Journeys, Business Flow) were documented in a clear and logical structure.
+- **Early alignment on product vision minimized decision conflicts**  
+  - Key product direction discussions were resolved collectively during Sprint activities.  
+  - **Impact:** No decision reversals occurred after validation, maintaining planning continuity and avoiding downstream redesign.
 
-- **Strong alignment on product vision**  
-  The team established a shared understanding of the product’s objectives, ensuring coherence across discussions and decisions.
-
-- **Early identification of project risks**  
-  A Project Risk Matrix was created, enabling anticipation of potential threats related to scope, communication, and planning.
-
----
+- **Proactive risk identification supported stable execution**  
+  - A project risk matrix was established during Sprint 1 planning.  
+  - **Impact:** Communication and scope risks were discussed before becoming blockers, contributing to uninterrupted progress.
 
 ### 1.2 Weaknesses
+- **High documentation workload created delivery bottlenecks**  
+  - Approximately 70% of Sprint effort was concentrated on documentation tasks.  
+  - **Effect:** Limited task parallelization and delayed progress on structural decisions.  
+  - **Action for Sprint 2:** Improve task distribution and prioritization to balance workload.
 
-- **Heavy focus on documentation activities**  
-  Sprint 1 required extensive writing, review, and validation work, increasing workload concentration.
+- **Initial tool alignment caused task delays**  
+  - Time was required to standardize repository usage and collaboration practices.  
+  - **Effect:** One backlog item remained temporarily stalled until conventions were clarified.  
+  - **Action for Sprint 2:** Define workflow standards at the start of the sprint.
 
-- **Initial adjustment period**  
-  The team needed time to align on tools, repository structure, and collaboration practices.
+- **Communication gaps increased clarification cycles**  
+  - Some collaborative tasks required additional explanation due to language differences.  
+  - **Effect:** Extended discussion time and slowed early decision-making.  
+  - **Action for Sprint 2:** Implement more structured daily updates.
 
-- **Minor communication frictions**  
-  Some clarifications were necessary during collaborative tasks, particularly in early exchanges because of the language barrier.
+- **GitLab adaptation extended review time**  
+  - Early use of merge request workflows required familiarization.  
+  - **Effect:** Merge request reviews took longer than expected during initial execution.  
+  - **Action for Sprint 2:** Improve team familiarity with GitLab interface and workflow.
 
-- **Tool learning curve**  
-  A short adaptation phase was observed when working with Git/GitLab workflows.
-
----
-
-### 1.3 Improvement Actions for Sprint 2
-
-| Improvement Area | Identified Issue | Proposed Action | Expected Outcome |
-|------------------|------------------|-----------------|------------------|
-| Sprint planning | Some backlog items lacked precision | Refine task descriptions and acceptance criteria | Reduced ambiguity during execution |
-| Communication | Occasional misunderstandings | Structure updates during dailies and reviews | Improved team alignment |
-| Tool usage | Early workflow inconsistencies | Reinforce Git/GitLab conventions | Improved traceability |
-
----
+### 1.3 Improvement Backlog
+| Action | Owner | Target Sprint | Metric | Evidence | Status | Observed Result |
+|--------|-------|--------------|--------|----------|--------|-----------------|
+| Refine backlog descriptions and acceptance criteria | Scrum Master | Sprint 2 | % of tasks requiring clarification | Sprint board history | Planned | To be measured at Sprint 2 Review |
+| Structure daily updates | Team | Sprint 2 | Reduction in repeated clarifications during tasks | Daily notes | Planned | To be measured mid-sprint |
+| Reinforce GitLab conventions | Tech Lead | Sprint 2 | Number of workflow inconsistencies or MR reopens | GitLab MR logs | Planned | To be measured at Sprint 2 Retro |
 
 ### 1.4 Risk Analysis and Tracking
+#### Risk Register
+| Risk                         | Description                                       | Probability | Impact | Owner     | Status | Trend  | Mitigation                                 |
+| ---------------------------- | ------------------------------------------------- | ----------- | ------ | --------- | ------ | ------ | ------------------------------------------ |
+| Delayed Tasks                | Tasks may exceed deadlines due to underestimation | Medium      | Medium | SM        | Open   | Stable | Redistribute workload; reassess priorities |
+| Requirement Misunderstanding | Misinterpretation of expectations                 | Medium      | High   | PO        | Open   | Stable | Validate assumptions with reviews          |
+| Communication Gaps           | Misalignment due to language barrier              | Low         | Medium | Team      | Open   | Stable | Structured daily updates                   |
+| Tool Misuse                  | Incorrect GitLab practices                        | Low         | Medium | Tech Lead | Open   | Stable | Reinforce GitLab workflow                  |
 
-This subsection reviews risks identified during planning and Sprint 1 execution.
-
-#### Identified Risks
-
-| Risk | Description | Probability | Impact | Mitigation / Contingency Action |
-|------|-------------|-------------|--------|--------------------------------|
-| Delayed Tasks | Tasks may exceed deadlines due to underestimation or technical complexity | Medium | Medium | Redistribute workload and reassess priorities |
-| Requirement Misunderstanding | Misinterpretation of expectations or needs | Medium | High | Validate assumptions during reviews |
-| Communication Gaps | Misalignment due to language barrier | Low | Medium | Reinforce structured updates |
-| Tool Misuse | Incorrect Git/GitLab practices | Low | Medium | Apply workflow guidelines |
-
-#### Risk Tracking Mechanism
-
-Risks are reviewed at the end of each sprint. New risks are added when identified, and existing risks are reassessed based on probability and impact evolution. Ownership is shared collectively, with updates reflected in the Project Management documentation.
-
----
+- **Risk Tracking:** Updated during Sprint Planning, Mid-Sprint Checkpoint, and Sprint Retrospective.  
+- **Status definitions:** Open, Mitigating, Closed.  
+- **Trend:** Increasing, Stable, Decreasing.
 
 ### 1.5 PMO Alignment
-
-Sprint 1 analysis aligns with PMO principles by ensuring:
-
-- **Traceability** through documented artifacts and structured analysis  
-- **Continuous improvement** via Sprint 2 action planning  
-- **Risk management** through identification and monitoring mechanisms  
-- **Documentation quality** with clear and organized deliverables  
+- **Traceability:** Backlog, task progress, and ownership tracked; artifacts versioned.  
+- **Planning visibility:** Sprint scope, breakdown, sizing, allocation documented.  
+- **Risk management:** Risks documented, reviewed, and assigned owners.  
+- **Configuration control:** Repository structure, coding standards, and MR validation documented.
 
 ---
 
 ## 2. Sprint 2 Planning
 
-_This section outlines the planning of Sprint 2, including task identification, prioritization, and workload estimation using T-shirt sizing._
-
----
-
 ### 2.1 Sprint Objectives
+- **Establish a shared scope vision** through a collaboratively validated UML diagram.  
+- **Derive logical data models** from that model.  
+- **Produce UI/UX artifacts** only after architectural consensus.  
+- **Implement repository structure and coding standards.**  
+- **Prepare Sprint Review presentation** within 2 days.
 
-Objectives:
-
-- Establish a shared scope vision through a collaboratively validated UML diagram.  
-- Derive logical data models from that model.  
-- Produce UI/UX artifacts only after architectural consensus.  
-- Implement repository structure and coding standards.  
-- Prepare Sprint Review presentation within 2 days.
-
-Expected outcomes:
-
+**Expected outcomes:**
 - Agreed source of scope definition.  
 - Database design traceable to UML decisions.  
-- Visual design consistent with architecture.
+- Visual design consistent with architecture.  
 - Standardized project environment.
-
----
 
 ### 2.2 Sprint 2 Backlog and Task Planning
 
-- **Product Owner (PO):** validates architectural decisions, accepts/declines features within artifacts.  
-- **Scrum Master (SM):** monitors engineering practices, GitFlow, and DoR/DoD applications.  
-- **Modeling & Design Team (5 members):** UML → Data Models (3 members)/UI/UX 2(members).  
-- **Review Team (2 members):** Sprint Review preparation from Wednesday, ideally.
+**Roles:**
+- **PO:** Validates architectural decisions, accepts/declines features.  
+- **SM:** Monitors engineering practices, GitFlow, DoR/DoD.  
+- **Modeling & Design Team (5 members):** UML → Data Models (3 members)/UI/UX (2 members).  
+- **Review Team (2 members):** Sprint Review preparation.
 
-| Task ID | Task Name | Description | Type | Size | DoR | DoD |
-|---|---|---|---|---|---|---|
-| S2-01 | Collective UML Modeling | Meetings to define domain classes and relations | Design | M | Sprint 2 artifacts reviewed | UML approved by PO |
-| S2-02 | UML Documentation | Formal diagram + thought process | Docs | S | UML consensus reached | documentation.md updated |
-| S2-03 | Logical Data Model | Tables and data relations | Design | M | Conceptual model validated | Logical schema complete |
-| S2-04 | UI Structure Discussion | Collective alignment before graphics | Design | S | Final UML available | Navigation defined |
-| S2-05 | Wireframes | Low fidelity screens | Design | M | UI structure approved | Wireframes complete |
-| S2-06 | Mockups & Visual Guide | High fidelity + design system | Design | L | Wireframes approved | Projeto.md updated |
-| S2-07 | Directory Structure | Repository organization | Config | S | Stack defined | Coherent structures to the READMEs |
-| S2-08 | Coding Standards | Standards document | Docs | S | Conventions agreed | Conventions applied |
-| S2-09 | Sprint Review Prep | Slides & narrative | Design | S | Draft artifacts | Ready presentation |
+**Sprint Capacity:**
+- Duration: 7 working days  
+- Availability per member: 2h/day → **14h per member**  
+- Team capacity: 7 × 14h = **98h**  
 
-**Allocation logic**
+**T-shirt sizing:**
+- XS → 0.5h  
+- S → 1h  
+- M → 1.5h  
+- L → 2h  
 
-- Day 1: S2-01 → collective session (all members)  
-- Days 2-3: S2-02   
-- Day 3–4: S2-03  
-- After architectural approval: S2-04 → S2-05 → S2-06  
-- From Wednesday: S2-09 by 2 members and S2-07 & S2-08 supervised by SM  
+| Task ID | Task Name                   | Type    | Size | DoR                                                                       | DoD                                                                              |
+| ------- | --------------------------- | ------- | ---- | ------------------------------------------------------------------------- | -------------------------------------------------------------------------------- |
+| S2-01   | Collective UML Modeling     | Feature | M    | Problem statement validated; domain scope defined; planning issue created | UML diagram uploaded; reviewed by 2 peers; PO approved                            |
+| S2-02   | UML Documentation           | Docs    | S    | UML model finalized; documentation template available                     | documentation.md updated; linked in MR; peer-reviewed                             |
+| S2-03   | Logical Data Model          | Feature | M    | Conceptual UML approved; entities identified                              | Logical schema committed; relationships validated; MR approved                   |
+| S2-04   | UI Structure Discussion     | Chore   | S    | UML finalized; user flow available                                        | Navigation structure documented; decision log updated                             |
+| S2-05   | Service Blueprint Mapping   | Feature | M    | User journey available; touchpoints identified                            | Blueprint draft uploaded; peer-reviewed                                          |
+| S2-06   | Service Blueprint Detailing | Feature | L    | Blueprint draft validated                                                 | Frontstage/backstage/support documented; PO approval recorded                     |
+| S2-07   | Directory Structure         | Chore   | S    | Stack defined; repo accessible                                            | Folder structure committed; README updated; MR merged                            |
+| S2-08   | Coding Standards            | Docs    | S    | Team conventions discussed                                                | standards.md committed; referenced in README                                     |
+| S2-09   | Sprint Review Prep          | Chore   | S    | Draft artifacts available                                                 | Slides prepared; narrative reviewed by 2 members                                  |
 
-This flow prevents UI and DB work from diverging from the scope defined previously by the group.
-
----
-
-### 2.3 Prioritization and Strategy
-
-**Principles**
-
-1. **Architecture first:** UML is the base for all later artifacts  
-2. **Collective validation:** UI concepts discussed before any drawing  
-3. **Coherence:** Logical model must derive from UML  
-4. **Management:** PO as final decision maker, SM as process advisor
-
-**Risk-oriented choices**
-
-- Avoid early mockups without entity definition  
-- Reduce rework between DB and UX  
-- Centralize acceptance to prevent inconsistent visions
-
-**Time management**
-
-- Separation for modeling by mid-sprint  
-- Review preparation begins Wednesday with final scope  
-- Final two days reserved for integration
+**Allocation logic:**  
+- Day 1: S2-01 (all members)  
+- Days 2–3: S2-02 + review checkpoint  
+- Days 3–4: S2-03 + architectural validation  
+- After validation: S2-04 → S2-05 → S2-06 (with peer review)  
+- Day 4 onward: S2-09 (2 members)  
+- Parallel Days 5–7: S2-07 & S2-08 (SM supervision)
 
 ---
 
-## 3. Group Development Process Management
+### 2.3 Sprint 2 Analysis
 
-This section defines collaboration and workflow policies.
+This section presents an analysis of Sprint 2 execution based on workflow, task completion, and team dynamics.
+
+### 2.3.1 Strengths
+
+- **Improved backlog clarity reduced clarification cycles**
+  - Tasks had refined descriptions and acceptance criteria, reducing back-and-forth during execution.
+  - **Impact:** Enabled faster task start and reduced mid-sprint confusion.
+
+- **Effective allocation logic supported parallel task execution**
+  - Tasks were sequenced to leverage team capacity; e.g., documentation and modeling ran in parallel with UI/UX planning.
+  - **Impact:** Enabled more efficient use of available hours and increased sprint throughput.
+
+- **Repository and coding standards adoption stabilized development**
+  - Directory structure and coding standards were established early.
+  - **Impact:** Reduced workflow inconsistencies and MR rework.
+
+- **Team collaboration improved through structured daily updates**
+  - Daily updates captured progress and blockers effectively.
+  - **Impact:** Reduced redundant clarifications and aligned team understanding.
+
+### 2.3.2 Weaknesses
+
+- **Sprint workload slightly underestimated**
+  - Some tasks (e.g., Service Blueprint Detailing) required more time than initially sized.
+  - **Effect:** Caused minor delays in follow-up tasks.
+  - **Action for Sprint 3:** Refine task sizing for complex features using historical sprint data.
+
+- **Dependency on PO validation created waiting periods**
+  - Certain tasks (Logical Data Model, Service Blueprint) were blocked until stakeholder approval.
+  - **Effect:** Introduced small idle periods for some team members.
+  - **Action for Sprint 3:** Introduce early validation checkpoints with PO to reduce blocked time.
+
+- **Limited test planning**
+  - Testing was deferred until artifacts were fully implemented.
+  - **Effect:** Reduced time available for early defect detection.
+  - **Action for Sprint 3:** Plan parallel testing execution alongside development tasks.
+
+### 2.3.3 Improvement Backlog for Sprint 3
+
+| Action                                             | Owner        | Target Sprint | Metric                                    | Evidence              | Status  | Observed Result                          |
+| -------------------------------------------------- | ------------ | ------------- | ----------------------------------------- | --------------------- | ------- | ---------------------------------------- |
+| **Refine task sizing for complex features**        | Scrum Master | Sprint 3      | % of tasks completed on time vs estimated | Sprint board history  | Planned | To be measured at Sprint 3 Review        |
+| **Introduce early validation checkpoints with PO** | PO & SM      | Sprint 3      | # of blocked hours reduced                | Daily notes & MR logs | Planned | To be measured mid-sprint                |
+| **Plan parallel testing execution**                | QA Team      | Sprint 3      | % of features tested mid-sprint           | Test logs             | Planned | To be measured in Sprint 3 Retrospective |
+
+## 3. Sprint 3 Planning
+
+### 3.1 Objectives
+- **Develop UML Deployment Diagram** for production cloud deployment (servers, devices, network, middleware, databases, protocols).  
+- **Implement physical database model** from logical model.  
+- **Progressively implement backend and frontend components** incrementally.  
+- **Conduct usability tests**.  
+- **Update coding architecture and directory structure**, including diagrams.
+
+**Expected outcomes:**
+- Clear production deployment infrastructure view.  
+- Fully implemented database schema with scripts and documentation.  
+- Incremental software delivery for backend and frontend.  
+- Verified FR, NFR, and usability aspects.
+
+### 3.2 Backlog and Task Allocation
+| Task ID | Task Name                           | Type    | Size | Owner             | DoR                                                  | DoD                                                                                             |
+| ------- | ----------------------------------- | ------- | ---- | ----------------- | ---------------------------------------------------- | ----------------------------------------------------------------------------------------------- |
+| S3-01   | UML Deployment Diagram              | Feature | M    | Modeling Team     | Logical model completed                              | Diagram uploaded; reviewed by 2 peers; PO approved                                            |
+| S3-02   | Physical Database Model             | Feature | L    | DB Team           | Logical model approved                               | SQL scripts 01_create_database.sql & 02_initial_data.sql committed; README updated; MR approved |
+| S3-03   | Directory & Coding Architecture     | Chore   | S    | Tech Lead         | Stack defined                                        | Directory committed; architecture documented; diagram included                                 |
+| S3-04   | Backend Incremental Development     | Feature | L    | Backend Dev Team  | Task scope defined                                   | Functional modules implemented; MRs approved; unit tests executed                               |
+| S3-05   | Frontend Incremental Development    | Feature | L    | Frontend Dev Team | Task scope defined                                   | Interfaces developed; MRs approved; user flow validated                                         |
+| S3-06   | Functional Requirements Testing     | Test    | M    | QA Team           | Functional specs available                           | Tests executed; results documented; coverage discussed                                          |
+| S3-07   | Non-Functional Requirements Testing | Test    | M    | QA Team           | NFR specs available                                  | Tests executed; results documented; coverage discussed                                          |
+| S3-08   | Usability Testing                   | Test    | L    | UX Team           | Test scenarios defined; ≥5 external users identified | Test script executed; feedback collected; summary documented                                    |
+| S3-09   | Sprint Review Preparation           | Chore   | S    | Review Team       | All artifacts available                              | Presentation slides ready; narrative reviewed; PO validation completed                          |
+
+**Allocation Logic**
+
+- **Days 1–2:** S3-01 → UML Deployment Diagram (Modeling Team)  
+  - All members involved in diagram validation to ensure shared understanding of deployment.  
+
+- **Days 2–4:** S3-02 → Physical Database Model (DB Team)  
+  - Backend devs support database structure validation; scripts versioned in GitLab.  
+
+- **Days 3–5:** S3-03 → Directory & Coding Architecture (Tech Lead)  
+  - Establish repo structure and coding standards in parallel with database work.  
+
+- **Days 4–8:**  
+  - S3-04 → Backend Incremental Development (Backend Dev Team)  
+  - S3-05 → Frontend Incremental Development (Frontend Dev Team)  
+  - **Parallel delivery:** Modules implemented incrementally to reduce rework and integration issues.  
+
+- **Days 6–9:**  
+  - S3-06 → Functional Requirements Testing (QA Team)  
+  - S3-07 → Non-Functional Requirements Testing (QA Team)  
+  - S3-08 → Usability Testing (UX Team)  
+  - Testing begins once respective modules are ready; feedback loops integrated mid-sprint.  
+
+- **Days 8–10:** S3-09 → Sprint Review Preparation (Review Team)  
+  - All artifacts consolidated; slides prepared; narrative reviewed; PO approval recorded.  
+
+### 3.3 Sprint Capacity
+- Duration: 10 working days  
+- Availability per member: 2h/day → 20h per member  
+- Team capacity: 7 × 20h = 140h
+
+### 3.4 Execution Improvements
+- **Incremental delivery:** Implement backend/frontend modules progressively; avoid large batch integration.  
+- **Traceable database evolution:** Versioned SQL scripts, README documentation, and data dictionary.  
+- **Testing discipline:** FR, NFR, and usability tests aligned with previous artifacts.  
+- **Deployment clarity:** UML Deployment Diagram communicates cloud infrastructure to all stakeholders.  
+- **PMO alignment:** All artifacts versioned in GitLab; MR approvals required.  
+- **Improved communication:** Daily structured updates; mid-sprint checkpoints for DB and architecture.
 
 ---
 
-### 3.1 Daily Meetings Policy
+## 4. Group Development Process Management
 
+### 4.1 Daily Meetings Policy
 - **Frequency:** Daily during sprint execution  
-- **Objective:** Share progress, blockers, and next actions  
-- **Duration:** Short, time-boxed meetings  
+- **Objective:** Share progress, blockers, next actions  
+- **Duration:** Short, time-boxed  
 - **Participation:** Entire team  
 
----
+### 4.2 Development and Collaboration Policies
 
-### 3.2 Development and Collaboration Policies
+- **GitLab usage rules:** Version all code and documentation; follow GitFlow for branching.  
+- **Commit conventions:** Conventional Commits for traceability.  
+- **Merge and review practices:**  
+  - All merges via Merge Requests (MRs)  
+  - MRs include clear description of changes  
+  - At least one team member review required  
+  - Reviewers validate scope alignment, documentation, standards
 
-####  GitHub/GitLab usage rules  
-All source code and documentation are versioned within the project repository. The team follows a structured branching workflow based on GitFlow, ensuring controlled feature development, isolated changes, and stable production management.
+- **Task lifecycle and workflow:**  
+  - Standard workflow:  
+    ```
+    Open -> Backlog -> Doing -> Waiting Review -> Review -> Closed
+    ```  
+  - Tasks move to **Doing** only when DoR is met  
+  - Tasks can be **Closed** only when DoD is satisfied
 
-#### Commit Conventions
-
-The team adopts Conventional Commits to standardize commit history and improve traceability.
-
-#### Merge and review practices  
-To ensure code quality and collaborative validation:
-
-- All merges must occur via Pull Requests (PRs);
-
-- PRs must include a clear description of implemented changes;
-
-- At least one team member review is required before approval;
-
-- Reviewers validate scope alignment, documentation updates, and adherence to standards;
-
-#### Task lifecycle and workflow  
-Project tasks follow a structured lifecycle to ensure visibility and progress tracking.
-
-Standard workflow:
-
-`
-Open -> Backlog → Doing → Waiting Review → Review -> Closed
-`
-
-Notes:
-
-- Tasks should only move to **Doing** when the Definition of Ready (DoR) is met.
-- A task can be marked **Closed** only when the Definition of Done (DoD) is satisfied.
-
-For more version control details (branch naming, PR template, and commit rules), see [ConfigurationManagement.md](ConfigurationManagement.md).
+- **Configuration management documentation:** See [ConfigurationManagement.md](ConfigurationManagement.md) for branch naming, MR templates, and commit rules.
