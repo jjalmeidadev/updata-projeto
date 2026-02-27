@@ -134,12 +134,186 @@ This section models safety compliance and permit-related records required for re
 | Confined_Spaces | Represents compliance records for operations conducted within confined spaces. | confined_space_id (PK), building_id, ventilation_required |
 
 ---
-
 # 4. Relationships and Multiplicities
 
-This section defines the relationships between the conceptual classes using UML relationship types (Association, Aggregation, and Composition), along with their respective multiplicity constraints and concise real-world interpretations. Each relationship specifies how entities interact within the domain, clarifying structural dependencies, participation requirements, and business rules that govern organizational structure, operational workflows, booking logic, compliance control, and building-level configurations. These relationships establish the structural integrity of the conceptual model and ensure consistency with the subsequent logical data model.
+This section defines the relationships between the conceptual classes using UML relationship types (Association, Aggregation, and Composition), along with their respective multiplicity constraints and concise real-world interpretations. Each relationship specifies how entities interact within the domain, clarifying structural dependencies, participation requirements, and business rules that govern organizational structure, operational workflows, booking logic, compliance control, and building-level configurations. 
 
-### Company — Industry
+# Section 4 — Relationships and Multiplicity
+
+This section consolidates all relationships defined in the Domain UML Class Diagram.  
+Each relationship specifies its type, multiplicity (bidirectional), and a concise explanation aligned with the operational domain.
+
+---
+## Building – Group
+
+Type: Composition
+
+Multiplicity:
+Building → Group: (1..*)
+Group → Building: (1..1)
+
+Description:
+A building is composed of one or more groups used to organize pricing structures, facilities, and booking logic. Groups depend on the building for existence.
+
+---
+
+## Building – Lone_Working
+
+Type: Association
+
+Multiplicity:
+Building → Lone_Working: (1..1)
+Lone_Working → Building: (1..1)
+
+Description:
+Each building maintains a single lone working compliance configuration record, and that record exists exclusively within the context of one building.
+
+---
+
+## Building – Permits_Configurations
+
+Type: Association
+
+Multiplicity:
+Building → Permits_Configurations: (1..1)
+Permits_Configurations → Building: (1..1)
+
+Description:
+Permit configuration rules are defined at the building level and are uniquely associated with that building.
+
+---
+
+## Building – Hot_Works
+
+Type: Association
+
+Multiplicity:
+Building → Hot_Works: (1..1)
+Hot_Works → Building: (1..1)
+
+Description:
+Each building maintains one hot works compliance configuration governing high-risk heat-based activities.
+
+---
+
+## Building – Confined_Spaces
+
+Type: Association
+
+Multiplicity:
+Building → Confined_Spaces: (1..1)
+Confined_Spaces → Building: (1..1)
+
+Description:
+Each building has a single confined spaces compliance configuration linked exclusively to it.
+
+---
+
+## Building – Working_At_Height
+
+Type: Association
+
+Multiplicity:
+Building → Working_At_Height: (1..1)
+Working_At_Height → Building: (1..1)
+
+Description:
+Working-at-height compliance rules are defined per building and are uniquely associated with that building.
+
+---
+
+## Building – Fire_Alarm_Isolation
+
+Type: Association
+
+Multiplicity:
+Building → Fire_Alarm_Isolation: (1..*)
+Fire_Alarm_Isolation → Building: (1..1)
+
+Description:
+A building may register multiple fire alarm isolation records, each tied to a single building context.
+
+---
+
+## Building – Electrical_Works
+
+Type: Association
+
+Multiplicity:
+Building → Electrical_Works: (1..1)
+Electrical_Works → Building: (1..1)
+
+Description:
+Each building maintains one electrical works compliance configuration.
+
+---
+
+## Building – Media
+
+Type: Association
+
+Multiplicity:
+Building → Media: (0..*)
+Media → Building: (1..1)
+
+Description:
+A building may be associated with multiple multimedia assets, each asset belonging to one building.
+
+---
+
+## Building – Residential_Details
+
+Type: Composition
+
+Multiplicity:
+Building → Residential_Details: (0..*)
+Residential_Details → Building: (1..1)
+
+Description:
+Residential units are structurally contained within a building and cannot exist independently of it.
+
+---
+
+## Residential_Details – Is_There_A_Firewall
+
+Type: Association
+
+Multiplicity:
+Residential_Details → Is_There_A_Firewall: (1..1)
+Is_There_A_Firewall → Residential_Details: (1..1)
+
+Description:
+Each residential unit has one associated firewall/security indicator record.
+
+---
+
+## Building – Company_Building
+
+Type: Association
+
+Multiplicity:
+Building → Company_Building: (1..*)
+Company_Building → Building: (1..1)
+
+Description:
+A building may be linked to multiple company-building association records.
+
+---
+
+## Company – Company_Building
+
+Type: Association
+
+Multiplicity:
+Company → Company_Building: (1..*)
+Company_Building → Company: (1..1)
+
+Description:
+A company may operate in multiple buildings through company-building association records.
+
+---
+
+## Company – Industry
 
 Type: Association
 
@@ -148,242 +322,228 @@ Company → Industry: (1..1)
 Industry → Company: (0..*)
 
 Description:
-Each company must be classified under exactly one industry, while an industry may classify multiple companies.
+Each company belongs to one industry classification, while an industry may classify multiple companies.
 
 ---
 
-### Company — User
+## Company – Attribute
 
 Type: Composition
 
 Multiplicity:
-Company → User: (0..*)
+Company → Attribute: (0..*)
+Attribute → Company: (1..1)
+
+Description:
+A company is composed of multiple descriptive attributes that cannot exist independently of it.
+
+---
+
+## User – IsEquiem
+
+Type: Composition
+
+Multiplicity:
+User → IsEquiem: (1..1)
+IsEquiem → User: (1..1)
+
+Description:
+Each user has exactly one internal identification status indicating whether they belong to the Equiem team.
+
+---
+
+## User – Company
+
+Type: Composition
+
+Multiplicity:
 User → Company: (1..1)
+Company → User: (0..*)
 
 Description:
-A user cannot exist in the system without being associated with a company. A company may have one or more users.
+Each user belongs to one company, while a company may have multiple users associated with it.
 
 ---
 
-### Company — Building (via Company_Building)
+## Request_Management – User
 
 Type: Association
 
 Multiplicity:
-Company → Building: (0..*)
-Building → Company: (0..*)
-
-Description:
-A company may operate in multiple buildings, and a building may host multiple companies.
-
----
-
-### Building — Levels
-
-Type: Composition
-
-Multiplicity:
-Building → Levels: (0..*)
-Levels → Building: (1..1)
-
-Description:
-Levels represent floors within a building and cannot exist independently of it.
-
----
-
-### Building — Group
-
-Type: Aggregation
-
-Multiplicity:
-Building → Group: (0..*)
-Group → Building: (1..1)
-
-Description:
-Groups are defined within a building to organize pricing, booking logic, and payment configurations.
-
----
-
-### Building — Room
-
-Type: Composition
-
-Multiplicity:
-Building → Room: (0..*)
-Room → Building: (1..1)
-
-Description:
-A room is structurally dependent on a building and cannot exist outside a building context.
-
----
-
-### Room — Levels
-
-Type: Association
-
-Multiplicity:
-Room → Levels: (1..1)
-Levels → Room: (0..*)
-
-Description:
-Each room must be located on exactly one level, while a level may contain multiple rooms.
-
----
-
-### Room — Group
-
-Type: Association
-
-Multiplicity:
-Room → Group: (0..1)
-Group → Room: (0..*)
-
-Description:
-A room may optionally belong to a group to inherit pricing and booking rules.
-
----
-
-### Group — Rates value
-
-Type: Composition
-
-Multiplicity:
-Group → Rates value: (0..*)
-Rates value → Group: (1..1)
-
-Description:
-Pricing rules are defined within the context of a group and cannot exist independently.
-
----
-
-### Group — Payment
-
-Type: Composition
-
-Multiplicity:
-Group → Payment: (0..*)
-Payment → Group: (1..1)
-
-Description:
-Payment options are configured at the group level and depend on its existence.
-
----
-
-### Group — Cancellation policy
-
-Type: Composition
-
-Multiplicity:
-Group → Cancellation policy: (0..*)
-Cancellation policy → Group: (1..1)
-
-Description:
-Cancellation rules are defined per group and cannot exist without it.
-
----
-
-### Building — Shared Facilities
-
-Type: Composition
-
-Multiplicity:
-Building → Shared Facilities: (0..*)
-Shared Facilities → Building: (1..1)
-
-Description:
-Shared facilities belong to a specific building and are not independent entities.
-
----
-
-### Building — Request_Management
-
-Type: Composition
-
-Multiplicity:
-Building → Request_Management: (0..*)
-Request_Management → Building: (1..1)
-
-Description:
-Every service request must be associated with a building and cannot exist independently.
-
----
-
-### User — Request_Management
-
-Type: Association
-
-Multiplicity:
+Request_Management → User: (1..*)
 User → Request_Management: (0..*)
-Request_Management → User: (1..1)
 
 Description:
-Each request must be created by one user, while a user may create multiple requests.
+Service requests may involve one or more users, and a user may be associated with multiple requests.
 
 ---
 
-### Status_Type — Request_Management
+## Room – Room_Configuration
+
+Type: Composition
+
+Multiplicity:
+Room → Room_Configuration: (1..1)
+Room_Configuration → Room: (1..1)
+
+Description:
+Each room has exactly one primary configuration definition.
+
+---
+
+## Room – Room_Features
+
+Type: Composition
+
+Multiplicity:
+Room → Room_Features: (0..*)
+Room_Features → Room: (1..1)
+
+Description:
+A room may include multiple standard features that are structurally part of the room.
+
+---
+
+## Room – Status_Type
 
 Type: Association
 
 Multiplicity:
-Status_Type → Request_Management: (0..*)
-Request_Management → Status_Type: (1..1)
+Room → Status_Type: (1..1)
+Status_Type → Room: (0..*)
 
 Description:
-Each request must have exactly one operational status classification.
+Each room is associated with one operational status classification, while a status type may apply to multiple rooms.
 
 ---
 
-### Building — Residential Details
+## Room – Room_Extra_Features
+
+Type: Association
+
+Multiplicity:
+Room → Room_Extra_Features: (0..*)
+Room_Extra_Features → Room: (1..1)
+
+Description:
+A room may offer multiple optional add-on features, each linked to a specific room.
+
+---
+
+## Group – Room
 
 Type: Composition
 
 Multiplicity:
-Building → Residential Details: (0..*)
-Residential Details → Building: (1..1)
+Group → Room: (0..*)
+Room → Group: (1..1)
 
 Description:
-Residential details are defined within a building context and cannot exist independently.
+A group contains multiple rooms within the same pricing and booking structure.
 
 ---
 
-### Residential Details — Is_There_A_Firewall
+## Group – Payment
+
+Type: Association
+
+Multiplicity:
+Group → Payment: (1..1)
+Payment → Group: (0..*)
+
+Description:
+Each group defines one payment configuration, while a payment method may be reused across multiple groups.
+
+---
+
+## Group – Shared_Facilities
+
+Type: Association
+
+Multiplicity:
+Group → Shared_Facilities: (0..*)
+Shared_Facilities → Group: (1..1)
+
+Description:
+A group may provide access to multiple shared facilities.
+
+---
+
+## Group – Scheduling_Type
+
+Type: Association
+
+Multiplicity:
+Group → Scheduling_Type: (1..1)
+Scheduling_Type → Group: (0..*)
+
+Description:
+Each group operates under one scheduling logic, which may be reused across different groups.
+
+---
+
+## Group – Levels
 
 Type: Composition
 
 Multiplicity:
-Residential Details → Is_There_A_Firewall: (0..1)
-Is_There_A_Firewall → Residential Details: (1..1)
+Group → Levels: (1..1)
+Levels → Group: (0..*)
 
 Description:
-Firewall configuration may exist only if residential details are defined.
+Each group is associated with one building level, while a level may contain multiple groups.
 
 ---
 
-### Building — Permits_Configurations
+## Group – Rates Value
+
+Type: Association
+
+Multiplicity:
+Group → Rates Value: (1..1)
+Rates Value → Group: (0..*)
+
+Description:
+Each group has one pricing structure, which may be applied across multiple groups if required.
+
+---
+
+## Group – Required_Information
+
+Type: Association
+
+Multiplicity:
+Group → Required_Information: (1..1)
+Required_Information → Group: (0..*)
+
+Description:
+Each group defines one set of mandatory booking information requirements.
+
+---
+
+## Group – Room_BookingPolicy
 
 Type: Composition
 
 Multiplicity:
-Building → Permits_Configurations: (0..*)
-Permits_Configurations → Building: (1..1)
+Group → Room_BookingPolicy: (1..1)
+Room_BookingPolicy → Group: (1..1)
 
 Description:
-Permit configuration rules are defined at the building level and depend on it.
+Each group includes one booking policy configuration that is structurally dependent on it.
 
 ---
 
-### Building — Compliance Entities
-(Working At Height, Electrical Works, Fire Alarm Isolation, Hot Works, Lone Working, Confined Spaces)
+## Group – Cancellation_Policy
 
 Type: Composition
 
 Multiplicity:
-Building → Compliance Entity: (0..*)
-Compliance Entity → Building: (1..1)
+Group → Cancellation_Policy: (1..1)
+Cancellation_Policy → Group: (1..1)
 
 Description:
-Compliance and permit records must always be associated with a specific building and cannot exist independently.
+Each group defines one cancellation policy that depends on the group for existence.
 
 ---
 
