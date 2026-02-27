@@ -45,9 +45,12 @@ relationships, and business rules:
 <sub>FIGURE 1 – Conceptual Diagram</sub><br>
   <img src="assets/conceptualdiagrampreview.png" width="100%" alt="Conceptual Diagram">
   <sup>Source: Material produced by the authors, 2026.</sup>
-[See Full PDF](assets/conceptualdatabase.drawio.pdf)
+
 </div>
 
+<div align="center">
+[See Full PDF](assets/conceptualdatabase.drawio.pdf)
+</div>
 ---
 
 ## 2.2 Entity Identification
@@ -815,9 +818,12 @@ The logical model transforms the conceptual model into a structure suitable for 
 <sub>FIGURE 2 – Logical Diagram</sub><br>
   <img src="assets/logicaldiagrampreview.png" width="100%" alt="Logical Diagram">
   <sup>Source: Material produced by the authors, 2026.</sup>
-[See Full PDF](assets/logicaldiagram.pdf)  
+ 
 </div>
 
+<div align="center">
+[See Full PDF](assets/logicaldiagram.pdf) 
+</div>
 
 
 
@@ -1574,12 +1580,12 @@ All business rules -> constraints
 
 # 4. Conclusion
 
-Summarize how the database design:
+This database design:
 
-- Identifies all relevant entities.
-- Defines essential attributes with appropriate primary keys.
-- Establishes relationships with accurate cardinality.
-- Documents business rules and constraints.
-- Achieves at least Third Normal Form (3NF).
-- Ensures referential integrity.
-- Maintains coherence between conceptual and logical models.
+- Identifies all required onboarding entities.
+- Defines structured attributes and primary keys.
+- Establishes correct cardinalities and relationships.
+- Documents business rules clearly.
+- Achieves Third Normal Form (3NF).
+- Ensures strong referential integrity.
+- Maintains traceability between conceptual and logical models.
