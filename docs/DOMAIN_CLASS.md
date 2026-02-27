@@ -50,8 +50,8 @@ This diagram represents the foundational structure of organizations, users, and 
 This diagram models the booking ecosystem, including rooms, configurations, pricing rules, payment settings, scheduling logic, and facilities. Group functions as the governance layer for booking logic within each building subdivision. The objective is to isolate booking structures without introducing organizational or compliance complexity.
 
 <div align="center">
-<sub>FIGURE X – [3_group]</sub><br>
-  <img src="../assets/[filename].png" width="100%" alt="[Same as diagram name]">
+<sub>FIGURE X – Booking and Amenities</sub><br>
+  <img src="./assets/3_group.jpeg" width="100%" alt="Booking and Amenities">
   <sup>Source: Material produced by the authors, 2026.</sup>
 </div>
 
