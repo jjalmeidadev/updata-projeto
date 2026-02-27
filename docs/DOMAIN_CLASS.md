@@ -29,36 +29,67 @@ The model is purely conceptual and independent of programming language or databa
 
 # 2. Domain Class Diagram
 
+This section presents the Domain UML Class Diagrams derived from the conceptual model. To ensure clarity and modularity, the system is divided into four domain-specific diagrams, plus one integration diagram that summarizes their structural connections. The diagrams focus on class structure and relationships. Detailed modeling decisions, multiplicities, and abstractions are addressed in later sections.
+
+---
+
+## 2.1 Core Organizational Domain
+
+This diagram represents the foundational structure of organizations, users, and buildings. It defines how companies and users are positioned within buildings and establishes the structural backbone that supports all other domains.
 
 <div align="center">
-<sub>FIGURE X – [Insert Diagram Name Here]</sub><br>
+<sub>FIGURE X – [1_core]</sub><br>
   <img src="../assets/[filename].png" width="100%" alt="[Same as diagram name]">
   <sup>Source: Material produced by the authors, 2026.</sup>
 </div>
 
-### Rationale for Domain Separation
+---
 
-The domain model was intentionally decomposed into five distinct UML diagrams: Core Organizational, Booking and Amenities, Request Management, Residential, and Permits and Compliance.
+## 2.2 Booking and Amenities Domain
 
-This separation was adopted to reduce structural complexity and ensure conceptual clarity. Each domain encapsulates a cohesive subset of business rules and responsibilities aligned with specific operational processes within the system. By isolating functional areas into dedicated diagrams, the model avoids excessive visual density.
+This diagram models the booking ecosystem, including rooms, configurations, pricing rules, payment settings, scheduling logic, and facilities. Group functions as the governance layer for booking logic within each building subdivision. The objective is to isolate booking structures without introducing organizational or compliance complexity.
 
-## Necessity of the Domain Integration Diagram
+<div align="center">
+<sub>FIGURE X – [3_group]</sub><br>
+  <img src="../assets/[filename].png" width="100%" alt="[Same as diagram name]">
+  <sup>Source: Material produced by the authors, 2026.</sup>
+</div>
 
-Although the domains were modeled independently for clarity, the system operates as a unified environment. For this reason, a high-level Domain Integration Diagram was introduced.
+---
 
-The integration diagram provides a systemic view of how the domains relate to one another without reintroducing diagrammatic complexity. It establishes cross-domain structural dependencies and ensures that the model reflects the interconnected nature of real-world operations. This step guarantees that modularization does not imply isolation, but rather structured abstraction.
+## 2.3 Room Domain
 
-## Central Entity of the System
+The **Room** entity represents a reservable resource within a building. Structurally, the Room entity maintains composition relationships with Room_Configuration and Room_Features, associates with Room_Extra_Features to support optional pricing extensions, and connects to Status_Type for booking state classification.
 
-The Building entity was identified as the primary operational anchor of the model.
+<div align="center">
+<sub>FIGURE X – [4_room]</sub><br>
+  <img src="../assets/[filename].png" width="100%" alt="[Same as diagram name]">
+  <sup>Source: Material produced by the authors, 2026.</sup>
+</div>
 
-Most domain entities — including rooms, groups, service requests, residential units, and permit configurations — are structurally dependent on a building context. This reflects the real-world structure in which operations, services, compliance processes, and tenant activities are organized around physical sites.
+---
 
-## Improvement in Abstraction and Conceptual Clarity
+## 2.4 Permits and Compliance Domain
 
-The combination of domain-level diagrams and an integration diagram enhances abstraction by separating detailed structural modeling from high-level systemic representation.
+This diagram models regulatory and safety control entities associated with buildings. It includes permit configuration and distinct compliance categories required for controlled operational activities, so all compliance structures are scoped at the building level.
 
-This layered modeling strategy improves readability, maintains UML consistency, and avoids implementation bias. It allows stakeholders to analyze specific operational domains independently while preserving an accurate representation of the system as a whole.
+<div align="center">
+<sub>FIGURE X – [2_building]</sub><br>
+  <img src="../assets/[filename].png" width="100%" alt="[Same as diagram name]">
+  <sup>Source: Material produced by the authors, 2026.</sup>
+</div>
+
+---
+
+## 2.5 Domain Integration Diagram
+
+This diagram provides a simplified structural overview of how the four domains connect. The integration view reinforces modular separation while demonstrating overall system cohesion.
+
+<div align="center">
+<sub>FIGURE X – [5_cross_relations]</sub><br>
+  <img src="../assets/[filename].png" width="100%" alt="[Same as diagram name]">
+  <sup>Source: Material produced by the authors, 2026.</sup>
+</div>
 
 ---
 
