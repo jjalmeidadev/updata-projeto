@@ -138,11 +138,6 @@ This section models safety compliance and permit-related records required for re
 
 This section defines the relationships between the conceptual classes using UML relationship types (Association, Aggregation, and Composition), along with their respective multiplicity constraints and concise real-world interpretations. Each relationship specifies how entities interact within the domain, clarifying structural dependencies, participation requirements, and business rules that govern organizational structure, operational workflows, booking logic, compliance control, and building-level configurations. 
 
-# Section 4 — Relationships and Multiplicity
-
-This section consolidates all relationships defined in the Domain UML Class Diagram.  
-Each relationship specifies its type, multiplicity (bidirectional), and a concise explanation aligned with the operational domain.
-
 ---
 ## Building – Group
 
@@ -547,17 +542,134 @@ Each group defines one cancellation policy that depends on the group for existen
 
 ---
 
-# 5. Modeling Decisions
+# Section 5 — Key Modeling Decisions
 
-The conceptual model was constructed based on the spreadsheets provided by the company as part of the contractor onboarding process. We decided to include all entities to avoid omitting relevant business data and to ensure complete traceability between the existing onboarding workflow and the proposed structured data model. 
+This section presents the main modeling decisions adopted during the construction of the Domain UML Class Diagram. The objective is to clarify the rationale behind structural choices, abstraction level, relationship types, and multiplicities.
 
-Relationships were classified according to structural dependency and lifecycle constraints. Composition was used when an entity cannot exist independently of its parent (e.g., Room within Building, User within Company, Compliance records within Building). Aggregation was applied when entities are logically grouped but maintain independent meaning (e.g., Group within Building). Association was used for relationships representing logical connections without strong ownership dependency (e.g., Company and Industry).
+---
 
-Multiplicity decisions were derived from real-world operational rules. Mandatory participation was defined when business logic requires the existence of a related entity (e.g., every User must belong to one Company; every Room must belong to one Building). Optional participation was applied when entities may exist independently under certain circumstances (e.g., a Building may exist before rooms are configured).
+## Inclusion of Domain Classes
 
-The level of abstraction chosen reflects a business-oriented conceptual model rather than a technical implementation model. The diagram captures domain entities and their structural relationships without including database-level details such as foreign keys or data types. This ensures proper separation between the conceptual and logical layers.
+The domain classes were selected based on structural relevance, operational responsibility, and regulatory significance identified in the onboarding documentation and organizational data sources.
 
-Several assumptions were made to support modeling clarity. It was assumed that users cannot exist without a company context, compliance records must always be linked to a building, and operational requests are always associated with both a building and a user. These assumptions are consistent with the onboarding documentation and the operational workflow described in the project requirements.
+The model is anchored around Building as the primary operational entity of the system. Building acts as the structural nucleus that connects organizational entities (Company, User), operational entities (Group, Room), and compliance entities (Permits and Safety classes). Its central positioning reflects its real-world role as the physical and administrative context in which all activities occur.
+
+Company and User were included as core organizational actors responsible for interacting with the platform. Company_Building was explicitly modeled to formalize the many-to-many operational relationship between companies and buildings, avoiding implicit assumptions and preserving conceptual clarity.
+
+Group was introduced as an intermediate organizational abstraction within a building. It functions as a governance layer for pricing rules, scheduling logic, shared facilities, and booking policies. 
+
+Room and its related entities (Room_Configuration, Room_Features, Room_Extra_Features) were maintained as separate classes to preserve booking granularity. This avoids conflating structural attributes, optional add-ons, and configuration variations into a single abstraction, improving conceptual precision.
+
+Compliance-related entities (Working_At_Height, Electrical_Works, Fire_Alarm_Isolation, Hot_Works, Lone_Working, Confined_Spaces) were modeled as independent classes to reflect regulatory autonomy. Each represents a distinct safety control domain with specific validation logic and operational workflows. 
+
+Overall, each class was included only when it represented a distinct business responsibility, structural dependency, or regulatory requirement. No artificial abstractions were introduced beyond those supported by the documented operational structure.
+
+---
+
+## Separation of Domains
+
+The model was intentionally decomposed into five domain-specific diagrams to improve readability and enforce separation of concerns. Each domain encapsulates entities that share cohesive responsibilities and operate within the same functional boundary.
+
+The model was intentionally decomposed into five domain-specific diagrams to improve readability, reduce structural complexity, and reinforce clear separation of responsibilities. Each domain groups entities that operate within a cohesive functional boundary while remaining structurally connected through the Building entity.
+
+- The Core Organizational Domain establishes the structural backbone of the system. It centers on Company as the primary operational entity. This domain defines how organizations and users are positioned within buildings.
+- The Booking and Amenities Domain is organized around Group as the governance layer for reservable resources. This domain models how booking logic and pricing rules are controlled within each building subdivision.
+- The Permits and Compliance Domain represents regulated operational activities fully scoped to Building.
+- Room_Details represents the operational metadata associated with a specific room. It encapsulates descriptive and structural information that complements the core Room entity.
+
+This separation prevents diagram overloading, reduces cognitive complexity, and reinforces modular conceptual reasoning. Because all domains ultimately operate within the same physical and administrative context, an integration diagram was required to explicitly represent cross-domain dependencies centered around Building.
+
+---
+
+## Relationship Type Decisions (Association vs Composition)
+
+Relationship types were selected based on lifecycle dependency and structural containment.
+
+Composition was used when a class cannot logically exist without its parent entity. This reflects strong ownership and lifecycle dependency. Examples include:
+
+- Building → Group  
+- Building → Levels  
+- Building → Residential_Details  
+- Residential_Details → Is_There_A_Firewall  
+- Building → Permits_Configurations  
+- Group → Room  
+- Room → Room_Configuration  
+- Room → Room_Features  
+- Room → Room_Extra_Features  
+- Company → Attribute  
+
+In these cases, deleting the parent entity would invalidate the dependent entity, justifying the use of composition.
+
+Association was applied when entities maintain conceptual independence but are functionally linked. Examples include:
+
+- Company → Industry  
+- Company ↔ Building (via Company_Building)  
+- User → Company  
+- Room → Status_Type  
+- Group → Payment  
+- Group → Scheduling_Type  
+- Group → Rates_Value  
+
+These relationships represent operational linkage without strict lifecycle dependency.
+
+---
+
+## Justification of Multiplicities
+
+Multiplicity values were defined based on operational constraints inferred from the documentation and real-world building management logic.
+
+Examples include:
+
+- A Building may contain multiple Groups (1..*), but each Group belongs to exactly one Building (1..1).
+- A Company may operate in multiple Buildings through Company_Building (0..*), while each association record references exactly one Company and one Building (1..1).
+- A Room belongs to exactly one Group (1..1), while a Group may contain multiple Rooms (0..*).
+- A Room may include multiple features and extra features (0..*), but each feature record is tied to exactly one Room (1..1).
+- Each compliance class instance is associated with exactly one Building (1..1), while a Building may define multiple compliance records (0..*).
+
+Multiplicity definitions were conservative and avoided unnecessary optionality where the business logic implied structural certainty.
+
+---
+
+## Level of Abstraction
+
+The model was constructed at a conceptual UML level, not at a database implementation level.
+
+Foreign keys, indexing strategies, constraints, and physical storage decisions were intentionally excluded from the diagram. The focus remains on:
+
+- Real-world entities
+- Structural hierarchy
+- Governance layers
+- Regulatory dependencies
+- Operational workflows
+
+Attributes included in the classes serve to clarify identity and functional responsibility, rather than represent complete schema definitions.
+
+This abstraction level ensures the diagram remains aligned with domain modeling principles rather than technical implementation details.
+
+---
+
+## Assumptions About the Problem Domain
+
+Conservative assumptions were made to maintain structural coherence.These assumptions were derived from structural interpretation of the organizational data and were kept minimal to avoid over-modeling.
+
+
+These assumptions include:
+
+- Each User belongs to exactly one Company.
+- Each Group operates within exactly one Building.
+- Compliance categories are maintained independently but always scoped to a Building.
+- Residential infrastructure exists only within the context of a Building.
+- Booking rules are governed at the Group level rather than directly at the Building level.
+
+---
+
+## Conceptual Alignment
+
+The final Domain UML Class Diagram aims to represent the structural logic of the system in a modular and readable way.
+
+The use of domain separation, explicit multiplicities, and lifecycle-aware relationship types contributes to conceptual clarity while preserving alignment with operational reality.
+
+Although simplifications were necessary for abstraction purposes, the model maintains traceability to documented business structures and regulatory requirements.
 
 ---
 
