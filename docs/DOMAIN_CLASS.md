@@ -121,32 +121,253 @@ This section models safety compliance and permit-related records required for re
 
 # 4. Relationships and Multiplicities
 
-Describe the relationships between domain classes.
+This section defines the relationships between the conceptual classes using UML relationship types (Association, Aggregation, and Composition), along with their respective multiplicity constraints and concise real-world interpretations. Each relationship specifies how entities interact within the domain, clarifying structural dependencies, participation requirements, and business rules that govern organizational structure, operational workflows, booking logic, compliance control, and building-level configurations. These relationships establish the structural integrity of the conceptual model and ensure consistency with the subsequent logical data model.
+
+### Company — Industry
+
+Type: Association
+
+Multiplicity:
+Company → Industry: (1..1)
+Industry → Company: (0..*)
+
+Description:
+Each company must be classified under exactly one industry, while an industry may classify multiple companies.
 
 ---
 
-### Relationship 1: `<Class_A>` — `<Class_B>`
+### Company — User
 
-**Type:**  
-- Association  
-- Aggregation  
-- Composition  
+Type: Composition
 
-**Multiplicity:**
+Multiplicity:
+Company → User: (0..*)
+User → Company: (1..1)
 
-- `<Class_A>` → `<Class_B>`: (1 to 0)  
-- `<Class_B>` → `<Class_A>`: (1 to 1)
-
-**Description:**  
-Explain what this relationship represents in the real world.
+Description:
+A user cannot exist in the system without being associated with a company. A company may have one or more users.
 
 ---
 
-### Relationship 2: `<Class_X>` — `<Class_Y>`
+### Company — Building (via Company_Building)
 
-**Type:**  
-**Multiplicity:**  
-**Description:**
+Type: Association
+
+Multiplicity:
+Company → Building: (0..*)
+Building → Company: (0..*)
+
+Description:
+A company may operate in multiple buildings, and a building may host multiple companies.
+
+---
+
+### Building — Levels
+
+Type: Composition
+
+Multiplicity:
+Building → Levels: (0..*)
+Levels → Building: (1..1)
+
+Description:
+Levels represent floors within a building and cannot exist independently of it.
+
+---
+
+### Building — Group
+
+Type: Aggregation
+
+Multiplicity:
+Building → Group: (0..*)
+Group → Building: (1..1)
+
+Description:
+Groups are defined within a building to organize pricing, booking logic, and payment configurations.
+
+---
+
+### Building — Room
+
+Type: Composition
+
+Multiplicity:
+Building → Room: (0..*)
+Room → Building: (1..1)
+
+Description:
+A room is structurally dependent on a building and cannot exist outside a building context.
+
+---
+
+### Room — Levels
+
+Type: Association
+
+Multiplicity:
+Room → Levels: (1..1)
+Levels → Room: (0..*)
+
+Description:
+Each room must be located on exactly one level, while a level may contain multiple rooms.
+
+---
+
+### Room — Group
+
+Type: Association
+
+Multiplicity:
+Room → Group: (0..1)
+Group → Room: (0..*)
+
+Description:
+A room may optionally belong to a group to inherit pricing and booking rules.
+
+---
+
+### Group — Rates value
+
+Type: Composition
+
+Multiplicity:
+Group → Rates value: (0..*)
+Rates value → Group: (1..1)
+
+Description:
+Pricing rules are defined within the context of a group and cannot exist independently.
+
+---
+
+### Group — Payment
+
+Type: Composition
+
+Multiplicity:
+Group → Payment: (0..*)
+Payment → Group: (1..1)
+
+Description:
+Payment options are configured at the group level and depend on its existence.
+
+---
+
+### Group — Cancellation policy
+
+Type: Composition
+
+Multiplicity:
+Group → Cancellation policy: (0..*)
+Cancellation policy → Group: (1..1)
+
+Description:
+Cancellation rules are defined per group and cannot exist without it.
+
+---
+
+### Building — Shared Facilities
+
+Type: Composition
+
+Multiplicity:
+Building → Shared Facilities: (0..*)
+Shared Facilities → Building: (1..1)
+
+Description:
+Shared facilities belong to a specific building and are not independent entities.
+
+---
+
+### Building — Request_Management
+
+Type: Composition
+
+Multiplicity:
+Building → Request_Management: (0..*)
+Request_Management → Building: (1..1)
+
+Description:
+Every service request must be associated with a building and cannot exist independently.
+
+---
+
+### User — Request_Management
+
+Type: Association
+
+Multiplicity:
+User → Request_Management: (0..*)
+Request_Management → User: (1..1)
+
+Description:
+Each request must be created by one user, while a user may create multiple requests.
+
+---
+
+### Status_Type — Request_Management
+
+Type: Association
+
+Multiplicity:
+Status_Type → Request_Management: (0..*)
+Request_Management → Status_Type: (1..1)
+
+Description:
+Each request must have exactly one operational status classification.
+
+---
+
+### Building — Residential Details
+
+Type: Composition
+
+Multiplicity:
+Building → Residential Details: (0..*)
+Residential Details → Building: (1..1)
+
+Description:
+Residential details are defined within a building context and cannot exist independently.
+
+---
+
+### Residential Details — Is_There_A_Firewall
+
+Type: Composition
+
+Multiplicity:
+Residential Details → Is_There_A_Firewall: (0..1)
+Is_There_A_Firewall → Residential Details: (1..1)
+
+Description:
+Firewall configuration may exist only if residential details are defined.
+
+---
+
+### Building — Permits_Configurations
+
+Type: Composition
+
+Multiplicity:
+Building → Permits_Configurations: (0..*)
+Permits_Configurations → Building: (1..1)
+
+Description:
+Permit configuration rules are defined at the building level and depend on it.
+
+---
+
+### Building — Compliance Entities
+(Working At Height, Electrical Works, Fire Alarm Isolation, Hot Works, Lone Working, Confined Spaces)
+
+Type: Composition
+
+Multiplicity:
+Building → Compliance Entity: (0..*)
+Compliance Entity → Building: (1..1)
+
+Description:
+Compliance and permit records must always be associated with a specific building and cannot exist independently.
 
 ---
 
