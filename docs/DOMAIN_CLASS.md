@@ -38,8 +38,8 @@ This section presents the Domain UML Class Diagrams derived from the conceptual 
 This diagram represents the foundational structure of organizations, users, and buildings. It defines how companies and users are positioned within buildings and establishes the structural backbone that supports all other domains.
 
 <div align="center">
-<sub>FIGURE X – [1_core]</sub><br>
-  <img src="../assets/[filename].png" width="100%" alt="[Same as diagram name]">
+<sub>FIGURE X – Core Organization Domain</sub><br>
+  <img src="./assets/1_core.jpeg" width="100%" alt="Core Organization Domain">
   <sup>Source: Material produced by the authors, 2026.</sup>
 </div>
 
