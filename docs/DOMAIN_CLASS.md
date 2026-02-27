@@ -373,31 +373,21 @@ Compliance and permit records must always be associated with a specific building
 
 # 5. Modeling Decisions
 
-Provide a brief explanation of the key modeling decisions made when constructing the diagram.
+The conceptual model was constructed based on the spreadsheets provided by the company as part of the contractor onboarding process. We decided to include all entities to avoid omitting relevant business data and to ensure complete traceability between the existing onboarding workflow and the proposed structured data model. 
 
-Discuss:
+Relationships were classified according to structural dependency and lifecycle constraints. Composition was used when an entity cannot exist independently of its parent (e.g., Room within Building, User within Company, Compliance records within Building). Aggregation was applied when entities are logically grouped but maintain independent meaning (e.g., Group within Building). Association was used for relationships representing logical connections without strong ownership dependency (e.g., Company and Industry).
 
-- Why certain domain classes were included
-- Why some concepts were excluded (if applicable)
-- Why specific relationships were modeled as association, aggregation, or composition
-- Justification for multiplicities
-- The level of abstraction chosen
-- Any assumptions made about the problem domain
+Multiplicity decisions were derived from real-world operational rules. Mandatory participation was defined when business logic requires the existence of a related entity (e.g., every User must belong to one Company; every Room must belong to one Building). Optional participation was applied when entities may exist independently under certain circumstances (e.g., a Building may exist before rooms are configured).
 
-This section should clearly demonstrate:
+The level of abstraction chosen reflects a business-oriented conceptual model rather than a technical implementation model. The diagram captures domain entities and their structural relationships without including database-level details such as foreign keys or data types. This ensures proper separation between the conceptual and logical layers.
 
-- Appropriate conceptual abstraction
-- Correct use of UML notation
-- Alignment with the real-world domain being modeled
+Several assumptions were made to support modeling clarity. It was assumed that users cannot exist without a company context, compliance records must always be linked to a building, and operational requests are always associated with both a building and a user. These assumptions are consistent with the onboarding documentation and the operational workflow described in the project requirements.
 
 ---
 
 # 6. Conclusion
 
-The Domain UML Class Diagram:
+The Domain UML Class Diagram represents the main entities identified in the contractor onboarding and property management domain. It applies standard UML notation to describe associations, aggregations, compositions, and multiplicity constraints in a structured and consistent manner.
 
-- Models real-world entities relevant to the problem domain
-- Uses proper UML notation
-- Correctly represents relationships and multiplicities
-- Maintains conceptual abstraction (no implementation details)
-- Aligns with project requirements
+The model maintains a conceptual level of abstraction by focusing on domain entities and their relationships. The structure reflects the data extracted from the onboarding spreadsheets and aims to align with the operational context described in the project requirements.
+
