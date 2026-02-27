@@ -130,7 +130,7 @@ Expected outcomes:
 
 | Task ID | Task Name | Description | Type | Size | DoR | DoD |
 |---|---|---|---|---|---|---|
-| S2-01 | Collective UML Modeling | Meetings to define domain classes and relations | Design | M | Sprint 2 artifacts reviewed | UML approved by PO |
+| S2-01 | Collective UML Modeling | Meetings to define domain classes and relations | Design | M | Sprint 2 artifacts reviewed | UML approved by PO | 
 | S2-02 | UML Documentation | Formal diagram + thought process | Docs | S | UML consensus reached | documentation.md updated |
 | S2-03 | Logical Data Model | Tables and data relations | Design | M | Conceptual model validated | Logical schema complete |
 | S2-04 | UI Structure Discussion | Collective alignment before graphics | Design | S | Final UML available | Navigation defined |
