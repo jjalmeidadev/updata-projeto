@@ -43,13 +43,13 @@ relationships, and business rules:
 
 <div align="center">
 <sub>FIGURE 1 – Conceptual Diagram</sub><br>
-  <img src="assets/conceptualdiagrampreview.png" width="100%" alt="Conceptual Diagram">
+  <img src="../assets/conceptualdiagrampreview.png" width="100%" alt="Conceptual Diagram">
   <sup>Source: Material produced by the authors, 2026.</sup>
 
 </div>
 
 <div align="center">
-[See Full PDF](assets/conceptualdatabase.drawio.pdf)
+[See Full PDF](../assets/conceptualdatabase.drawio.pdf)
 </div>
 ---
 
@@ -816,13 +816,13 @@ The logical model transforms the conceptual model into a structure suitable for 
 
 <div align="center">
 <sub>FIGURE 2 – Logical Diagram</sub><br>
-  <img src="assets/logicaldiagrampreview.png" width="100%" alt="Logical Diagram">
+  <img src="../assets/logicaldiagrampreview.png" width="100%" alt="Logical Diagram">
   <sup>Source: Material produced by the authors, 2026.</sup>
  
 </div>
 
 <div align="center">
-[See Full PDF](assets/logicaldiagram.pdf) 
+[See Full PDF](../assets/logicaldiagram.pdf) 
 </div>
 
 
