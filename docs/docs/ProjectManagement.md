@@ -11,14 +11,21 @@
    - [Improvement Actions for Sprint 2](#13-improvement-actions-for-sprint-2)
    - [Risk Analysis and Tracking](#14-risk-analysis-and-tracking)
    - [PMO Alignment](#15-pmo-alignment)
+
 2. [Sprint 2 Planning](#2-sprint-2-planning)
    - [Sprint Objectives](#21-sprint-objectives)
    - [Sprint 2 Backlog and Task Planning](#22-sprint-2-backlog-and-task-planning)
+   - [Sprint 2 Analysis](#23-sprint-2-analysis)
+      - [Strengths](#231-strengths)
+      - [Weaknesses](#232-weaknesses)
+      - [Improvement Backlog for Sprint 3](#233-improvement-backlog-for-sprint-3)
+
 3. [Sprint 3 Planning](#3-sprint-3-planning)
    - [Sprint Objectives](#31-objectives)
    - [Sprint 3 Backlog and Task Allocation](#32-backlog-and-task-allocation)
    - [Sprint Capacity](#33-sprint-capacity)
    - [Execution Improvements](#34-execution-improvements)
+
 4. [Group Development Process Management](#4-group-development-process-management)
    - [Daily Meetings Policy](#41-daily-meetings-policy)
    - [Development and Collaboration Policies](#42-development-and-collaboration-policies)
