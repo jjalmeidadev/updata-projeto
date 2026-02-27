@@ -36,13 +36,29 @@ The model is purely conceptual and independent of programming language or databa
   <sup>Source: Material produced by the authors, 2026.</sup>
 </div>
 
-The diagram must include:
+### Rationale for Domain Separation
 
-- Domain classes
-- Attributes (no data types required if purely conceptual)
-- Multiplicities (e.g., 1, 0..1, 1..*, 0..*)
-- Association types (association, aggregation, composition)
-- Clear and consistent UML notation
+The domain model was intentionally decomposed into five distinct UML diagrams: Core Organizational, Booking and Amenities, Request Management, Residential, and Permits and Compliance.
+
+This separation was adopted to reduce structural complexity and ensure conceptual clarity. Each domain encapsulates a cohesive subset of business rules and responsibilities aligned with specific operational processes within the system. By isolating functional areas into dedicated diagrams, the model avoids excessive visual density.
+
+## Necessity of the Domain Integration Diagram
+
+Although the domains were modeled independently for clarity, the system operates as a unified environment. For this reason, a high-level Domain Integration Diagram was introduced.
+
+The integration diagram provides a systemic view of how the domains relate to one another without reintroducing diagrammatic complexity. It establishes cross-domain structural dependencies and ensures that the model reflects the interconnected nature of real-world operations. This step guarantees that modularization does not imply isolation, but rather structured abstraction.
+
+## Central Entity of the System
+
+The Building entity was identified as the primary operational anchor of the model.
+
+Most domain entities — including rooms, groups, service requests, residential units, and permit configurations — are structurally dependent on a building context. This reflects the real-world structure in which operations, services, compliance processes, and tenant activities are organized around physical sites.
+
+## Improvement in Abstraction and Conceptual Clarity
+
+The combination of domain-level diagrams and an integration diagram enhances abstraction by separating detailed structural modeling from high-level systemic representation.
+
+This layered modeling strategy improves readability, maintains UML consistency, and avoids implementation bias. It allows stakeholders to analyze specific operational domains independently while preserving an accurate representation of the system as a whole.
 
 ---
 
