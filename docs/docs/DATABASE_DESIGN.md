@@ -51,6 +51,9 @@ relationships, and business rules:
 <div align="center">
 [See Full PDF](../assets/conceptualdatabase.drawio.pdf)
 </div>
+
+For better visualization, please access the following [link:](https://drive.google.com/file/d/1a-Kao1kniOMmbktFXLu1YoaF_dwFhOGL/view?usp=sharing)
+
 ---
 
 ## 2.2 Entity Identification
@@ -825,7 +828,7 @@ The logical model transforms the conceptual model into a structure suitable for 
 [See Full PDF](../assets/logicaldiagram.pdf) 
 </div>
 
-For better visualization, please access the following link.: https://dbdiagram.io/d/6812e36d1ca52373f50e75bf
+For better visualization, please access the following [link:](https://dbdiagram.io/d/6812e36d1ca52373f50e75bf)
 
 
 
