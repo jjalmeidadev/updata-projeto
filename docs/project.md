@@ -505,26 +505,26 @@ The project will be executed in a 10 week cycle. The governance structure includ
 
 | ID   | Title                                     | Functional Requirement Description                                                                                                                                                                                                                                                           |
 | ---- | ----------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| FR01 | Structured Onboarding Data Upload         | The system must allow authenticated users to submit onboarding data files associated with a specific onboarding process by uploading CSV and XLSX files through the onboarding submission interface, supporting large datasets and multiple files while keeping user interaction responsive. |
+| FR01 | Structured Onboarding Data Upload         | The system must allow authenticated users to submit onboarding data files (CSV and XLSX formats only) associated with a specific onboarding process through the onboarding submission interface. File size limits and responsiveness requirements are defined in NFR02. |
 | FR02 | Data Standardization                      | The system must transform all submitted onboarding data into predefined internal data models and standardized field structures before any validation or consolidation occurs.                                                                                                                |
 | FR03 | Intermediate Data Persistence             | The system must persist submitted onboarding data in an intermediate storage layer to enable validation, correction cycles, and controlled consolidation without overwriting previous versions or the final dataset prematurely.                                                             |
-| FR04 | Data Validation and Conflict Detection    | The system must validate submitted onboarding data by checking mandatory fields, data formats, data types, and business constraints, and must identify duplicates or conflicting records.                                                                                                    |
+| FR04 | Data Validation and Conflict Detection    | The system must validate submitted onboarding data by checking: (1) presence of mandatory fields defined per dataset schema, (2) field data types, (3) format rules (date format YYYY-MM-DD, valid email pattern), and (4) uniqueness constraints based on predefined natural identifiers. The system must identify duplicate or conflicting records based on these identifiers.                                                                                                    |
 | FR05 | Safe Data Correction via Re-Submission    | The system must allow users to correct invalid onboarding data by re-submitting updated files that safely replace previous entries based on natural identifiers defined for each dataset.                                                                                                    |
 | FR06 | Change Comparison Visualization           | The system must present a comparison view that highlights differences between the latest and previous submission for the same dataset or section, focusing on changed fields or records.                                                                                                     |
 | FR07 | Automatic Progress Persistence            | The system must automatically preserve onboarding progress across sessions, ensuring users can resume completion without re-entering previously submitted information.                                                                                                                       |
 | FR08 | Dynamic Onboarding Interface              | The system must dynamically present onboarding sections based on the client’s active modules, ensuring that users only access forms and fields relevant to the selected configuration scope.                                                                                                 |
-| FR09 | Section Dependency Enforcement            | The system must enforce dependencies between onboarding sections, preventing submission of dependent sections before prerequisite sections reach a completed state.                                                                                                                          |
+| FR09 | Section Dependency Enforcement            | The system must enforce dependencies between onboarding sections, preventing submission of dependent sections before prerequisite sections reach a "Completed" state as defined in FR11.                                                                                                                          |
 | FR10 | Collaborative Section Assignment          | The system must enable collaborative onboarding by allowing administrators to assign sections to multiple contributors and support parallel completion of independent sections.                                                                                                              |
-| FR11 | Onboarding Status and Feedback            | The system must track and display onboarding and processing states per section and per file submission (e.g., Not Started, In Progress, Processing, Completed, Failed) and must inform users when processing succeeds or fails.                                                              |
-| FR12 | Data Consolidation and Secure Integration | The system must generate consolidated onboarding datasets in CSV or JSON format and transmit approved data packages to external systems through authenticated integration mechanisms.                                                                                                        |
+| FR11 | Onboarding Status and Feedback            | The system must track and display the following onboarding and processing states per section and per file submission: "Not Started", "In Progress", "Processing", "Completed", and "Failed". These states are finite and exclusive. The system must inform users when processing transitions to either "Completed" or "Failed".                                                              |
+| FR12 | Data Consolidation and Secure Integration | The system must generate consolidated onboarding datasets in CSV or JSON format and transmit approved data packages to external systems via authenticated REST API calls using JWT-based authentication with signature validation.                                                                                                        |
 
 ### 16.1. Functional Requirement Details
 
 #### FR01 – Structured Onboarding Data Upload
 
 - Applies only to onboarding submission interfaces
-- Supports large files and multiple simultaneous uploads
-- Maintains responsive user experience
+- Accepts CSV and XLSX formats only
+- File size and responsiveness constraints defined in NFR02
 
 #### FR02 – Data Standardization
 
@@ -540,9 +540,10 @@ The project will be executed in a 10 week cycle. The governance structure includ
 
 #### FR04 – Data Validation and Conflict Detection
 
-- Verifies required fields
-- Applies format and type rules
-- Detects duplicates and inconsistencies
+- Verifies required fields defined per dataset schema
+- Applies explicit format and type validation rules
+- Enforces uniqueness based on natural identifiers
+- Detects duplicates and inconsistencies deterministically
 
 #### FR05 – Safe Data Correction via Re-Submission
 
@@ -568,7 +569,7 @@ The project will be executed in a 10 week cycle. The governance structure includ
 #### FR09 – Section Dependency Enforcement
 
 - Controls onboarding flow order
-- Ensures consistent completion logic
+- Requires prerequisite sections to be in "Completed" state
 
 #### FR10 – Collaborative Section Assignment
 
@@ -577,30 +578,32 @@ The project will be executed in a 10 week cycle. The governance structure includ
 
 #### FR11 – Onboarding Status and Feedback
 
-- Displays processing and completion states
-- Notifies users of outcomes
+- Uses fixed states: Not Started, In Progress, Processing, Completed, Failed
+- States are mutually exclusive
+- Notifies users on state transition to Completed or Failed
 
 #### FR12 – Data Consolidation and Secure Integration
 
-- Generates export datasets
-- Sends approved data securely
+- Generates export datasets in CSV or JSON
+- Sends approved data via authenticated REST API using JWT
+- Requires successful authentication before transmission
 
 ### 16.2. Functional Requirements Validation Tests
 
-| ID   | Test                    | Pre-condition            | Procedure                | Expected Result                | Post-condition           |
-| ---- | ----------------------- | ------------------------ | ------------------------ | ------------------------------ | ------------------------ |
-| FR01 | Upload onboarding files | User authenticated       | Upload CSV/XLSX files    | Processing starts responsively | Files stored in staging  |
-| FR02 | Standardize data        | Files uploaded           | Trigger transformation   | Data matches schemas           | Ready for validation     |
-| FR03 | Persist staging data    | Standardized data exists | Save to staging          | Data stored                    | Available for correction |
-| FR04 | Validate data           | Data in staging          | Run validation           | Errors identified              | Report generated         |
-| FR05 | Re-submit data          | Errors exist             | Upload corrected version | Data replaced safely           | Updated dataset stored   |
-| FR06 | Compare submissions     | Multiple versions        | Open comparison          | Changes highlighted            | Review complete          |
-| FR07 | Resume onboarding       | Progress saved           | Reopen system            | Progress restored              | Flow continues           |
-| FR08 | Dynamic sections        | Modules set              | Open onboarding          | Relevant sections shown        | Correct scope            |
-| FR09 | Enforce dependencies    | Parent incomplete        | Access child             | Access blocked                 | Flow maintained          |
-| FR10 | Assign contributors     | Admin logged in          | Assign sections          | Users assigned                 | Parallel work            |
-| FR11 | Track status            | Upload triggered         | Monitor states           | Correct updates                | User informed            |
-| FR12 | Export & integrate      | Sections approved        | Generate and send        | Data transmitted               | External system updated  |
+| ID   | Test                    | Pre-condition            | Procedure                | Expected Result                                                                 | Post-condition           |
+| ---- | ----------------------- | ------------------------ | ------------------------ | ------------------------------------------------------------------------------ | ------------------------ |
+| FR01 | Upload onboarding files | User authenticated       | Upload CSV/XLSX files ≤ size defined in NFR02 | File stored in staging layer and submission record created                     | Files stored in staging  |
+| FR02 | Standardize data        | Files uploaded           | Trigger transformation   | Output matches predefined internal schema without structural deviations        | Ready for validation     |
+| FR03 | Persist staging data    | Standardized data exists | Save to staging          | New version record created without overwriting previous versions               | Available for correction |
+| FR04 | Validate data           | Data in staging          | Run validation           | Validation report generated listing schema, format, or uniqueness violations   | Report generated         |
+| FR05 | Re-submit data          | Errors exist             | Upload corrected version | Records replaced only where natural identifiers match                          | Updated dataset stored   |
+| FR06 | Compare submissions     | Multiple versions        | Open comparison          | System displays field-level differences between selected versions               | Review complete          |
+| FR07 | Resume onboarding       | Progress saved           | Reopen system            | Previously saved state restored without data loss                              | Flow continues           |
+| FR08 | Dynamic sections        | Modules set              | Open onboarding          | Only sections mapped to active modules are rendered                            | Correct scope            |
+| FR09 | Enforce dependencies    | Parent not "Completed"   | Attempt child submission | System blocks submission and returns dependency validation message             | Flow maintained          |
+| FR10 | Assign contributors     | Admin authenticated      | Assign sections          | Section assignment persisted and visible to assigned users                     | Parallel work enabled    |
+| FR11 | Track status            | Upload triggered         | Monitor states           | Status transitions follow defined state set and invalid states are rejected    | User informed            |
+| FR12 | Export & integrate      | Sections approved        | Generate and send        | API request sent with valid JWT; external system returns HTTP 2xx confirmation | External system updated  |
 
 ## 17. Non-Functional Requirements (NFRs)
 
