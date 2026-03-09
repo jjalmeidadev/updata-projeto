@@ -609,49 +609,57 @@ The project will be executed in a 10 week cycle. The governance structure includ
 
 | ID    | Title                                  | Non-Functional Requirement Description                                                                                                                                                    |
 | ----- | -------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| NFR01 | Data Integrity Compliance              | The system must enforce full compliance with predefined internal data schemas before and during validation, consolidation, and export to ensure consistent and clean onboarding datasets. |
-| NFR02 | Large File Handling and Responsiveness | The system must support large onboarding file uploads (up to 100 MB per file) while maintaining responsive user interaction during processing.                                            |
-| NFR03 | Processing Reliability                 | The system must prevent data corruption or loss during ingestion, validation, staging, and consolidation activities.                                                                      |
-| NFR04 | Extensible File Format Support         | The system architecture must allow new supported file formats to be added without modifying existing ingestion or validation logic.                                                       |
-| NFR05 | Concurrent Submission Handling         | The system must support multiple simultaneous onboarding submissions without degradation of responsiveness or validation accuracy.                                                        |
+| NFR01 | Data Integrity Compliance              | The system shall reject 100% of records that do not conform to the predefined schema and ensure that 100% of exported datasets match the validated schema structure. |
+| NFR02 | Large File Handling | The system shall support onboarding file uploads of up to 100 MB per file and process them without causing application crashes, request timeouts, or interruption of other active user sessions.           |
+| NFR03 | Processing Reliability                 | The system shall ensure transactional consistency during ingestion, validation, staging, and consolidation processes, preventing partial writes and automatically rolling back incomplete operations in case of failure.                                                       |
+| NFR04 | Security  | All stored onboarding data must be encrypted at rest (AES-256) and in transit (TLS 1.2+), with access restricted through AWS IAM role-based policies.                                                       |
+| NFR05 | Concurrent Submission Handling         | The system shall support multiple concurrent onboarding submissions and ensure that each submission is processed independently without data mixing, corruption, or validation inconsistency.                                                      |
 
 ### 17.1. Non-Functional Requirement Details
 
 #### NFR01 – Data Integrity Compliance
 
-- Enforces schema consistency
-- Blocks malformed records
-- Guarantees clean exports
+- 100% of uploaded records must be validated against the predefined internal schema.
+- Any record that fails schema validation must be rejected before staging.
+- Only fully validated datasets may proceed to consolidation and export
 
 #### NFR02 – Large File Handling and Responsiveness
 
-- Supports high-volume uploads
-- Maintains UI usability
+- The system must accept file uploads up to 100 MB per file.
+- File processing must occur without application crashes or unhandled exceptions.
+- Uploading a large file must not terminate or block other active user sessions.
+- Files exceeding 100 MB must be rejected with a clear validation message.
 
 #### NFR03 – Processing Reliability
 
-- Avoids partial writes
-- Preserves correctness across failures
+- 100% of failed transactions must be rolled back automatically.
+- All ingestion, validation, and consolidation operations must execute within transactional boundaries.
+- Incomplete or failed operations must be automatically rolled back.
+- No partial writes shall persist in the database after a failure.
 
-#### NFR04 – Extensible File Format Support
+#### NFR04 – Security
 
-- Modular ingestion design
-- No system refactoring for new formats
+- All stored onboarding data must be encrypted at rest using AES-256 encryption.
+- All data transmitted between client and server must use TLS 1.2 or higher.
+- Access to stored data must be restricted using AWS IAM role-based access control.
+- Unauthorized access attempts must be denied by default.
 
 #### NFR05 – Concurrent Submission Handling
 
-- Parallel onboarding support
-- Stable performance
+- The system must support at least 10 multiple concurrent onboarding submissions.
+- Each submission must be processed independently.
+- Concurrent processing must not cause data mixing between submissions.
 
 ### 17.2. Non-Functional Requirements Validation Tests
 
-| ID    | Test                       | Pre-condition      | Procedure             | Expected Result              | Post-condition      |
-| ----- | -------------------------- | ------------------ | --------------------- | ---------------------------- | ------------------- |
-| NFR01 | Validate schema compliance | Data uploaded      | Run standardization   | Only compliant data proceeds | Clean dataset       |
-| NFR02 | Upload large files         | User authenticated | Upload large dataset  | UI remains responsive        | Data ingested       |
-| NFR03 | Simulate failure           | Processing active  | Trigger interruption  | No data loss                 | Recovery successful |
-| NFR04 | Add new format             | System configured  | Ingest new format     | Existing flows unaffected    | Format supported    |
-| NFR05 | Parallel uploads           | Multiple users     | Upload simultaneously | No degradation               | All processed       |
+| ID    | Test                                            | Pre-condition                                            | Procedure                                                          | Expected Result                                                                                                        | Post-condition                               |
+| ----- | ----------------------------------------------- | -------------------------------------------------------- | ------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------- | -------------------------------------------- |
+| NFR01 | Schema validation enforcement                   | Dataset containing valid and invalid records is uploaded | Execute schema validation process                                  | 100% of invalid records are rejected; only valid records proceed to staging                                            | Only validated dataset stored                |
+| NFR02 | Maximum file size handling                      | User authenticated                                       | Upload file ≤ 100 MB and upload file > 100 MB                      | Files ≤ 100 MB are processed successfully; files > 100 MB are rejected with validation message; no system crash occurs | Valid file ingested; oversized file rejected |
+| NFR03 | Transaction rollback verification               | Processing operation active                              | Force system interruption during database write operation          | 100% of interrupted transactions are rolled back; no partial writes persist in database                                | Database remains in consistent state         |
+| NFR04 | Data encryption and access control verification | System deployed in production configuration              | Inspect storage configuration and attempt unauthorized data access | Data is encrypted at rest (AES-256); communication occurs via TLS 1.2+; unauthorized access attempt is denied          | Data remains protected                       |
+| NFR05 | Concurrent submission handling                  | At least 10 users authenticated                          | Simulate 10 concurrent onboarding submissions                      | All 10 submissions are processed independently without data mixing or processing errors                                | All submissions completed correctly          |
+
 
 ## 18. FR–NFR Correlation Matrix
 
