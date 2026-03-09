@@ -1,0 +1,20 @@
+# Test Case: FR10 - 
+
+## 1. Objective
+The primary objective is to verify that the system allows administrators to assign specific onboarding sections to different contributors and enables those contributors to work on their assigned sections independently, specifically validating the requirements defined in **RF10**.
+
+## 2. Precondition
+* At least two users must be registered in the system: one with an **Administrator/Onboarding Specialist** role and one or more with a **Contributor/Office Manager**.
+* An active onboarding project with multiple sections must be available.
+* The Administrator must be logged in to the project management interface.
+
+## 3. Procedure
+1. Log in as an Administrator and navigate to the "Team Management" or "Section Assignment" area of an active project.
+2. Assign the "Building Details" section to Contributor A and the "User Permissions" section to Contributor B.
+3. Verify that Contributor A can access and edit "Building Details" but cannot modify unassigned sections.
+4. Simultaneously, in a different session, log in as Contributor B and verify they can edit "User Permissions" in parallel.
+
+## 4. Expected Result
+* In accordance with **RF10**, the system must correctly restrict and grant access based on section assignments.
+* Multiple contributors must be able to save progress in their respective sections simultaneously without data conflicts.
+
