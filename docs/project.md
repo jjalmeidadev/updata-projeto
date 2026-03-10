@@ -612,6 +612,23 @@ The project will be executed in a 10 week cycle. The governance structure includ
 | FR11 | Track status            | Upload triggered         | Monitor states           | Status transitions follow defined state set and invalid states are rejected    | User informed            |
 | FR12 | Export & integrate      | Sections approved        | Generate and send        | API request sent with valid JWT; external system returns HTTP 2xx confirmation | External system updated  |
 
+### 16.3. Functional Negative Test Scenarios
+| ID | Functional Requirement | Negative Scenario | Expected Result |
+| --- | --- | --- | --- |
+| **FR01** | Structured Data Upload | Attempt to upload a prohibited file type (e.g., `.pdf`, `.exe`). | System blocks the upload and displays an "Invalid Format" error. |
+| **FR02** | Data Standardization | Upload a file where column names do not match the required template. | System fails normalization and identifies the incorrect columns. |
+| **FR03** | Intermediate Persistence | Attempt to access a submission version that has been deleted or does not exist. | System returns a "Resource Not Found" error. |
+| **FR04** | Data Validation | Submit a file with invalid email patterns or duplicate natural identifiers. | System lists all specific errors and prevents data consolidation. |
+| **FR05** | Safe Data Correction | Re-submit data where the natural identifier has been altered. | System treats it as a new record or alerts the user of the inconsistency. |
+| **FR06** | Change Visualization | Attempt to compare a version with a corrupted or empty dataset. | System informs the user that comparison is not possible due to data gaps. |
+| **FR07** | Progress Persistence | Close the browser during a large upload before the "Saved" confirmation. | System restores the last stable state without corrupted partial data. |
+| **FR08** | Dynamic Interface | Attempt to access an inactive module's section via direct URL. | System redirects to the home page or displays "Access Denied". |
+| **FR09** | Dependency Enforcement | Attempt to submit a child section while the parent is "In Progress". | System blocks submission and displays a dependency error. |
+| **FR10** | Section Assignment | An unassigned user attempts to edit a section restricted to another collaborator. | System prevents editing and shows the section is locked/assigned. |
+| **FR11** | Status Tracking | Simulate a connection failure during processing to test hangs. | System triggers a timeout and moves the status to "Failed". |
+| **FR12** | Secure Integration | Attempt to push data while the target external system is offline. | System logs the integration failure and allows for a later retry. |
+
+
 ## 17. Non-Functional Requirements (NFRs)
 
 | ID    | Title                                  | Non-Functional Requirement Description                                                                                                                                                    |
@@ -666,7 +683,6 @@ The project will be executed in a 10 week cycle. The governance structure includ
 | NFR03 | Transaction rollback verification               | Processing operation active                              | Force system interruption during database write operation          | 100% of interrupted transactions are rolled back; no partial writes persist in database                                | Database remains in consistent state         |
 | NFR04 | Data encryption and access control verification | System deployed in production configuration              | Inspect storage configuration and attempt unauthorized data access | Data is encrypted at rest (AES-256); communication occurs via TLS 1.2+; unauthorized access attempt is denied          | Data remains protected                       |
 | NFR05 | Concurrent submission handling                  | At least 10 users authenticated                          | Simulate 10 concurrent onboarding submissions                      | All 10 submissions are processed independently without data mixing or processing errors                                | All submissions completed correctly          |
-
 
 ## 18. Functional Test Execution Strategy
 
@@ -835,5 +851,5 @@ The combination of functional, non-functional, and usability tests provides stro
 | US12       | FR12        |
 
 ## 24. Conclusion
-
+x'
 The proposed solution establishes a structured and scalable foundation for transforming Equiem’s onboarding process from a fragmented, manual workflow into a reliable and strategically differentiated intake system. Through comprehensive business analysis, clear requirement definition, and a focused MVP strategy, the project directly addresses operational bottlenecks that currently limit efficiency, data integrity, and speed of deployment. By embedding validation, standardization, and collaborative capabilities at the point of data entry, the platform significantly reduces manual effort, minimizes rework, and enables parallel onboarding at scale. Ultimately, the initiative accelerates time-to-launch, enhances customer experience, and strengthens operational resilience, positioning onboarding not as a constraint, but as a sustainable competitive advantage for Equiem’s continued growth.
