@@ -1,0 +1,62 @@
+<div class="form-shell">
+  <header class="form-header">
+    <h1>Onboarding Form</h1>
+
+    @if (!loading() && !submitted()) {
+      <div class="progress-bar-container">
+        <div class="progress-bar" [style.width.%]="progressPercent()"></div>
+      </div>
+      <p class="progress-label">Step {{ currentSectionIndex() + 1 }} of {{ sections().length }}</p>
+    }
+  </header>
+
+  @if (loading()) {
+    <p class="loading">Loading questions…</p>
+  } @else if (submitted()) {
+    <div class="success">
+      <h2>✓ Submission received</h2>
+      <p>Your onboarding data has been submitted successfully.</p>
+    </div>
+  } @else {
+    <!-- Section nav tabs -->
+    <nav class="section-tabs" aria-label="Form sections">
+      @for (section of sections(); track section; let i = $index) {
+        <button
+          class="tab-btn"
+          [class.active]="i === currentSectionIndex()"
+          [class.visited]="i < currentSectionIndex()"
+          (click)="goTo(i)"
+          type="button">
+          {{ sectionLabels[section] ?? section }}
+        </button>
+      }
+    </nav>
+
+    <!-- Current section -->
+    <section class="form-section">
+      <h2 class="section-title">{{ currentSectionLabel() }}</h2>
+
+      <form [formGroup]="form()">
+        @for (question of currentQuestions(); track question.id) {
+          <app-dynamic-field
+            [question]="question"
+            [control]="control(question.id)" />
+        }
+      </form>
+
+      <div class="form-nav">
+        @if (!isFirstSection()) {
+          <button class="btn btn-secondary" type="button" (click)="previous()">← Previous</button>
+        } @else {
+          <span></span>
+        }
+
+        @if (isLastSection()) {
+          <button class="btn btn-primary" type="button" (click)="submit()">Submit</button>
+        } @else {
+          <button class="btn btn-primary" type="button" (click)="next()">Next →</button>
+        }
+      </div>
+    </section>
+  }
+</div>
