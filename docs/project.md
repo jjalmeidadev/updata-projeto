@@ -47,7 +47,7 @@
     - [13.4. Features](#134-features)
     - [13.5. Expected Results](#135-expected-results)
     - [13.6. Metrics to Validate](#136-metrics-to-validate)
-    - [13.7. Cost \& Schedule](#137-cost--schedule)
+    - [13.7. Cost & Schedule](#137-cost--schedule)
   - [14. Project Risk Matrix and Action Table](#14-project-risk-matrix-and-action-table)
     - [14.1. THREATS](#141-threats)
     - [14.2. OPPORTUNITIES](#142-opportunities)
@@ -72,14 +72,21 @@
       - [NFR01 – Data Integrity Compliance](#nfr01--data-integrity-compliance)
       - [NFR02 – Large File Handling and Responsiveness](#nfr02--large-file-handling-and-responsiveness)
       - [NFR03 – Processing Reliability](#nfr03--processing-reliability)
-      - [NFR04 – Extensible File Format Support](#nfr04--extensible-file-format-support)
+      - [NFR04 – Security](#nfr04--security)
       - [NFR05 – Concurrent Submission Handling](#nfr05--concurrent-submission-handling)
     - [17.2. Non-Functional Requirements Validation Tests](#172-non-functional-requirements-validation-tests)
-  - [18. FR–NFR Correlation Matrix](#18-frnfr-correlation-matrix)
-  - [19. User Stories and Traceability](#19-user-stories-and-traceability)
+  - [18. Functional Test Execution Strategy](#18-functional-test-execution-strategy)
+    - [Test Execution Instructions](#test-execution-instructions)
+  - [19. Non-Functional Test Execution Strategy](#19-non-functional-test-execution-strategy)
+    - [Execution Method](#execution-method)
+  - [20. Testing Tools and Environment](#20-testing-tools-and-environment)
+    - [Automated Test Frameworks](#automated-test-frameworks)
+  - [21. Test Coverage Discussion](#21-test-coverage-discussion)
+  - [22. FR–NFR Correlation Matrix](#22-frnfr-correlation-matrix)
+  - [23. User Stories and Traceability](#23-user-stories-and-traceability)
     - [User Stories](#user-stories)
     - [User Stories and FR Traceability](#user-stories-and-fr-traceability)
-  - [20. Conclusion](#20-conclusion)
+  - [24. Conclusion](#24-conclusion)
 
 ## 1. Introduction
 
@@ -661,7 +668,120 @@ The project will be executed in a 10 week cycle. The governance structure includ
 | NFR05 | Concurrent submission handling                  | At least 10 users authenticated                          | Simulate 10 concurrent onboarding submissions                      | All 10 submissions are processed independently without data mixing or processing errors                                | All submissions completed correctly          |
 
 
-## 18. FR–NFR Correlation Matrix
+## 18. Functional Test Execution Strategy
+
+The purpose of functional testing is to verify that the system behaves according to the defined Functional Requirements (FRs).  
+Each test defined in section 16.2 validates a specific functional capability of the onboarding system.
+
+Functional tests focus on verifying:
+
+- correct onboarding data upload and processing
+- proper transformation and standardization of datasets
+- reliable staging and persistence mechanisms
+- validation of data formats and schema compliance
+- collaborative onboarding workflows
+- correct enforcement of section dependencies
+- accurate status tracking
+- secure integration with external systems
+
+### Test Execution Instructions
+
+Functional tests are executed using integration testing in an isolated environment.
+
+Test execution generally follows these steps:
+
+1. Deploy the system in a controlled testing environment.
+2. Initialize the database with the required schema.
+3. Prepare test datasets (valid and invalid onboarding files).
+4. Execute the system operation defined in the test procedure.
+5. Observe the system output and behavior.
+6. Compare the obtained results with the expected results defined in the test tables.
+
+Integration tests are executed using **Testcontainers**, which allows the database and system dependencies to run inside isolated containers during testing. This ensures reproducibility and avoids the use of mocked components.
+
+---
+
+## 19. Non-Functional Test Execution Strategy
+
+Non-functional tests verify system qualities that are critical for operational reliability and scalability.
+
+The tests defined in section 17.2 validate the following aspects:
+
+- data integrity
+- performance and large file handling
+- transactional reliability
+- system security
+- concurrent submission handling
+
+### Execution Method
+
+Non-functional tests are executed using controlled test environments where specific stress or failure conditions are simulated.
+
+Examples include:
+
+- uploading large datasets close to the 100 MB limit
+- simulating concurrent onboarding submissions
+- forcing transaction interruptions to validate rollback mechanisms
+- verifying encryption and access control configurations
+
+These tests confirm that the system maintains reliability, performance, and security under realistic operational conditions.
+
+---
+
+## 20. Testing Tools and Environment
+
+The following tools are used to support test execution:
+
+**Testcontainers**  
+Used to create isolated containerized environments for integration testing.  
+It allows the database and system dependencies to run inside containers, ensuring consistent test environments across development machines.
+
+**PostgreSQL**  
+Used as the primary database system during testing to validate persistence, transactions, and schema constraints.
+
+**Automated Test Frameworks**
+
+The system tests may be implemented using testing frameworks compatible with the project’s technology stack:
+
+- **Jest / Vitest** for TypeScript components
+- **Pytest** for Python services
+
+These frameworks allow automated execution of integration and validation tests to verify system behavior against the defined requirements.
+
+Mocks are not used for integration testing. Instead, real dependencies are executed inside containerized environments to ensure realistic behavior and accurate validation of system functionality.
+
+---
+
+## 21. Test Coverage Discussion
+
+The defined test plan provides comprehensive coverage of the onboarding system’s functional and non-functional requirements.
+
+Functional tests cover the entire onboarding workflow, including:
+
+- onboarding data file upload
+- dataset transformation and standardization
+- intermediate staging persistence
+- schema validation and conflict detection
+- safe data correction and re-submission
+- comparison between dataset versions
+- dynamic onboarding interfaces
+- enforcement of section dependencies
+- collaborative onboarding workflows
+- onboarding status tracking
+- export and integration with external systems
+
+Non-functional tests ensure that the system meets key operational requirements, including:
+
+- strict schema compliance and data integrity
+- large file handling capabilities
+- transactional reliability during processing
+- secure data storage and transmission
+- concurrent submission handling
+
+Together, these tests ensure that both business requirements and technical system constraints are validated.  
+The combination of functional, non-functional, and usability tests provides strong verification of system correctness, reliability, and user experience.
+
+## 22. FR–NFR Correlation Matrix
 
 | FR ID | Related NFRs | Justification                                                                  |
 | ----- | ------------ | ------------------------------------------------------------------------------ |
@@ -678,7 +798,7 @@ The project will be executed in a 10 week cycle. The governance structure includ
 | FR11  | NFR03        | Status tracking depends on reliable processing.                                |
 | FR12  | NFR01, NFR03 | Export requires integrity and fault tolerance.                                 |
 
-## 19. User Stories and Traceability
+## 23. User Stories and Traceability
 
 ### User Stories
 
@@ -714,6 +834,6 @@ The project will be executed in a 10 week cycle. The governance structure includ
 | US11       | FR11        |
 | US12       | FR12        |
 
-## 20. Conclusion
+## 24. Conclusion
 
 The proposed solution establishes a structured and scalable foundation for transforming Equiem’s onboarding process from a fragmented, manual workflow into a reliable and strategically differentiated intake system. Through comprehensive business analysis, clear requirement definition, and a focused MVP strategy, the project directly addresses operational bottlenecks that currently limit efficiency, data integrity, and speed of deployment. By embedding validation, standardization, and collaborative capabilities at the point of data entry, the platform significantly reduces manual effort, minimizes rework, and enables parallel onboarding at scale. Ultimately, the initiative accelerates time-to-launch, enhances customer experience, and strengthens operational resilience, positioning onboarding not as a constraint, but as a sustainable competitive advantage for Equiem’s continued growth.
