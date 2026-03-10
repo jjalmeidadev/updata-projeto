@@ -684,6 +684,15 @@ The project will be executed in a 10 week cycle. The governance structure includ
 | NFR04 | Data encryption and access control verification | System deployed in production configuration              | Inspect storage configuration and attempt unauthorized data access | Data is encrypted at rest (AES-256); communication occurs via TLS 1.2+; unauthorized access attempt is denied          | Data remains protected                       |
 | NFR05 | Concurrent submission handling                  | At least 10 users authenticated                          | Simulate 10 concurrent onboarding submissions                      | All 10 submissions are processed independently without data mixing or processing errors                                | All submissions completed correctly          |
 
+### 17.3. Non-Functional Negative Test Scenarios
+| ID | Non-Functional Requirement | Negative Scenario | Expected Result (Negative) |
+| --- | --- | --- | --- |
+| **NFR01** | Data Integrity | Manually insert a record violating the schema into the staging DB. | The export process detects the violation and rejects the dataset. |
+| **NFR02** | Large File Handling | Attempt to upload a 105 MB file (exceeding the limit). | System instantly rejects the file and notifies the user of the 100 MB limit. |
+| **NFR03** | Processing Reliability | Force a server shutdown during a database write operation. | Transaction is rolled back; no partial data persists in the database. |
+| **NFR04** | Security | Attempt to access the endpoint without a token or with an expired JWT. | System returns HTTP 401 Unauthorized and blocks access. |
+| **NFR05** | Concurrent Submissions | Two users attempt to save conflicting changes to the same section simultaneously. | System applies optimistic locking and alerts the second user. |
+
 ## 18. Functional Test Execution Strategy
 
 The purpose of functional testing is to verify that the system behaves according to the defined Functional Requirements (FRs).  
