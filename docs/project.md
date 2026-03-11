@@ -633,7 +633,7 @@ The project will be executed in a 10 week cycle. The governance structure includ
 
 | ID    | Title                                  | Non-Functional Requirement Description                                                                                                                                                    |
 | ----- | -------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| NFR01 | Data Integrity Compliance              | The system shall reject 100% of records that do not conform to the predefined schema and ensure that 100% of exported datasets match the validated schema structure. |
+| NFR01 | Strict Data Integrity and Consistency | The system shall maintain 100% data consistency across all storage layers, ensuring that no orphaned or schema-violating records exist within the production environment at any time. |
 | NFR02 | Large File Handling | The system shall support onboarding file uploads of up to 100 MB per file and process them without causing application crashes, request timeouts, or interruption of other active user sessions.           |
 | NFR03 | Processing Reliability                 | The system shall ensure transactional consistency during ingestion, validation, staging, and consolidation processes, preventing partial writes and automatically rolling back incomplete operations in case of failure.                                                       |
 | NFR04 | Security  | All stored onboarding data must be encrypted at rest (AES-256) and in transit (TLS 1.2+), with access restricted through AWS IAM role-based policies.                                                       |
@@ -643,9 +643,9 @@ The project will be executed in a 10 week cycle. The governance structure includ
 
 #### NFR01 – Data Integrity Compliance
 
-- 100% of uploaded records must be validated against the predefined internal schema.
-- Any record that fails schema validation must be rejected before staging.
-- Only fully validated datasets may proceed to consolidation and export
+- The system must validate 100% of uploaded records against the predefined internal schema.
+- The system must reject any record that fails schema validation before it reaches the staging area.
+- The system must prevent any dataset from proceeding to consolidation or export unless it has been fully validated.
 
 #### NFR02 – Large File Handling and Responsiveness
 
@@ -678,7 +678,7 @@ The project will be executed in a 10 week cycle. The governance structure includ
 
 | ID    | Test                                            | Pre-condition                                            | Procedure                                                          | Expected Result                                                                                                        | Post-condition                               |
 | ----- | ----------------------------------------------- | -------------------------------------------------------- | ------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------- | -------------------------------------------- |
-| NFR01 | Schema validation enforcement                   | Dataset containing valid and invalid records is uploaded | Execute schema validation process                                  | 100% of invalid records are rejected; only valid records proceed to staging                                            | Only validated dataset stored                |
+| NFR01 | Strict Data Integrity and Consistency                   | System is active with a predefined schema; a dataset containing valid and invalid records. | Execute schema validation process                                  | 100% of invalid records are blocked                                            | System remains in a 100% consistent state with no corrupted data.              |
 | NFR02 | Maximum file size handling                      | User authenticated                                       | Upload file ≤ 100 MB and upload file > 100 MB                      | Files ≤ 100 MB are processed successfully; files > 100 MB are rejected with validation message; no system crash occurs | Valid file ingested; oversized file rejected |
 | NFR03 | Transaction rollback verification               | Processing operation active                              | Force system interruption during database write operation          | 100% of interrupted transactions are rolled back; no partial writes persist in database                                | Database remains in consistent state         |
 | NFR04 | Data encryption and access control verification | System deployed in production configuration              | Inspect storage configuration and attempt unauthorized data access | Data is encrypted at rest (AES-256); communication occurs via TLS 1.2+; unauthorized access attempt is denied          | Data remains protected                       |
@@ -687,7 +687,7 @@ The project will be executed in a 10 week cycle. The governance structure includ
 ### 17.3. Non-Functional Negative Test Scenarios
 | ID | Non-Functional Requirement | Negative Scenario | Expected Result (Negative) |
 | --- | --- | --- | --- |
-| **NFR01** | Data Integrity | Manually insert a record violating the schema into the staging DB. | The export process detects the violation and rejects the dataset. |
+| **NFR01** | Strict Data Integrity and Consistency | Manually insert a schema-violating record into the staging database and attempt a dataset export. | The export process detects the violation and rejects the dataset. |
 | **NFR02** | Large File Handling | Attempt to upload a 105 MB file (exceeding the limit). | System instantly rejects the file and notifies the user of the 100 MB limit. |
 | **NFR03** | Processing Reliability | Force a server shutdown during a database write operation. | Transaction is rolled back; no partial data persists in the database. |
 | **NFR04** | Security | Attempt to access the endpoint without a token or with an expired JWT. | System returns HTTP 401 Unauthorized and blocks access. |
