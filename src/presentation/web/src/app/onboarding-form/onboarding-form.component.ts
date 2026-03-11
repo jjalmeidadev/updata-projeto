@@ -23,12 +23,16 @@ export class OnboardingFormComponent implements OnInit {
 
   readonly sectionLabels = SECTION_LABELS;
 
+  readonly formValues = signal<Record<string, unknown>>({});
+
   ngOnInit(): void {
     this.questionService.getQuestions().subscribe({
       next: questions => {
         this.questions.set(questions);
         this.sections.set(this.questionService.getSections(questions));
-        this.form.set(this.buildForm(questions));
+        const builtForm = this.buildForm(questions);
+        this.form.set(builtForm);
+        builtForm.valueChanges.subscribe(values => this.formValues.set(values)); // <-- add this
         this.loading.set(false);
       },
       error: err => {
@@ -54,7 +58,18 @@ export class OnboardingFormComponent implements OnInit {
   readonly currentQuestions = computed(() => this.questionService.getQuestionsBySection(this.questions(), this.currentSection()));
   readonly isFirstSection = computed(() => this.currentSectionIndex() === 0);
   readonly isLastSection = computed(() => this.currentSectionIndex() === this.sections().length - 1);
-  readonly progressPercent = computed(() => Math.round(((this.currentSectionIndex() + 1) / this.sections().length) * 100));
+  readonly progressPercent = computed(() => {
+    const questions = this.questions();
+    const values = this.formValues();
+    if (questions.length === 0) return 0;
+    const filled = questions.filter(q => {
+      const val = values[q.id];
+      if (q.type === 'boolean') return true;
+      if (q.type === 'multi-select') return Array.isArray(val) && val.length > 0;
+      return val !== '' && val !== null && val !== undefined;
+    }).length;
+    return Math.round((filled / questions.length) * 100);
+  });
 
   control(questionId: string): FormControl {
     return this.form().get(questionId) as FormControl;
