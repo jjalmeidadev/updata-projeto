@@ -7,7 +7,7 @@ Verify if the system correctly standardizes submitted onboarding data into the p
 The user must be already logged in and filling out the onboarding form using the system interface.
 
 ### Test Procedure
-the user fills a date field in the onboarding form (for example, “amenity availability date”) using a non-standard format such as 03/11/2026. The user then submits the onboarding form.
+the user fills a date field in the onboarding form (for example, “amenity availability date”) using a non-standard format such as 03/11/2026. The user then submits it.
 
 ### Expected Result
 The system must transform the submitted date into the predefined internal format following, for exemple, the ISO 8601 standard (YYYY-MM-DD), converting 03/11/2026 into 2026-03-11 before validation or consolidation occurs.
