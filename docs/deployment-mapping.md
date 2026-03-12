@@ -38,6 +38,8 @@ This architecture reflects the intended deployment of the system in a production
 
 Figure 1 illustrates the deployment architecture of the onboarding automation platform.
 
+For better visualization, please access the following [link](https://drive.google.com/file/d/1jHnyVEm3KI1-ERu1pNhjq-7KT3i-hlVW/view?usp=sharing).
+
 <div align="center">
 <sub>FIGURE 1 – Deployment Architecture Diagram</sub><br>
   <img src="assets/deployment_map.svg" width="100%" alt="Deployment Architecture Diagram"><br>
