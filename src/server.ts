@@ -5,6 +5,7 @@ import uploadRoutes from "./presentation/api/routes/upload-routes.ts";
 const app = express();
 
 // API endpoints in this app only accept JSON payloads.
+// Parse JSON request bodies for API endpoints.
 app.use(express.json());
 
 // Mount all user-related API routes.
