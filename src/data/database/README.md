@@ -65,6 +65,77 @@ The detailed structure of these entities is documented in `docs/database-design.
 
 ---
 
+## 3.1 Implementation of Equiem Model Improvements
+
+Following feedback from Equiem, several structural improvements were incorporated into the database schema to better reflect how the real platform organizes data and permissions.
+
+### Customer → Site → Building Hierarchy
+
+The original model started at the **Building** entity.
+To align with the Equiem platform architecture, the hierarchy was extended by introducing the entities **Customer** and **Site**.
+
+The resulting hierarchy is:
+
+Customer → Site → Building → Levels → Rooms
+
+This structure allows buildings to be grouped under specific sites, which are managed by customers.
+It also supports permission management and administration at higher organizational levels.
+
+### SiteProfile (User–Site Relationship)
+
+Users in the Equiem platform are **global entities**, meaning they are not owned by a single site.
+
+To represent this correctly, a **SiteProfile** join entity was introduced between **User** and **Site**.
+
+The SiteProfile table stores:
+
+* the user assigned to a site
+* the site they belong to
+* optional company association
+* the date the user joined the site
+* the user's status within that site
+
+This design allows a user to belong to multiple sites while maintaining site-specific metadata.
+
+### User–Company Relationship Adjustment
+
+The relationship between **User** and **Company** was revised to reflect the real system behavior.
+
+Only **Commercial users** belong to a company.
+Other user types follow different associations:
+
+* Commercial users → associated with a Company
+* Residential users → associated with an Apartment
+* Visitors → not linked to either Company or Apartment
+
+This behavior is represented in the schema using:
+
+* an optional `company_id` in the `user` table
+* an optional `apartment_id` for residential users
+* a `user_type` ENUM that defines the user category
+
+### Apartment and Residential Users
+
+The **Apartment** entity represents residential units within buildings.
+
+Apartments can be linked to multiple levels through the **apartment_levels** table, allowing flexible building layouts.
+
+Residential users may optionally be associated with an apartment through the `apartment_id` attribute in the `user` table.
+
+### Role Scoping
+
+User roles were designed to support scoped permissions across different organizational levels.
+
+The `user_role` table allows roles to be assigned in relation to:
+
+* a specific **Building**
+* a specific **Company**
+
+This structure enables permissions to be restricted to certain parts of the system rather than applying globally.
+
+These modifications ensure the database schema more accurately reflects the operational structure of the Equiem platform while maintaining strong relational integrity and normalization.
+
+
 ## 4. SQL Scripts
 
 This directory contains two SQL scripts used to build and populate the database.
