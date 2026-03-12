@@ -36,7 +36,15 @@
 
     <!-- Current section -->
     <section class="form-section">
-      <h2 class="section-title">{{ currentSectionLabel() }}</h2>
+      <div class="section-header">
+        <h2 class="section-title">{{ currentSectionLabel() }}</h2>
+        <button class="upload-btn" type="button" (click)="goToUpload()" title="Upload data for this section">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" width="18" height="18">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+          </svg>
+          Upload CSV/XLSX
+        </button>
+      </div>
 
       <form [formGroup]="form()">
         @for (question of currentQuestions(); track question.id) {

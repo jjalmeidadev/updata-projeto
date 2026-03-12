@@ -1,0 +1,278 @@
+.form-shell {
+  max-width: 760px;
+  margin: 40px auto;
+  padding: 0 20px 60px;
+  font-family: sans-serif;
+  color: #1a1a2e;
+}
+
+.form-header {
+  margin-bottom: 28px;
+}
+
+.form-header h1 {
+  font-size: 1.8rem;
+  margin-bottom: 12px;
+}
+
+.progress-bar-container {
+  height: 22px;
+  background: #e5e7eb;
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.progress-bar {
+  height: 100%;
+  background: #6366f1;
+  border-radius: 999px;
+  transition: width 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding-right: 8px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #fff;
+  min-width: 2.5rem;
+}
+
+.progress-label {
+  font-size: 0.82rem;
+  color: #888;
+  margin-top: 6px;
+}
+
+/* Section tabs */
+.section-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 28px;
+}
+
+.tab-btn {
+  padding: 6px 14px;
+  border-radius: 999px;
+  border: 1px solid #d1d5db;
+  background: #fff;
+  font-size: 0.8rem;
+  cursor: pointer;
+  transition: all 0.15s;
+  color: #555;
+  position: relative;
+}
+
+.tab-btn:hover { 
+  background: #f3f4f6; 
+}
+
+.tab-btn.visited { 
+  border-color: #a5b4fc; 
+  color: #6366f1; 
+}
+
+.tab-btn.active { 
+  background: #6366f1; 
+  color: #fff; 
+  border-color: #6366f1; 
+}
+
+.tab-check {
+  margin-left: 4px;
+}
+
+.tab-btn.completed {
+  background: #ecfdf5;
+  border-color: #10b981;
+  color: #10b981;
+}
+
+.tab-btn.completed:hover {
+  background: #d1fae5;
+}
+
+/* Form section */
+.form-section {
+  background: #fff;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  padding: 32px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+.section-title {
+  font-size: 1.25rem;
+  margin-bottom: 28px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+/* Upload Area */
+.upload-area {
+  margin: 20px 0;
+}
+
+.upload-box {
+  border: 2px dashed #d1d5db;
+  border-radius: 10px;
+  padding: 48px 24px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  background: #fafbfc;
+}
+
+.upload-box:hover {
+  border-color: #6366f1;
+  background: #f0f3ff;
+}
+
+.upload-box.disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.upload-icon {
+  width: 64px;
+  height: 64px;
+  margin: 0 auto 16px;
+  color: #6366f1;
+}
+
+.upload-icon svg {
+  width: 100%;
+  height: 100%;
+  stroke-width: 1.5;
+}
+
+.upload-icon.uploading {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.upload-text {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #1a1a2e;
+  margin: 0;
+}
+
+.upload-subtext {
+  font-size: 0.85rem;
+  color: #888;
+  margin-top: 6px;
+}
+
+.selected-file {
+  font-size: 0.85rem;
+  color: #10b981;
+  margin-top: 12px;
+  padding: 8px 12px;
+  background: #ecfdf5;
+  border-radius: 6px;
+  display: inline-block;
+}
+
+.error-message {
+  font-size: 0.85rem;
+  color: #dc2626;
+  margin-top: 12px;
+  padding: 8px 12px;
+  background: #fee2e2;
+  border-radius: 6px;
+}
+
+/* Manual Option */
+.manual-option {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  margin-top: 24px;
+  padding: 20px 0;
+  border-top: 1px solid #f0f0f0;
+}
+
+.or-text {
+  font-size: 0.8rem;
+  color: #999;
+  font-weight: 500;
+}
+
+.manual-link {
+  background: none;
+  border: none;
+  color: #6366f1;
+  font-size: 0.9rem;
+  cursor: pointer;
+  text-decoration: underline;
+  padding: 0;
+  transition: color 0.2s;
+}
+
+.manual-link:hover {
+  color: #4f46e5;
+}
+
+/* Navigation buttons */
+.form-nav {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 32px;
+  padding-top: 20px;
+  border-top: 1px solid #f0f0f0;
+}
+
+.btn {
+  padding: 10px 28px;
+  border-radius: 8px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  border: none;
+  transition: background 0.15s;
+}
+
+.btn-primary {
+  background: #6366f1;
+  color: #fff;
+}
+
+.btn-primary:hover {
+  background: #4f46e5;
+}
+
+.btn-primary:disabled {
+  background: #d1d5db;
+  cursor: not-allowed;
+}
+
+.btn-secondary {
+  background: #f3f4f6;
+  color: #374151;
+  border: 1px solid #d1d5db;
+}
+
+.btn-secondary:hover {
+  background: #e5e7eb;
+}
+
+.btn-secondary:disabled {
+  background: #f3f4f6;
+  color: #999;
+  cursor: not-allowed;
+}
+
+/* Loading state */
+.loading {
+  color: #888;
+  font-size: 1rem;
+  padding: 40px 0;
+  text-align: center;
+}

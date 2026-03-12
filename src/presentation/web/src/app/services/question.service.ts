@@ -32,17 +32,17 @@ export class QuestionService {
 
   getQuestions(): Observable<Question[]> {
     return this.http.get<Question[]>('/questions.json').pipe(
-      map(questions => {
+      map((questions: Question[]) => {
         // Deduplicate by sectionId + id (the JSON has repeated q56/q57)
         const seen = new Set<string>();
         return questions
-          .filter(q => {
+          .filter((q: Question) => {
             const key = `${q.sectionId}-${q.id}`;
             if (seen.has(key)) return false;
             seen.add(key);
             return true;
           })
-          .sort((a, b) => a.order - b.order);
+          .sort((a: Question, b: Question) => a.order - b.order);
       })
     );
   }
