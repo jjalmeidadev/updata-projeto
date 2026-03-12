@@ -11,12 +11,38 @@ CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 -- CORE STRUCTURE
 -- ===============
 
+CREATE TABLE IF NOT EXISTS customer (
+  customer_id INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+  customer_name VARCHAR(255) NOT NULL,
+  customer_email VARCHAR(255)
+);
+
+CREATE TABLE IF NOT EXISTS site (
+  site_id INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+  customer_id INT NOT NULL,
+  site_name VARCHAR(255) NOT NULL,
+
+  CONSTRAINT fk_site_customer
+    FOREIGN KEY (customer_id)
+    REFERENCES customer(customer_id)
+    ON UPDATE CASCADE ON DELETE CASCADE
+);
+
 CREATE TABLE IF NOT EXISTS building (
-  building_id           INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-  building_name         VARCHAR(255) NOT NULL,
-  occupants             INT,
-  footfall              INT,
-  area                  VARCHAR(255)
+  building_id INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+
+  site_id INT NOT NULL,
+
+  building_name VARCHAR(255) NOT NULL,
+  occupants INT,
+  footfall INT,
+  area VARCHAR(255),
+
+  CONSTRAINT fk_building_site
+    FOREIGN KEY (site_id)
+    REFERENCES site(site_id)
+    ON UPDATE CASCADE
+    ON DELETE CASCADE
 );
 
 CREATE TABLE IF NOT EXISTS levels (
@@ -103,7 +129,7 @@ CREATE TABLE IF NOT EXISTS room (
   amenity_type          VARCHAR(255),
   capacity              INT NOT NULL,
   description           VARCHAR(500),
-  level                 INT,
+  levels_id             INT NOT NULL, 
   start_date_end_date   TIMESTAMP,
   prep_time_before      VARCHAR(255),
   prep_time_after       VARCHAR(255),
@@ -138,7 +164,12 @@ CREATE TABLE IF NOT EXISTS room (
     ON UPDATE CASCADE ON DELETE SET NULL,
   CONSTRAINT fk_room_building
     FOREIGN KEY (building_id) REFERENCES building(building_id)
-    ON UPDATE CASCADE ON DELETE RESTRICT
+    ON UPDATE CASCADE ON DELETE RESTRICT,
+  CONSTRAINT fk_room_levels
+    FOREIGN KEY (levels_id)
+    REFERENCES levels(levels_id)
+    ON UPDATE CASCADE
+    ON DELETE RESTRICT
 );
 
 CREATE TABLE IF NOT EXISTS room_configuration (
@@ -179,6 +210,35 @@ CREATE TABLE IF NOT EXISTS required_information (
     ON UPDATE CASCADE ON DELETE CASCADE
 );
 
+CREATE TABLE IF NOT EXISTS apartment (
+  apartment_id INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+  apartment_name VARCHAR(255) NOT NULL,
+  building_id INT NOT NULL,
+
+  CONSTRAINT fk_apartment_building
+    FOREIGN KEY (building_id)
+    REFERENCES building(building_id)
+    ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS apartment_levels (
+  apartment_levels_id INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+  apartment_id INT NOT NULL,
+  levels_id INT NOT NULL,
+
+  CONSTRAINT fk_apartment_levels_apartment
+    FOREIGN KEY (apartment_id)
+    REFERENCES apartment(apartment_id)
+    ON DELETE CASCADE,
+
+  CONSTRAINT fk_apartment_levels_levels
+    FOREIGN KEY (levels_id)
+    REFERENCES levels(levels_id)
+    ON DELETE CASCADE,
+
+  CONSTRAINT uq_apartment_level UNIQUE (apartment_id, levels_id)
+);
+
 -- ==================
 -- COMPANY / USERS
 -- ==================
@@ -189,15 +249,27 @@ CREATE TABLE IF NOT EXISTS industry (
 );
 
 CREATE TABLE IF NOT EXISTS company (
-  company_id            INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-  company_name          VARCHAR(255) NOT NULL,
-  company_email         VARCHAR(255),
-  industry_id           INT,
-  level                 INT NOT NULL,
-  n_f_employees         INT NOT NULL,
+  company_id INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+
+  site_id INT NOT NULL,
+
+  company_name VARCHAR(255) NOT NULL,
+  company_email VARCHAR(255),
+  industry_id INT,
+  level INT NOT NULL,
+  n_f_employees INT NOT NULL,
+
+  CONSTRAINT fk_company_site
+    FOREIGN KEY (site_id)
+    REFERENCES site(site_id)
+    ON UPDATE CASCADE
+    ON DELETE CASCADE,
+
   CONSTRAINT fk_company_industry
-    FOREIGN KEY (industry_id) REFERENCES industry(industry_id)
-    ON UPDATE CASCADE ON DELETE SET NULL
+    FOREIGN KEY (industry_id)
+    REFERENCES industry(industry_id)
+    ON UPDATE CASCADE
+    ON DELETE SET NULL
 );
 
 CREATE TABLE IF NOT EXISTS attribute (
@@ -254,17 +326,102 @@ CREATE TABLE IF NOT EXISTS sub_statuses (
     ON UPDATE CASCADE ON DELETE RESTRICT
 );
 
+CREATE TYPE user_type_enum AS ENUM (
+  'commercial',
+  'residential',
+  'visitor',
+  'admin'
+);
+
 CREATE TABLE IF NOT EXISTS "user" (
-  user_id    UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
-  user_name  VARCHAR(255) NOT NULL,
+  user_id UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
+
+  user_name VARCHAR(255) NOT NULL,
   user_email VARCHAR(255) NOT NULL UNIQUE,
-  password   VARCHAR(255),
-  auth0_id   TEXT UNIQUE,
+  password VARCHAR(255),
+  auth0_id TEXT UNIQUE,
+
+  user_type user_type_enum NOT NULL,
+
   company_id INT,
+  apartment_id INT,
+
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+
   CONSTRAINT fk_user_company
-    FOREIGN KEY (company_id) REFERENCES company(company_id)
-    ON UPDATE CASCADE ON DELETE SET NULL
+    FOREIGN KEY (company_id)
+    REFERENCES company(company_id)
+    ON UPDATE CASCADE
+    ON DELETE SET NULL,
+
+  CONSTRAINT fk_user_apartment
+    FOREIGN KEY (apartment_id)
+    REFERENCES apartment(apartment_id)
+    ON UPDATE CASCADE
+    ON DELETE SET NULL
+);
+
+CREATE TABLE IF NOT EXISTS role (
+  role_id INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+  role_name VARCHAR(100) NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS user_role (
+  user_role_id INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+
+  user_id UUID NOT NULL,
+  role_id INT NOT NULL,
+
+  building_id INT,
+  company_id INT,
+
+  CONSTRAINT fk_user_role_user
+    FOREIGN KEY (user_id)
+    REFERENCES "user"(user_id)
+    ON DELETE CASCADE,
+
+  CONSTRAINT fk_user_role_role
+    FOREIGN KEY (role_id)
+    REFERENCES role(role_id)
+    ON DELETE CASCADE,
+
+  CONSTRAINT fk_user_role_building
+    FOREIGN KEY (building_id)
+    REFERENCES building(building_id)
+    ON DELETE CASCADE,
+
+  CONSTRAINT fk_user_role_company
+    FOREIGN KEY (company_id)
+    REFERENCES company(company_id)
+    ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS site_profile (
+  site_profile_id INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+
+  user_id UUID NOT NULL,
+  site_id INT NOT NULL,
+
+  company_id INT,
+  joined_at TIMESTAMP DEFAULT NOW(),
+  status VARCHAR(50),
+
+  CONSTRAINT uq_user_site UNIQUE (user_id, site_id),
+
+  CONSTRAINT fk_site_profile_user
+    FOREIGN KEY (user_id)
+    REFERENCES "user"(user_id)
+    ON DELETE CASCADE,
+
+  CONSTRAINT fk_site_profile_site
+    FOREIGN KEY (site_id)
+    REFERENCES site(site_id)
+    ON DELETE CASCADE,
+
+  CONSTRAINT fk_site_profile_company
+    FOREIGN KEY (company_id)
+    REFERENCES company(company_id)
+    ON DELETE SET NULL
 );
 
 CREATE TABLE IF NOT EXISTS isequiem (
