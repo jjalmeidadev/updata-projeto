@@ -8,7 +8,7 @@ interface UserInsert {
 }
 
 interface UserRecord {
-  user_id: number
+  user_id: string   // UUID
   user_name: string
   user_email: string
   auth0_id: string

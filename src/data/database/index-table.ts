@@ -2,7 +2,7 @@ import dotenv from "dotenv"
 import { Pool } from "pg"
 
 // Load environment variables from .env before creating the pool.
-dotenv.config()
+dotenv.config({ path: 'config/.env' })
 
 const env = ((globalThis as { process?: { env?: Record<string, string | undefined> } }).process?.env ?? {}) as Record<
   string,
