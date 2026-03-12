@@ -47,7 +47,7 @@
     - [13.4. Features](#134-features)
     - [13.5. Expected Results](#135-expected-results)
     - [13.6. Metrics to Validate](#136-metrics-to-validate)
-    - [13.7. Cost \& Schedule](#137-cost--schedule)
+    - [13.7. Cost & Schedule](#137-cost--schedule)
   - [14. Project Risk Matrix and Action Table](#14-project-risk-matrix-and-action-table)
     - [14.1. THREATS](#141-threats)
     - [14.2. OPPORTUNITIES](#142-opportunities)
@@ -67,19 +67,28 @@
       - [FR11 – Onboarding Status and Feedback](#fr11--onboarding-status-and-feedback)
       - [FR12 – Data Consolidation and Secure Integration](#fr12--data-consolidation-and-secure-integration)
     - [16.2. Functional Requirements Validation Tests](#162-functional-requirements-validation-tests)
+    - [16.3. Functional Negative Test Scenarios](#163-functional-negative-test-scenarios)
   - [17. Non-Functional Requirements (NFRs)](#17-non-functional-requirements-nfrs)
     - [17.1. Non-Functional Requirement Details](#171-non-functional-requirement-details)
       - [NFR01 – Data Integrity Compliance](#nfr01--data-integrity-compliance)
       - [NFR02 – Large File Handling and Responsiveness](#nfr02--large-file-handling-and-responsiveness)
       - [NFR03 – Processing Reliability](#nfr03--processing-reliability)
-      - [NFR04 – Extensible File Format Support](#nfr04--extensible-file-format-support)
+      - [NFR04 – Security](#nfr04--security)
       - [NFR05 – Concurrent Submission Handling](#nfr05--concurrent-submission-handling)
     - [17.2. Non-Functional Requirements Validation Tests](#172-non-functional-requirements-validation-tests)
-  - [18. FR–NFR Correlation Matrix](#18-frnfr-correlation-matrix)
-  - [19. User Stories and Traceability](#19-user-stories-and-traceability)
+    - [17.3. Non-Functional Negative Test Scenarios](#173-non-functional-negative-test-scenarios)
+  - [18. Functional Test Execution Strategy](#18-functional-test-execution-strategy)
+    - [Test Execution Instructions](#test-execution-instructions)
+  - [19. Non-Functional Test Execution Strategy](#19-non-functional-test-execution-strategy)
+    - [Execution Method](#execution-method)
+  - [20. Testing Tools and Environment](#20-testing-tools-and-environment)
+    - [Automated Test Frameworks](#automated-test-frameworks)
+  - [21. Test Coverage Discussion](#21-test-coverage-discussion)
+  - [22. FR–NFR Correlation Matrix](#22-frnfr-correlation-matrix)
+  - [23. User Stories and Traceability](#23-user-stories-and-traceability)
     - [User Stories](#user-stories)
     - [User Stories and FR Traceability](#user-stories-and-fr-traceability)
-  - [20. Conclusion](#20-conclusion)
+  - [24. Conclusion](#24-conclusion)
 
 ## 1. Introduction
 
@@ -588,28 +597,45 @@ The project will be executed in a 10 week cycle. The governance structure includ
 - Sends approved data via authenticated REST API using JWT
 - Requires successful authentication before transmission
 
-### 16.2. Functional Requirements Validation Tests
+  ### 16.2. Functional Requirements Validation Tests
 
-| ID   | Test                    | Pre-condition            | Procedure                | Expected Result                                                                 | Post-condition           |
-| ---- | ----------------------- | ------------------------ | ------------------------ | ------------------------------------------------------------------------------ | ------------------------ |
-| FR01 | Upload onboarding files | User authenticated       | Upload CSV/XLSX files ≤ size defined in NFR02 | File stored in staging layer and submission record created                     | Files stored in staging  |
-| FR02 | Standardize data        | Files uploaded           | Trigger transformation   | Output matches predefined internal schema without structural deviations        | Ready for validation     |
-| FR03 | Persist staging data    | Standardized data exists | Save to staging          | New version record created without overwriting previous versions               | Available for correction |
-| FR04 | Validate data           | Data in staging          | Run validation           | Validation report generated listing schema, format, or uniqueness violations   | Report generated         |
-| FR05 | Re-submit data          | Errors exist             | Upload corrected version | Records replaced only where natural identifiers match                          | Updated dataset stored   |
-| FR06 | Compare submissions     | Multiple versions        | Open comparison          | System displays field-level differences between selected versions               | Review complete          |
-| FR07 | Resume onboarding       | Progress saved           | Reopen system            | Previously saved state restored without data loss                              | Flow continues           |
-| FR08 | Dynamic sections        | Modules set              | Open onboarding          | Only sections mapped to active modules are rendered                            | Correct scope            |
-| FR09 | Enforce dependencies    | Parent not "Completed"   | Attempt child submission | System blocks submission and returns dependency validation message             | Flow maintained          |
-| FR10 | Assign contributors     | Admin authenticated      | Assign sections          | Section assignment persisted and visible to assigned users                     | Parallel work enabled    |
-| FR11 | Track status            | Upload triggered         | Monitor states           | Status transitions follow defined state set and invalid states are rejected    | User informed            |
-| FR12 | Export & integrate      | Sections approved        | Generate and send        | API request sent with valid JWT; external system returns HTTP 2xx confirmation | External system updated  |
+  | ID   | Test                    | Pre-condition            | Procedure                | Positive Scenario | Expected Result                                                                 | Post-condition           |
+  | ---- | ----------------------- | ------------------------ | ------------------------ | ------------------------------------------------------------------------------ | ------------------------ | -- |
+  | FR01 | Upload onboarding files | User authenticated       | Upload CSV/XLSX files ≤ size defined in NFR02 | A user uploads a valid 50MB CSV file containing correctly structured onboarding data. | File stored in staging layer and submission record created                     | Files stored in staging  | 
+  | FR02 | Standardize data        | Files uploaded           | Trigger transformation   | The system processes a dataset with raw headers and varying date formats, successfully mapping them to the correct internal structure. |Output matches predefined internal schema without structural deviations        | Ready for validation     |
+  | FR03 | Persist staging data    | Standardized data exists | Save to staging          | The user saves a standardized dataset, and the system stores it without overwriting any other data. |New version record created without overwriting previous versions               | Available for correction |
+  | FR04 | Validate data           | Data in staging          | Run validation           | The system scans a dataset where all mandatory fields are present, types match, and no duplicate identifiers exist. | Validation report generated listing schema, format, or uniqueness violations   | Report generated         |
+  | FR05 | Re-submit data          | Errors exist             | Upload corrected version | The user uploads a corrected file fixing previous errors; the system matches the natural identifiers and safely updates those specific records. |Records replaced only where natural identifiers match                          | Updated dataset stored   |
+  | FR06 | Compare submissions     | Multiple versions        | Open comparison          | The user selects Version 1 and Version 2 of a dataset to review recent corrections. |System displays field-level differences between selected versions               | Review complete          |
+  | FR07 | Resume onboarding       | Progress saved           | Reopen system            | A user logs out halfway through section completion and logs back in to resume their work. | Previously saved state restored without data loss                              | Flow continues           |
+  | FR08 | Dynamic sections        | Modules set              | Open onboarding          | A client with only the "Tenant Experience" module activated logs in to view their required onboarding tasks. |Only sections mapped to active modules are rendered                            | Correct scope            |
+  | FR09 | Enforce dependencies    | Parent not "Completed"   | Attempt child submission | A user successfully submits the "Building Info" parent section and attempts to access the "Space Info" child section. | System blocks submission and returns dependency validation message             | Flow maintained          |
+  | FR10 | Assign contributors     | Admin authenticated      | Assign sections          | An admin assigns the "User Roles" section to a specific contributor, who logs in to edit it simultaneously. |Section assignment persisted and visible to assigned users                     | Parallel work enabled    |
+  | FR11 | Track status            | Upload triggered         | Monitor states           | A user uploads a file and watches the UI for processing feedback until validation finishes successfully. | Status transitions follow defined state set and invalid states are rejected    | User informed            |
+  | FR12 | Export & integrate      | Sections approved        | Generate and send        | The admin approves the final dataset, and the system transmits the JSON payload via the API. |API request sent with valid JWT; external system returns HTTP 2xx confirmation | External system updated  |
+
+### 16.3. Functional Negative Test Scenarios
+| ID | Functional Requirement | Negative Scenario | Expected Result |
+| --- | --- | --- | --- |
+| **FR01** | Structured Data Upload | Attempt to upload a prohibited file type (e.g., `.pdf`, `.exe`). | System blocks the upload and displays an "Invalid Format" error. |
+| **FR02** | Data Standardization | Upload a file where column names do not match the required template. | System fails normalization and identifies the incorrect columns. |
+| **FR03** | Intermediate Persistence | Attempt to access a submission version that has been deleted or does not exist. | System returns a "Resource Not Found" error. |
+| **FR04** | Data Validation | Submit a file with invalid email patterns or duplicate natural identifiers. | System lists all specific errors and prevents data consolidation. |
+| **FR05** | Safe Data Correction | Re-submit data where the natural identifier has been altered. | System treats it as a new record or alerts the user of the inconsistency. |
+| **FR06** | Change Visualization | Attempt to compare a version with a corrupted or empty dataset. | System informs the user that comparison is not possible due to data gaps. |
+| **FR07** | Progress Persistence | Close the browser during a large upload before the "Saved" confirmation. | System restores the last stable state without corrupted partial data. |
+| **FR08** | Dynamic Interface | Attempt to access an inactive module's section via direct URL. | System redirects to the home page or displays "Access Denied". |
+| **FR09** | Dependency Enforcement | Attempt to submit a child section while the parent is "In Progress". | System blocks submission and displays a dependency error. |
+| **FR10** | Section Assignment | An unassigned user attempts to edit a section restricted to another collaborator. | System prevents editing and shows the section is locked/assigned. |
+| **FR11** | Status Tracking | Simulate a connection failure during processing to test hangs. | System triggers a timeout and moves the status to "Failed". |
+| **FR12** | Secure Integration | Attempt to push data while the target external system is offline. | System logs the integration failure and allows for a later retry. |
+
 
 ## 17. Non-Functional Requirements (NFRs)
 
 | ID    | Title                                  | Non-Functional Requirement Description                                                                                                                                                    |
 | ----- | -------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| NFR01 | Data Integrity Compliance              | The system shall reject 100% of records that do not conform to the predefined schema and ensure that 100% of exported datasets match the validated schema structure. |
+| NFR01 | Strict Data Integrity and Consistency | The system shall maintain 100% data consistency across all storage layers, ensuring that no orphaned or schema-violating records exist within the production environment at any time. |
 | NFR02 | Large File Handling | The system shall support onboarding file uploads of up to 100 MB per file and process them without causing application crashes, request timeouts, or interruption of other active user sessions.           |
 | NFR03 | Processing Reliability                 | The system shall ensure transactional consistency during ingestion, validation, staging, and consolidation processes, preventing partial writes and automatically rolling back incomplete operations in case of failure.                                                       |
 | NFR04 | Security  | All stored onboarding data must be encrypted at rest (AES-256) and in transit (TLS 1.2+), with access restricted through AWS IAM role-based policies.                                                       |
@@ -619,9 +645,9 @@ The project will be executed in a 10 week cycle. The governance structure includ
 
 #### NFR01 – Data Integrity Compliance
 
-- 100% of uploaded records must be validated against the predefined internal schema.
-- Any record that fails schema validation must be rejected before staging.
-- Only fully validated datasets may proceed to consolidation and export
+- The system must validate 100% of uploaded records against the predefined internal schema.
+- The system must reject any record that fails schema validation before it reaches the staging area.
+- The system must prevent any dataset from proceeding to consolidation or export unless it has been fully validated.
 
 #### NFR02 – Large File Handling and Responsiveness
 
@@ -652,16 +678,137 @@ The project will be executed in a 10 week cycle. The governance structure includ
 
 ### 17.2. Non-Functional Requirements Validation Tests
 
-| ID    | Test                                            | Pre-condition                                            | Procedure                                                          | Expected Result                                                                                                        | Post-condition                               |
-| ----- | ----------------------------------------------- | -------------------------------------------------------- | ------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------- | -------------------------------------------- |
-| NFR01 | Schema validation enforcement                   | Dataset containing valid and invalid records is uploaded | Execute schema validation process                                  | 100% of invalid records are rejected; only valid records proceed to staging                                            | Only validated dataset stored                |
-| NFR02 | Maximum file size handling                      | User authenticated                                       | Upload file ≤ 100 MB and upload file > 100 MB                      | Files ≤ 100 MB are processed successfully; files > 100 MB are rejected with validation message; no system crash occurs | Valid file ingested; oversized file rejected |
-| NFR03 | Transaction rollback verification               | Processing operation active                              | Force system interruption during database write operation          | 100% of interrupted transactions are rolled back; no partial writes persist in database                                | Database remains in consistent state         |
-| NFR04 | Data encryption and access control verification | System deployed in production configuration              | Inspect storage configuration and attempt unauthorized data access | Data is encrypted at rest (AES-256); communication occurs via TLS 1.2+; unauthorized access attempt is denied          | Data remains protected                       |
-| NFR05 | Concurrent submission handling                  | At least 10 users authenticated                          | Simulate 10 concurrent onboarding submissions                      | All 10 submissions are processed independently without data mixing or processing errors                                | All submissions completed correctly          |
+| ID    | Test                                            | Pre-condition                                            | Procedure                                                          | Positive Scenario |Expected Result                                                                                                        | Post-condition                               |
+| ----- | ----------------------------------------------- | -------------------------------------------------------- | -----| ------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------- | -------------------------------------------- |
+| NFR01 | Strict Data Integrity and Consistency                   | System is active with a predefined schema; a dataset containing valid and invalid records. | Execute schema validation process                                  | A dataset with 500 valid records and 5 schema-violating records is ingested; the system successfully identifies and filters the corrupted data automatically. | 100% of invalid records are blocked                                            | System remains in a 100% consistent state with no corrupted data.              |
+| NFR02 | Maximum file size handling                      | User authenticated                                       | Upload file ≤ 100 MB and upload file > 100 MB                      | A user uploads a dense, 98 MB .xlsx file containing thousands of rows, and the system processes it seamlessly. |Files ≤ 100 MB are processed successfully; files > 100 MB are rejected with validation message; no system crash occurs | Valid file ingested; oversized file rejected |
+| NFR03 | Transaction rollback verification               | Processing operation active                              | Force system interruption during database write operation          | A database connection is intentionally interrupted mid-write, and the system successfully triggers its automated rollback protocol to protect the dataset. |  100% of interrupted transactions are rolled back; no partial writes persist in database                                | Database remains in consistent state         |
+| NFR04 | Data encryption and access control verification | System deployed in production configuration              | Inspect storage configuration and attempt unauthorized data access | An authorized internal security tool audits the database and network layers to verify that all active encryption protocols are functioning correctly. | Data is encrypted at rest (AES-256); communication occurs via TLS 1.2+; unauthorized access attempt is denied          | Data remains protected                       |
+| NFR05 | Concurrent submission handling                  | At least 10 users authenticated                          | Simulate 10 concurrent onboarding submissions                      | Ten independent customer administrators trigger massive dataset validations at the exact same second, and the system routes them safely into separate processing queues. | All 10 submissions are processed independently without data mixing or processing errors                                | All submissions completed correctly          |
 
+### 17.3. Non-Functional Negative Test Scenarios
+| ID | Non-Functional Requirement | Negative Scenario | Expected Result (Negative) |
+| --- | --- | --- | --- |
+| **NFR01** | Strict Data Integrity and Consistency | Manually insert a schema-violating record into the staging database and attempt a dataset export. | The export process detects the violation and rejects the dataset. |
+| **NFR02** | Large File Handling | Attempt to upload a 105 MB file (exceeding the limit). | System instantly rejects the file and notifies the user of the 100 MB limit. |
+| **NFR03** | Processing Reliability | Force a server shutdown during a database write operation. | Transaction is rolled back; no partial data persists in the database. |
+| **NFR04** | Security | Attempt to access the endpoint without a token or with an expired JWT. | System returns HTTP 401 Unauthorized and blocks access. |
+| **NFR05** | Concurrent Submissions | Two users attempt to save conflicting changes to the same section simultaneously. | System applies optimistic locking and alerts the second user. |
 
-## 18. FR–NFR Correlation Matrix
+## 18. Functional Test Execution Strategy
+
+The purpose of functional testing is to verify that the system behaves according to the defined Functional Requirements (FRs).  
+Each test defined in section 16.2 validates a specific functional capability of the onboarding system.
+
+Functional tests focus on verifying:
+
+- correct onboarding data upload and processing
+- proper transformation and standardization of datasets
+- reliable staging and persistence mechanisms
+- validation of data formats and schema compliance
+- collaborative onboarding workflows
+- correct enforcement of section dependencies
+- accurate status tracking
+- secure integration with external systems
+
+### Test Execution Instructions
+
+Functional tests are executed using integration testing in an isolated environment.
+
+Test execution generally follows these steps:
+
+1. Deploy the system in a controlled testing environment.
+2. Initialize the database with the required schema.
+3. Prepare test datasets (valid and invalid onboarding files).
+4. Execute the system operation defined in the test procedure.
+5. Observe the system output and behavior.
+6. Compare the obtained results with the expected results defined in the test tables.
+
+Integration tests are executed using **Testcontainers**, which allows the database and system dependencies to run inside isolated containers during testing. This ensures reproducibility and avoids the use of mocked components.
+
+---
+
+## 19. Non-Functional Test Execution Strategy
+
+Non-functional tests verify system qualities that are critical for operational reliability and scalability.
+
+The tests defined in section 17.2 validate the following aspects:
+
+- data integrity
+- performance and large file handling
+- transactional reliability
+- system security
+- concurrent submission handling
+
+### Execution Method
+
+Non-functional tests are executed using controlled test environments where specific stress or failure conditions are simulated.
+
+Examples include:
+
+- uploading large datasets close to the 100 MB limit
+- simulating concurrent onboarding submissions
+- forcing transaction interruptions to validate rollback mechanisms
+- verifying encryption and access control configurations
+
+These tests confirm that the system maintains reliability, performance, and security under realistic operational conditions.
+
+---
+
+## 20. Testing Tools and Environment
+
+The following tools are used to support test execution:
+
+**Testcontainers**  
+Used to create isolated containerized environments for integration testing.  
+It allows the database and system dependencies to run inside containers, ensuring consistent test environments across development machines.
+
+**PostgreSQL**  
+Used as the primary database system during testing to validate persistence, transactions, and schema constraints.
+
+**Automated Test Frameworks**
+
+The system tests may be implemented using testing frameworks compatible with the project’s technology stack:
+
+- **Jest / Vitest** for TypeScript components
+- **Pytest** for Python services
+
+These frameworks allow automated execution of integration and validation tests to verify system behavior against the defined requirements.
+
+Mocks are not used for integration testing. Instead, real dependencies are executed inside containerized environments to ensure realistic behavior and accurate validation of system functionality.
+
+---
+
+## 21. Test Coverage Discussion
+
+The defined test plan provides comprehensive coverage of the onboarding system’s functional and non-functional requirements.
+
+Functional tests cover the entire onboarding workflow, including:
+
+- onboarding data file upload
+- dataset transformation and standardization
+- intermediate staging persistence
+- schema validation and conflict detection
+- safe data correction and re-submission
+- comparison between dataset versions
+- dynamic onboarding interfaces
+- enforcement of section dependencies
+- collaborative onboarding workflows
+- onboarding status tracking
+- export and integration with external systems
+
+Non-functional tests ensure that the system meets key operational requirements, including:
+
+- strict schema compliance and data integrity
+- large file handling capabilities
+- transactional reliability during processing
+- secure data storage and transmission
+- concurrent submission handling
+
+Together, these tests ensure that both business requirements and technical system constraints are validated.  
+The combination of functional, non-functional, and usability tests provides strong verification of system correctness, reliability, and user experience.
+
+## 22. FR–NFR Correlation Matrix
 
 | FR ID | Related NFRs | Justification                                                                  |
 | ----- | ------------ | ------------------------------------------------------------------------------ |
@@ -678,7 +825,7 @@ The project will be executed in a 10 week cycle. The governance structure includ
 | FR11  | NFR03        | Status tracking depends on reliable processing.                                |
 | FR12  | NFR01, NFR03 | Export requires integrity and fault tolerance.                                 |
 
-## 19. User Stories and Traceability
+## 23. User Stories and Traceability
 
 ### User Stories
 
@@ -714,6 +861,6 @@ The project will be executed in a 10 week cycle. The governance structure includ
 | US11       | FR11        |
 | US12       | FR12        |
 
-## 20. Conclusion
-
+## 24. Conclusion
+x'
 The proposed solution establishes a structured and scalable foundation for transforming Equiem’s onboarding process from a fragmented, manual workflow into a reliable and strategically differentiated intake system. Through comprehensive business analysis, clear requirement definition, and a focused MVP strategy, the project directly addresses operational bottlenecks that currently limit efficiency, data integrity, and speed of deployment. By embedding validation, standardization, and collaborative capabilities at the point of data entry, the platform significantly reduces manual effort, minimizes rework, and enables parallel onboarding at scale. Ultimately, the initiative accelerates time-to-launch, enhances customer experience, and strengthens operational resilience, positioning onboarding not as a constraint, but as a sustainable competitive advantage for Equiem’s continued growth.
