@@ -6,9 +6,21 @@ SET search_path TO equiem;
 INSERT INTO industry (industry_type)
 VALUES ('Real Estate'), ('Hospitality');
 
+-- CUSTOMER
+INSERT INTO customer (customer_name, customer_email)
+VALUES ('Demo Customer', 'customer@demo.com');
+
+-- SITE
+INSERT INTO site (customer_id, site_name)
+SELECT customer_id, 'Demo Site'
+FROM customer
+WHERE customer_name = 'Demo Customer';
+
 -- BUILDING
-INSERT INTO building (building_name, occupants, footfall, area)
-VALUES ('Demo Building A', 250, 1200, '15000 m2');
+INSERT INTO building (site_id, building_name, occupants, footfall, area)
+SELECT s.site_id, 'Demo Building A', 250, 1200, '15000 m2'
+FROM site s
+WHERE s.site_name = 'Demo Site';
 
 -- LEVELS
 INSERT INTO levels (building_id, level_type, level_number)
@@ -51,9 +63,10 @@ JOIN building b ON b.building_id = g.building_id
 WHERE b.building_name = 'Demo Building A';
 
 -- COMPANY
-INSERT INTO company (company_name, company_email, industry_id, level, n_f_employees)
-SELECT 'Demo Company', 'contact@demo.com', i.industry_id, 1, 42
+INSERT INTO company (site_id, company_name, company_email, industry_id, level, n_f_employees)
+SELECT s.site_id, 'Demo Company', 'contact@demo.com', i.industry_id, 1, 42
 FROM industry i
+JOIN site s ON s.site_name = 'Demo Site'
 WHERE i.industry_type = 'Real Estate';
 
 -- ATTRIBUTE
@@ -71,8 +84,8 @@ WHERE c.company_name = 'Demo Company';
 
 -- USER (UUID) + capture generated UUID
 WITH inserted_user AS (
-  INSERT INTO "user" (user_name, user_email, password, auth0_id, company_id)
-  SELECT 'Admin User', 'admin@demo.com', NULL, 'auth0|demo_admin', c.company_id
+  INSERT INTO "user" (user_name, user_email, password, auth0_id, company_id, user_type)
+  SELECT 'Admin User', 'admin@demo.com', NULL, 'auth0|demo_admin', c.company_id, 'commercial'
   FROM company c
   WHERE c.company_name = 'Demo Company'
   RETURNING user_id
@@ -83,7 +96,7 @@ FROM inserted_user;
 
 -- ROOM
 INSERT INTO room (
-  amenity_title, amenity_type, capacity, description, level, start_date_end_date,
+  amenity_title, amenity_type, capacity, description, levels_id, start_date_end_date,
   prep_time_before, prep_time_after, minimum_notice_before_booking, maximum_time_before_booking,
   days_available, available_from, available_to, minimum_booking_length, maximum_booking_length,
   approval_required_for_bookings, invite_visitors_to_bookings, who_can_book_this_resource,
@@ -92,19 +105,27 @@ INSERT INTO room (
   scheduling_type_id, rates_id, cancellation_policy_id, building_id
 )
 SELECT
-  'Meeting Room 1', 'meeting', 10, 'Demo room', 1, NULL,
+  'Meeting Room 1', 'meeting', 10, 'Demo room', l.levels_id, NULL,
   '10m', '10m', '1h', '30d',
   'Mon-Fri', NOW(), NOW() + interval '30 days', '30m', '8h',
   TRUE, TRUE, 'all', 'no', TRUE, NULL,
   '24h',
   st.scheduling_type_id, r.rates_id, cp.cancellation_policy_id, b.building_id
 FROM building b
+JOIN levels l ON l.building_id = b.building_id
 JOIN "group" g ON g.building_id = b.building_id
 JOIN scheduling_type st ON st.group_id = g.group_id
 JOIN rates r ON r.group_id = g.group_id
 JOIN cancellation_policy cp ON cp.group_id = g.group_id
 WHERE b.building_name = 'Demo Building A'
 LIMIT 1;
+
+INSERT INTO site_profile (user_id, site_id, company_id, status)
+SELECT u.user_id, s.site_id, c.company_id, 'active'
+FROM "user" u
+JOIN company c ON u.company_id = c.company_id
+JOIN site s ON s.site_id = c.site_id
+WHERE u.user_email = 'admin@demo.com';
 
 -- ROOM CONFIG (1:1)
 INSERT INTO room_configuration (room_name, room_id)
