@@ -1,42 +1,62 @@
 # Project Management
 
-This document describes the project management practices adopted by the team, including sprint analysis, sprint planning, and development workflow policies.
+This document describes the project management practices adopted by the team, including sprint analysis, sprint planning, and development workflow policies. The goal is to ensure transparency in the development process, continuous improvement between sprints, and proper coordination of the team’s activities.
 
 ---
 
 # 1. Current Sprint Analysis
 
+The purpose of this section is to analyze the results of the current sprint, identifying strengths, weaknesses, improvement actions, and potential risks that may impact the project.
+
 ## Strengths
 
-- The team maintained good communication during development.
-- Tasks were well distributed, allowing better visibility of sprint progress.
-- Pull Requests were properly reviewed and commented on before being merged, improving code quality.
+During the current sprint, the team demonstrated several positive practices that contributed to the progress of the project:
+
+- The team maintained good communication during development, facilitating problem solving and coordination of tasks.
+- Tasks were well distributed among team members, allowing better visibility of sprint progress and reducing work overload.
+- Pull Requests were properly reviewed and commented on before being merged, improving code quality and reducing potential defects in the codebase.
 
 ## Weaknesses
 
-- Some tasks were started without a fully defined scope.
-- Integration tasks took longer than expected.
-- The team did not maintain good organization within the GitLab Kanban board.
+Despite the progress achieved, some issues were identified during the sprint:
+
+- Some tasks were started without a fully defined scope, which generated uncertainty during development.
+- Integration tasks took longer than expected due to dependencies between frontend and backend components.
+- The team did not maintain consistent organization within the GitLab Kanban board, which reduced visibility of task status and progress.
 
 ## Improvement Actions
 
 To improve the next sprint, the team will adopt the following actions:
 
 - Ensure that all tasks meet the **Definition of Ready (DoR)** before starting development.
-- Assign clear responsibilities for each task.
-- Standardize task descriptions and move them across the board at the correct time.
+- Assign clear responsibilities for each task to improve accountability and task ownership.
+- Standardize task descriptions to include clear objectives, acceptance criteria, and dependencies.
+- Improve the organization of the GitLab Kanban board by ensuring that tasks are moved across columns (**To Do, In Progress, Review, Done**) at the appropriate time.
+
+These actions aim to improve workflow efficiency, increase task traceability, and reduce development delays.
+
+---
 
 ## Risk Analysis
 
+The following risks were identified during the sprint and may affect the project if not properly managed:
+
 | Risk | Impact | Mitigation Strategy |
 |-----|-----|-----|
-| Delay in screen integration | High | Assign a responsible developer and test early |
-| Poor communication between team members | Medium | Maintain daily meetings |
-| Code conflicts in the repository | Medium | Enforce Pull Request reviews |
+| Delay in screen integration | High | Assign a responsible developer and perform early integration testing |
+| Code conflicts in the repository | Medium | Enforce Pull Request reviews and maintain smaller feature branches |
+| Problems in Auth0 authentication integration | High | Test authentication service early in the development environment |
+| Changes in requirements during the sprint | Medium | Validate requirements before sprint planning and avoid scope changes during the sprint |
+| Issues with database structure or migration scripts | High | Review SQL scripts and validate database changes before deployment |
+| Task overload on specific team members | Medium | Improve task distribution during sprint planning |
+
+---
 
 ## Risk Tracking Mechanism
 
-Risks will be tracked using the project management board and reviewed during sprint planning meetings.
+Risks will be tracked using the project management board and reviewed during **Sprint Planning** and **Sprint Review** meetings.
+
+If a risk becomes critical, it will be escalated to the team and mitigation actions will be implemented immediately. Recurring risks will also be documented to improve planning and risk management in future sprints.
 
 # 2. Next Sprint Planning
 
