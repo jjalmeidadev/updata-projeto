@@ -31,13 +31,13 @@ export const getPayload = async (
     // Internal team users go to monitoring.
     if (email.endsWith("@getequiem.com")) {
       console.log(`[FLOW][${traceId}] controller:redirect /monitoring`)
-      return res.redirect("/monitoring")
+      return res.status(200).json({ next: "/monitoring", traceId })
     }
 
     // Company users go to their company page.
     if (user.company_id) {
       console.log(`[FLOW][${traceId}] controller:redirect /company/${user.company_id}`)
-      return res.redirect(`/company/${user.company_id}`)
+      return res.status(200).json({ next: `/company/${user.company_id}`, traceId })
     }
 
     console.log(`[FLOW][${traceId}] controller:company_not_registered`)
