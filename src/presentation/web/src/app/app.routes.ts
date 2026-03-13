@@ -3,6 +3,7 @@ import { LoginComponent } from './pages/login/login.component';
 import { SignupComponent } from './pages/signup/signup.component';
 import { HomeComponent } from './pages/home/home.component';
 import { OnboardingFormComponent } from './onboarding-form/onboarding-form.component';
+import { UploadComponent } from './pages/upload/upload.component';
 
 
 export const routes: Routes = [
@@ -11,5 +12,6 @@ export const routes: Routes = [
   { path: 'signup', component: SignupComponent },
   { path: 'home', component: HomeComponent },
   { path: 'form', component: OnboardingFormComponent },
+  { path: 'upload', component: UploadComponent },
   { path: '**', redirectTo: '/login' }
 ];
