@@ -4,7 +4,7 @@ import { SignupComponent } from './pages/signup/signup.component';
 import { HomeComponent } from './pages/home/home.component';
 import { OnboardingFormComponent } from './onboarding-form/onboarding-form.component';
 import { UploadComponent } from './pages/upload/upload.component';
-
+import { ModuleSelectorComponent } from './pages/module-selector/module-selector.component';
 
 export const routes: Routes = [
   { path: '', redirectTo: '/login', pathMatch: 'full' },
@@ -13,5 +13,6 @@ export const routes: Routes = [
   { path: 'home', component: HomeComponent },
   { path: 'form', component: OnboardingFormComponent },
   { path: 'upload', component: UploadComponent },
+  { path: 'module-selector', component: ModuleSelectorComponent },
   { path: '**', redirectTo: '/login' }
 ];
