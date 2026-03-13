@@ -31,7 +31,13 @@ export class OnboardingFormComponent implements OnInit {
 
   ngOnInit(): void {
     this.questionService.getQuestions().subscribe({
-      next: (questions: Question[]) => {
+      next: (allQuestions: Question[]) => {
+        const selected = this.getSelectedSections();
+
+        const questions = selected.length
+          ? allQuestions.filter((q: Question) => selected.includes(q.sectionId))
+          : allQuestions;
+
         this.questions.set(questions);
         this.sections.set(this.questionService.getSections(questions));
         const builtForm = this.buildForm(questions);
@@ -154,5 +160,14 @@ export class OnboardingFormComponent implements OnInit {
   submit(): void {
     this.submitted.set(true);
     console.log('Onboarding form submitted:', this.form().value);
+  }
+
+  private getSelectedSections(): string[] {
+    try {
+      const raw = localStorage.getItem('selectedSections');
+      return raw ? JSON.parse(raw) : [];
+    } catch {
+      return [];
+    }
   }
 }

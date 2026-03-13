@@ -1,4 +1,4 @@
-import pool from "../database/index-table"
+import pool from "../database/index-table.js"
 
 interface UserInsert {
   auth0_id: string

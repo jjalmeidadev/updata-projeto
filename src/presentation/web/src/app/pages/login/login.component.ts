@@ -10,7 +10,7 @@ type UserFlowResponse = { next: string };
 @Component({
   selector: 'app-login',
   standalone: true,
-  imports: [CommonModule, RouterLink],
+  imports: [CommonModule],
   templateUrl: './login.component.html',
   styleUrls: ['./login.component.css'],
 })
