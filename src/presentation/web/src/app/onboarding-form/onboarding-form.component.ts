@@ -45,7 +45,7 @@ export class OnboardingFormComponent implements OnInit {
   private buildForm(questions: Question[]): FormGroup {
     const controls: Record<string, FormControl> = {};
     for (const q of questions) {
-      const defaultValue = q.type === 'boolean' ? false
+      const defaultValue = q.type === 'boolean' ? null
         : q.type === 'multi-select' ? []
         : '';
       controls[q.id] = new FormControl(defaultValue);
@@ -64,7 +64,7 @@ export class OnboardingFormComponent implements OnInit {
     if (questions.length === 0) return 0;
     const filled = questions.filter(q => {
       const val = values[q.id];
-      if (q.type === 'boolean') return true;
+      if (q.type === 'boolean') return typeof val === 'boolean';
       if (q.type === 'multi-select') return Array.isArray(val) && val.length > 0;
       return val !== '' && val !== null && val !== undefined;
     }).length;
