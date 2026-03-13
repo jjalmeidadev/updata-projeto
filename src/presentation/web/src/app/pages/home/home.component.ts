@@ -1,6 +1,7 @@
-import { Component, ElementRef, HostListener } from '@angular/core';
+import { Component, ElementRef, HostListener, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Router } from '@angular/router';
+import { AuthService } from '@auth0/auth0-angular';
+import { map } from 'rxjs/operators';
 
 interface Company {
   name: string;
@@ -16,13 +17,40 @@ interface Company {
   styleUrls: ['./home.component.css'],
 })
 export class HomeComponent {
-  profileMenuOpen = false;
-  userEmail = 'cliente@email.com';
+  private readonly auth = inject(AuthService);
 
-  constructor(
-    private readonly router: Router,
-    private readonly elRef: ElementRef<HTMLElement>,
-  ) {}
+  profileMenuOpen = false;
+
+  readonly userEmail$ = this.auth.user$.pipe(
+    map(user => user?.email ?? '')
+  );
+
+  readonly userInitials$ = this.auth.user$.pipe(
+    map(user => {
+      const fullName = (user?.name ?? '').trim();
+
+      if (fullName) {
+        const parts = fullName.split(/\s+/).filter(Boolean);
+        return parts.slice(0, 2).map(part => part[0]?.toUpperCase() ?? '').join('');
+      }
+
+      const email = (user?.email ?? '').trim();
+      if (!email) {
+        return 'U';
+      }
+
+      const emailName = email.split('@')[0];
+      const chunks = emailName.split(/[._-]+/).filter(Boolean);
+
+      if (chunks.length >= 2) {
+        return (chunks[0][0] + chunks[1][0]).toUpperCase();
+      }
+
+      return emailName.slice(0, 2).toUpperCase();
+    })
+  );
+
+  constructor(private readonly elRef: ElementRef<HTMLElement>) {}
 
   companies: Company[] = [
     { name: 'Company 1', progress: 35, started: true },
@@ -35,7 +63,6 @@ export class HomeComponent {
   startOnboarding(company: Company) {
     company.started = true;
     company.progress = 10;
-
     console.log('Starting onboarding for', company.name);
   }
 
@@ -58,6 +85,10 @@ export class HomeComponent {
 
   logout() {
     this.profileMenuOpen = false;
-    this.router.navigate(['/login']);
+    this.auth.logout({
+      logoutParams: {
+        returnTo: window.location.origin + '/login',
+      },
+    });
   }
 }

@@ -20,6 +20,13 @@ export class LoginComponent implements OnInit {
   private readonly router = inject(Router);
 
   ngOnInit(): void {
+    const params = new URLSearchParams(window.location.search);
+    const isAuthCallback = params.has('code') && params.has('state');
+
+    if (!isAuthCallback) {
+      return;
+    }
+
     this.auth.isAuthenticated$
       .pipe(filter(Boolean), take(1))
       .subscribe(() => this.resolveUserFlow());
@@ -32,6 +39,15 @@ export class LoginComponent implements OnInit {
   loginWithGoogle(): void {
     this.auth.loginWithRedirect({
       authorizationParams: { connection: 'google-oauth2' },
+    });
+  }
+
+  signup(): void {
+    this.auth.loginWithRedirect({
+      authorizationParams: {
+        screen_hint: 'signup',
+        prompt: 'login',
+      },
     });
   }
 
