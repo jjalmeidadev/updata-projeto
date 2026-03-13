@@ -1,5 +1,6 @@
 import { Component, ElementRef, HostListener, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { Router } from '@angular/router';
 import { AuthService } from '@auth0/auth0-angular';
 import { map } from 'rxjs/operators';
 
@@ -18,6 +19,7 @@ interface Company {
 })
 export class HomeComponent {
   private readonly auth = inject(AuthService);
+  private readonly router = inject(Router);
 
   profileMenuOpen = false;
 
@@ -63,7 +65,11 @@ export class HomeComponent {
   startOnboarding(company: Company) {
     company.started = true;
     company.progress = 10;
-    console.log('Starting onboarding for', company.name);
+
+    localStorage.removeItem('selectedSections');
+    sessionStorage.setItem('onboardingCompany', company.name);
+
+    this.router.navigate(['/module-selector']);
   }
 
   viewDetails(company: Company) {

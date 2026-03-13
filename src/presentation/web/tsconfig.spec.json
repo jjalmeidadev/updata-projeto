@@ -4,7 +4,23 @@
   "extends": "./tsconfig.json",
   "compilerOptions": {
     "outDir": "./out-tsc/spec",
-    "types": ["vitest/globals"]
+    "types": ["vitest/globals"],
+    "baseUrl": ".",
+    "paths": {
+      "@angular/core/testing": ["node_modules/@angular/core/types/testing.d.ts"],
+      "@angular/common/http": ["node_modules/@angular/common/types/http.d.ts"],
+      "@angular/common/http/testing": ["node_modules/@angular/common/types/http-testing.d.ts"],
+      "@angular/router": ["node_modules/@angular/router"],
+      "@auth0/auth0-angular": ["node_modules/@auth0/auth0-angular"],
+      "rxjs": ["node_modules/rxjs"],
+      "rxjs/*": ["node_modules/rxjs/*"],
+      "vitest": ["node_modules/vitest"],
+      "vitest/*": ["node_modules/vitest/*"]
+    }
   },
-  "include": ["src/**/*.d.ts", "src/**/*.spec.ts"]
+  "include": [
+    "src/**/*.d.ts",
+    "src/**/*.spec.ts",
+    "../../../tests/**/*.spec.ts"
+  ]
 }
