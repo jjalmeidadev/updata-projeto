@@ -9,13 +9,13 @@ function mapRowsToEntities(
   traceId = "no-trace"
 ): UploadEntity[] {
 
-  console.log(`[FLOW][${traceId}] service:start rows=${rows.length}`)
-
   // Guard clause prevents from running with invalid input.
-  if (!rows || rows.length === 0) {
+  if (rows == null || !Array.isArray(rows) || rows.length === 0) {
     console.log(`[FLOW][${traceId}] service:empty_rows`)
     throw new Error("No rows received")
   }
+
+  console.log(`[FLOW][${traceId}] service:start rows=${rows.length}`)
 
   const entities = rows.map((row) => {
     const entity = new UploadEntity(row)

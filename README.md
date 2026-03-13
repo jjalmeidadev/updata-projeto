@@ -162,10 +162,12 @@ Contains unit and integration tests organized by layer.
 
 ```
 tests/
-├── presentation/
-├── business/
+├── presentation/     # API controllers + Angular component specs
+├── business/         # Entities and services unit tests
 └── data/
 ```
+
+**Unit tests (backend):** run from the project root with `npm test`. Coverage: `npm run test:coverage`. Strategy, implementation, and coverage are documented in [docs/project.md](docs/project.md) (section 21.1).
 
 ## 3. docs/
 
