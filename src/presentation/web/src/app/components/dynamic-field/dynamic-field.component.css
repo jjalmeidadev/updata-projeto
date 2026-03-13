@@ -54,3 +54,16 @@
   accent-color: #6366f1;
   cursor: pointer;
 }
+
+.field-boolean-options {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+}
+
+.boolean-option {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+}

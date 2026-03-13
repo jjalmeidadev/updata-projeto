@@ -35,50 +35,23 @@
   </div>
   <div class="login-box">
     <h1>Login to your account</h1>
-    <p class="subtitle">Enter your email below to login to your account</p>
-    
-    <form #f="ngForm" (ngSubmit)="login(f)">
-    <div class="form-group">
-        <label for="email">Email</label>
-        <input
-        id="email"
-        type="email"
-        name="email"
-        [(ngModel)]="email"
-        placeholder="john@getequiem.com"
-        required
-        autocomplete="email"
-        />
-    </div>
+    <p class="subtitle">Use your company account to continue</p>
 
-    <div class="form-group password-group">
-        <div class="password-label">
-        <label for="password">Password</label>
-        <a href="#" class="forgot-password">Forgot your password?</a>
-        </div>
-        <input
-        id="password"
-        type="password"
-        name="password"
-        [(ngModel)]="password"
-        placeholder="•••••••••"
-        required
-        autocomplete="current-password"
-        />
-    </div>
-
-    <button type="submit" class="btn-login" [disabled]="f.invalid">
-        Login
+    <button type="button" class="btn-login" (click)="login()">
+      Continue with Auth0
     </button>
 
-    <button type="button" class="btn-google">
-        <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/c/c1/Google_%22G%22_logo.svg/500px-Google_%22G%22_logo.svg.png" alt="Google" class="google-logo">
-        Login with Google
+    <button type="button" class="btn-google" (click)="loginWithGoogle()">
+      <img
+        src="https://upload.wikimedia.org/wikipedia/commons/thumb/c/c1/Google_%22G%22_logo.svg/500px-Google_%22G%22_logo.svg.png"
+        alt="Google"
+        class="google-logo">
+      Continue with Google
     </button>
-    </form>
-    
+
     <p class="signup-link">
-      Don't have an account? <a routerLink="/signup" href="/signup">Sign up</a>
+      Don't have an account?
+      <a href="#" (click)="signup(); $event.preventDefault()">Create account</a>
     </p>
   </div>
 </div>

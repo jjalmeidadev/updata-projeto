@@ -37,9 +37,24 @@
       <p class="field-hint">Hold Ctrl / Cmd to select multiple.</p>
     }
     @case ('boolean') {
-      <div class="field-checkbox-wrapper">
-        <input [id]="question.id" type="checkbox" [formControl]="control" class="field-checkbox" />
-        <span>Yes</span>
+      <div class="field-boolean-options">
+        <label class="boolean-option">
+          <input
+            type="radio"
+            [name]="question.id"
+            [checked]="control.value === true"
+            (change)="control.setValue(true)" />
+          <span>Yes</span>
+        </label>
+
+        <label class="boolean-option">
+          <input
+            type="radio"
+            [name]="question.id"
+            [checked]="control.value === false"
+            (change)="control.setValue(false)" />
+          <span>No</span>
+        </label>
       </div>
     }
     @case ('time') {

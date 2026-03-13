@@ -605,5 +605,593 @@
   "description": "Define the cancellation rules and any associated fees.",
   "type": "textarea",
   "order": 69
-}
+},
+{
+  "id": "q70",
+  "moduleId": "permits",
+  "sectionId": "Permit Configuration",
+  "question": "Will you use the Equiem question templates or provide your own?",
+  "description": "Templates can be found on the following tabs.",
+  "type": "text",
+  "order": 70
+},
+{
+  "id": "q71",
+  "moduleId": "permits",
+  "sectionId": "Permit Configuration",
+  "question": "Please indicate which question set(s) apply to which permit type: Access or Works",
+  "type": "text",
+  "order": 71
+},
+{
+  "id": "q72",
+  "moduleId": "permits",
+  "sectionId": "Permit Configuration",
+  "question": "Would you like question sets to be ticked or unticked by default?",
+  "description": "E.g. if ticked, a contractor will have to make a choice on which templates they don't require.",
+  "type": "text",
+  "order": 72
+},
+{
+  "id": "q73",
+  "moduleId": "permits",
+  "sectionId": "Permit Configuration",
+  "question": "Are comments mandatory?",
+  "type": "text",
+  "order": 73
+},
+{
+  "id": "q74",
+  "moduleId": "permits",
+  "sectionId": "Permit Configuration",
+  "question": "Would you like to capture the car registration?",
+  "type": "text",
+  "order": 74
+},
+{
+  "id": "q75",
+  "moduleId": "permits",
+  "sectionId": "Permit Configuration",
+  "question": "Will you be signing off permits digitally (ie. via iPad)?",
+  "description": "If yes, please confirm you have the device in place and who should be able to sign permits digitally. Name(s) and Email Address(es)",
+  "type": "textarea",
+  "order": 75
+},
+{
+  "id": "q76",
+  "moduleId": "permits",
+  "sectionId": "Permit Configuration",
+  "question": "Do you want to stop contractors submitting permits without uploading documentation?",
+  "type": "text",
+  "order": 76
+},
+{
+  "id": "q77",
+  "moduleId": "permits",
+  "sectionId": "Permit Configuration",
+  "question": "What is the minimum notice period for a permit to be submitted?",
+  "type": "text",
+  "order": 77
+},
+{
+  "id": "q78",
+  "moduleId": "permits",
+  "sectionId": "Permit Configuration",
+  "question": "What is the maximum duration of a permit?",
+  "type": "text",
+  "order": 78
+},
+{
+  "id": "q79",
+  "moduleId": "permits",
+  "sectionId": "Permit Configuration",
+  "question": "Is contractor phone number mandatory?",
+  "type": "text",
+  "order": 79
+},
+{
+  "id": "q80",
+  "moduleId": "permits",
+  "sectionId": "Permit Configuration",
+  "question": "Do you have an essential documents / required reading?",
+  "description": "E.g. House Rules & Regs. If yes, please provide as an attachment upon return of this template.",
+  "type": "text",
+  "order": 80
+},
+{
+  "id": "q81",
+  "moduleId": "permits",
+  "sectionId": "Permit Configuration",
+  "question": "Please list users who need to be notified of new permit submissions.",
+  "description": "Please provide name(s) and email address(es)",
+  "type": "text",
+  "order": 81
+},
+{
+  "id": "q82",
+  "moduleId": "permits",
+  "sectionId": "Permit Configuration",
+  "question": "Please list the Property Management team member(s) who need to be included in the training for this module, and what level of permit approval they require (1,2,3).",
+  "description": "Please provide name(s) and email address(es)",
+  "type": "text",
+  "order": 82
+},
+
+{
+  "id": "q83",
+  "moduleId": "permits",
+  "sectionId": "Confined Spaces",
+  "question": "Incoming services (gas; electric; water; steam) have been isolated",
+  "type": "boolean",
+  "order": 83
+},
+{
+  "id": "q84",
+  "moduleId": "permits",
+  "sectionId": "Confined Spaces",
+  "question": "Gas monitoring equipment requirements have been identified and equipment made available before commencement of work. Personnel are trained in the use of this equipment",
+  "type": "boolean",
+  "order": 84
+},
+{
+  "id": "q85",
+  "moduleId": "permits",
+  "sectionId": "Confined Spaces",
+  "question": "Respiratory Protection Equipment requirements have been identified and equipment made available before commencement of work. Personnel are trained in the use of RPE equipment",
+  "type": "boolean",
+  "order": 85
+},
+{
+  "id": "q86",
+  "moduleId": "permits",
+  "sectionId": "Confined Spaces",
+  "question": "Additional fire protection requirements have been identified and equipment made available before commencement of work. Personnel are trained in the use of this equipment",
+  "type": "boolean",
+  "order": 86
+},
+{
+  "id": "q87",
+  "moduleId": "permits",
+  "sectionId": "Confined Spaces",
+  "question": "Powered equipment/valves are isolated/shut off",
+  "type": "boolean",
+  "order": 87
+},
+{
+  "id": "q88",
+  "moduleId": "permits",
+  "sectionId": "Confined Spaces",
+  "question": "Certified safety belt and life line requirements have been identified and equipment made available before commencement of work. Personnel are trained in the use of this equipment",
+  "type": "boolean",
+  "order": 88
+},
+{
+  "id": "q89",
+  "moduleId": "permits",
+  "sectionId": "Confined Spaces",
+  "question": "Supervision is provided for duration of works. Provide name and emergency contact number",
+  "description": "Please use the comment box to provide the name and emergency contact number.",
+  "type": "boolean",
+  "order": 89
+},
+{
+  "id": "q90",
+  "moduleId": "permits",
+  "sectionId": "Confined Spaces",
+  "question": "Emergency and rescue procedures are in place and operatives trained",
+  "type": "boolean",
+  "order": 90
+},
+{
+  "id": "q91",
+  "moduleId": "permits",
+  "sectionId": "Confined Spaces",
+  "question": "Lighting equipment requirements have been identified and equipment made available before commencement of work",
+  "type": "boolean",
+  "order": 91
+},
+
+{
+  "id": "q92",
+  "moduleId": "permits",
+  "sectionId": "Electrical Works",
+  "question": "Contractor Must Provide Rubber Matting to BS 921 unless already in place",
+  "type": "boolean",
+  "order": 92
+},
+{
+  "id": "q93",
+  "moduleId": "permits",
+  "sectionId": "Electrical Works",
+  "question": "Contractor Must Provide Rubber Matting to BE EN 61111:2009",
+  "type": "boolean",
+  "order": 93
+},
+{
+  "id": "q94",
+  "moduleId": "permits",
+  "sectionId": "Electrical Works",
+  "question": "Regulation 14 Electricity at Work Regulations 1989. No Live working unless truly essential. Apparatus must be proven dead",
+  "type": "boolean",
+  "order": 94
+},
+{
+  "id": "q95",
+  "moduleId": "permits",
+  "sectionId": "Electrical Works",
+  "question": "Switching Schedule is attached",
+  "type": "boolean",
+  "order": 95
+},
+{
+  "id": "q96",
+  "moduleId": "permits",
+  "sectionId": "Electrical Works",
+  "question": "Prove apparatus dead with the use of suitable test instrument",
+  "type": "boolean",
+  "order": 96
+},
+{
+  "id": "q97",
+  "moduleId": "permits",
+  "sectionId": "Electrical Works",
+  "question": "The system/equipment is efficiently connected to earth at the following identified points",
+  "type": "boolean",
+  "order": 97
+},
+{
+  "id": "q98",
+  "moduleId": "permits",
+  "sectionId": "Electrical Works",
+  "question": "Specific Warning Notices on points of isolation/work to be provided",
+  "type": "boolean",
+  "order": 98
+},
+{
+  "id": "q99",
+  "moduleId": "permits",
+  "sectionId": "Electrical Works",
+  "question": "Reference No's of padlocks used, kept in a Safety Key Box",
+  "type": "boolean",
+  "order": 99
+},
+{
+  "id": "q100",
+  "moduleId": "permits",
+  "sectionId": "Fire Alarm Isolation",
+  "question": "Has a Fire Risk Assessment been conducted for the isolation/works and associated controls put in place",
+  "type": "boolean",
+  "order": 100
+  },
+  {
+  "id": "q101",
+  "moduleId": "permits",
+  "sectionId": "Fire Alarm Isolation",
+  "question": "If Hot Works are being performed ensure the HOT WORKS PERMIT section is completed",
+  "type": "boolean",
+  "order": 101
+  },
+  {
+  "id": "q102",
+  "moduleId": "permits",
+  "sectionId": "Fire Alarm Isolation",
+  "question": "Confirm smoke detectors are being capped during isolation and caps removed on completion of works",
+  "type": "boolean",
+  "order": 102
+  },
+  {
+  "id": "q103",
+  "moduleId": "permits",
+  "sectionId": "Fire Alarm Isolation",
+  "question": "How long the area will be isolated for is indicated on the permit or attached documents",
+  "type": "boolean",
+  "order": 103
+  },
+  {
+  "id": "q104",
+  "moduleId": "permits",
+  "sectionId": "Fire Alarm Isolation",
+  "question": "Confirm manual call points in the vicinity of the work area still active prior to works",
+  "type": "boolean",
+  "order": 104
+  },
+  {
+  "id": "q105",
+  "moduleId": "permits",
+  "sectionId": "Fire Alarm Isolation",
+  "question": "The type of area being isolated has been indicated on the permit or attached documents (including stating whether High Risk or Low Risk)",
+  "type": "boolean",
+  "order": 105
+  },
+  {
+  "id": "q106",
+  "moduleId": "permits",
+  "sectionId": "Fire Alarm Isolation",
+  "question": "Are the isolated detectors covering an emergency exit path? If so ensure Emergency Evacuation plans are in place/updated and all affected persons aware",
+  "type": "boolean",
+  "order": 106
+  },
+  {
+  "id": "q107",
+  "moduleId": "permits",
+  "sectionId": "Fire Alarm Isolation",
+  "question": "The date and approximate time when the system is to be re-instated has been indicated on the permit or attached documents",
+  "type": "boolean",
+  "order": 107
+  },
+  {
+  "id": "q108",
+  "moduleId": "permits",
+  "sectionId": "Fire Alarm Isolation",
+  "question": "Ensure that the de-isolation procedures are carried out as per the Fire Safety Manual",
+  "type": "boolean",
+  "order": 108
+  },
+  {
+  "id": "q109",
+  "moduleId": "permits",
+  "sectionId": "Fire Alarm Isolation",
+  "question": "The number of devices being isolated has been indicated on the permit or attached documents",
+  "type": "boolean",
+  "order": 109
+  },
+  {
+  "id": "q110",
+  "moduleId": "permits",
+  "sectionId": "Fire Alarm Isolation",
+  "question": "Does the Work area have sufficient Sprinkler coverage",
+  "type": "boolean",
+  "order": 110
+  },
+  {
+  "id": "q111",
+  "moduleId": "permits",
+  "sectionId": "Fire Alarm Isolation",
+  "question": "Is a manual Fire Watch in place? - state the frequency and who conducting in the comments",
+  "type": "boolean",
+  "order": 111
+  },
+  {
+  "id": "q112",
+  "moduleId": "permits",
+  "sectionId": "Fire Alarm Isolation",
+  "question": "Means to raise the alarm in the event of a fire have been provided? Please state what means will be available and what actions should be taken in the comments",
+  "type": "boolean",
+  "order": 112
+  },
+  {
+  "id": "q113",
+  "moduleId": "permits",
+  "sectionId": "Hot Works",
+  "question": "Site has been checked and all combustibles and flammable substances in the vicinity of the hot work will be removed or protected prior to commencement of works",
+  "type": "boolean",
+  "order": 113
+  },
+  {
+  "id": "q114",
+  "moduleId": "permits",
+  "sectionId": "Hot Works",
+  "question": "Fire detection system isolation has been agreed with Building Management",
+  "type": "boolean",
+  "order": 114
+  },
+  {
+  "id": "q115",
+  "moduleId": "permits",
+  "sectionId": "Hot Works",
+  "question": "Sprinkler system isolation agreed with Building Management and insurers notified where applicable",
+  "type": "boolean",
+  "order": 115
+  },
+  {
+  "id": "q116",
+  "moduleId": "permits",
+  "sectionId": "Hot Works",
+  "question": "Additional fire protection requirements have been identified and equipment made available prior to commencement of works. Personnel are familiar with the use of the Fire Equipment",
+  "type": "boolean",
+  "order": 116
+  },
+  {
+  "id": "q117",
+  "moduleId": "permits",
+  "sectionId": "Hot Works",
+  "question": "Fire watch to be posted and shall continue for a minimum of 30 minutes after the conclusion of the work; State by Whom and the Frequency",
+  "type": "boolean",
+  "order": 117
+  },
+  {
+  "id": "q118",
+  "moduleId": "permits",
+  "sectionId": "Hot Works",
+  "question": "Area to be inspected for combustion on completion of work and a Fire Watch conducted for a minimum of 30 minutes and shall continue for 30, 60 and 90 minutes after conclusion of the work. State who is",
+  "type": "boolean",
+  "order": 118
+  },
+  {
+  "id": "q119",
+  "moduleId": "permits",
+  "sectionId": "Hot Works",
+  "question": "Area to be inspected for combustion on completion of work and 30,60 and 90 minutes after",
+  "type": "boolean",
+  "order": 119
+  },
+  {
+  "id": "q120",
+  "moduleId": "permits",
+  "sectionId": "Hot Works",
+  "question": "Hot work conducted in areas with vertical or horizontal fire exposures that are not observable by a single individual shall have additional personnel assigned to fire watches to ensure that exposed areas are",
+  "type": "boolean",
+  "order": 120
+  },
+  {
+  "id": "q121",
+  "moduleId": "permits",
+  "sectionId": "Hot Works",
+  "question": "Fire alarm isolation has been agreed with Building Management",
+  "type": "boolean",
+  "order": 121
+  },
+  {
+  "id": "q122",
+  "moduleId": "permits",
+  "sectionId": "Hot Works",
+  "question": "All openings and gaps in walls, floors and risers, through which sparks could pass, are covered with sheets or non-combustible material. Beware of any risk of falls being created",
+  "type": "boolean",
+  "order": 122
+  },
+  {
+  "id": "q123",
+  "moduleId": "permits",
+  "sectionId": "Lone Working",
+  "question": "A specific Lone Working Risk Assessment and Safe System of Work is in place",
+  "type": "boolean",
+  "order": 123
+  },
+  {
+  "id": "q124",
+  "moduleId": "permits",
+  "sectionId": "Lone Working",
+  "question": "Lone Worker has been inducted on the site procedures and the area being worked in",
+  "type": "boolean",
+  "order": 124
+  },
+  {
+  "id": "q125",
+  "moduleId": "permits",
+  "sectionId": "Lone Working",
+  "question": "Site specific Lone Working procedures have been explained",
+  "type": "boolean",
+  "order": 125
+  },
+  {
+  "id": "q126",
+  "moduleId": "permits",
+  "sectionId": "Lone Working",
+  "question": "Security have been notified and a procedure is in place to ensure a communication log is kept to the prescribed frequency (no longer than every 30 minutes)",
+  "type": "boolean",
+  "order": 126
+  },
+  {
+  "id": "q127",
+  "moduleId": "permits",
+  "sectionId": "Lone Working",
+  "question": "A fully operational two way radio or other suitable means of communication has been tested and issued",
+  "type": "boolean",
+  "order": 127
+  },
+  {
+  "id": "q128",
+  "moduleId": "permits",
+  "sectionId": "Lone Working",
+  "question": "Any medical conditions that may affect the Operative conducting the works have been considered, and control measures implemented",
+  "type": "boolean",
+  "order": 128
+  },
+  {
+  "id": "q129",
+  "moduleId": "permits",
+  "sectionId": "Lone Working",
+  "question": "Emergency procedures and rescue plans are in place and operatives aware and trained in the procedures",
+  "type": "boolean",
+  "order": 129
+  },
+  {
+  "id": "q130",
+  "moduleId": "permits",
+  "sectionId": "Working At Height",
+  "question": "Are statutory inspections up to date and all safety equipment verified as safe to use",
+  "type": "boolean",
+  "order": 130
+  },
+  {
+  "id": "q131",
+  "moduleId": "permits",
+  "sectionId": "Working At Height",
+  "question": "Certified safety belt/harnesses and life line requirements have been identified and equipment made available before accessing work area",
+  "type": "boolean",
+  "order": 131
+  },
+  {
+  "id": "q132",
+  "moduleId": "permits",
+  "sectionId": "Working At Height",
+  "question": "Means to prevent falling equipment and materials are in place",
+  "type": "boolean",
+  "order": 132
+  },
+  {
+  "id": "q133",
+  "moduleId": "permits",
+  "sectionId": "Working At Height",
+  "question": "Emergency and rescue procedures are in place and operatives trained",
+  "type": "boolean",
+  "order": 133
+  },
+  {
+  "id": "q134",
+  "moduleId": "permits",
+  "sectionId": "Working At Height",
+  "question": "Fragile or non load bearing surfaces have been identified and control measures are in place for safe working",
+  "type": "boolean",
+  "order": 134
+  },
+  {
+  "id": "q135",
+  "moduleId": "permits",
+  "sectionId": "Working At Height",
+  "question": "Suitable communications are in place",
+  "type": "boolean",
+  "order": 135
+  },
+  {
+  "id": "q136",
+  "moduleId": "permits",
+  "sectionId": "Working At Height",
+  "question": "Personnel are trained in the use of all equipment associated with these works",
+  "type": "boolean",
+  "order": 136
+  },
+  {
+  "id": "q137",
+  "moduleId": "permits",
+  "sectionId": "Working At Height",
+  "question": "Weather conditions have been checked and considered suitable for works to proceed",
+  "type": "boolean",
+  "order": 137
+  },
+  {
+  "id": "q138",
+  "moduleId": "permits",
+  "sectionId": "Working At Height",
+  "question": "Work area will be cordoned off with suitable barriers and signage to prevent injury to others",
+  "type": "boolean",
+  "order": 138
+  },
+  {
+  "id": "q139",
+  "moduleId": "request-management",
+  "sectionId": "Request Management Configuration",
+  "question": "Please list users who need to be notified of new requests.",
+  "description": "Please provide name(s), email address(es) and company.",
+  "type": "text",
+  "order": 139
+  },
+  {
+  "id": "q140",
+  "moduleId": "request-management",
+  "sectionId": "Request Management Configuration",
+  "question": "Please list users who will be assigned requests to resolve (e.g. service partners).",
+  "description": "Please provide name(s), email address(es) and company.",
+  "type": "text",
+  "order": 140
+  },
+  {
+  "id": "q141",
+  "moduleId": "request-management",
+  "sectionId": "Request Management Configuration",
+  "question": "By default, all users from each company will be able to submit new requests. If you, or your tenants, want this to be nominated individuals only, please indicate who from each company should be able to submit requests.",
+  "description": "Please provide name(s), email address(es) and company.",
+  "type": "text",
+  "order": 141
+  }
 ]
