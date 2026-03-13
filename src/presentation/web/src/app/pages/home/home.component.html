@@ -119,13 +119,13 @@
         [attr.aria-expanded]="profileMenuOpen"
         (click)="toggleProfileMenu($event)"
       >
-        <span class="avatar"><span>DR</span></span>
+        <span class="avatar"><span>{{ userInitials$ | async }}</span></span>
       </button>
 
       <div *ngIf="profileMenuOpen" class="profile-menu" role="menu">
         <div class="profile-menu-header">
           <div class="profile-menu-label">Account</div>
-          <div class="profile-menu-email">{{ userEmail }}</div>
+          <div class="profile-menu-email">{{ userEmail$ | async }}</div>
         </div>
         <div class="profile-menu-divider"></div>
         <button type="button" class="logout-btn" role="menuitem" (click)="logout()">
