@@ -34,41 +34,65 @@ export class UploadComponent implements OnInit {
   readonly isFirstSection = computed(() => this.currentSectionIndex() === 0);
   readonly isLastSection = computed(() => this.currentSectionIndex() === this.sections().length - 1);
 
-  readonly currentSectionQuestions = computed(() => 
+  readonly currentSectionQuestions = computed(() =>
     this.questionService.getQuestionsBySection(this.questions(), this.currentSection())
   );
 
   readonly progressPercent = computed(() => {
-    const questions = this.questions();
-    if (questions.length === 0) return 0;
-    const completed = Array.from(this.completedSections()).length;
-    return Math.round((completed / this.sections().length) * 100);
+    const sections = this.sections();
+    if (sections.length === 0) return 0;
+    const completed = this.completedSections().size;
+    return Math.round((completed / sections.length) * 100);
   });
 
-  readonly currentSectionQuestionsLength = computed(() => 
-    this.currentSectionQuestions().length
-  );
+  readonly currentSectionQuestionsLength = computed(() => this.currentSectionQuestions().length);
 
   ngOnInit(): void {
     this.questionService.getQuestions().subscribe({
-      next: (questions: Question[]) => {
-        this.questions.set(questions);
-        this.sections.set(this.questionService.getSections(questions));
-        this.loading.set(false);
+      next: (allQuestions: Question[]) => {
+        const selected = this.getSelectedSections();
 
-        // Check if there's a section index in query params
+        const filteredQuestions = selected.length
+          ? allQuestions.filter((q: Question) => selected.includes(q.sectionId))
+          : allQuestions;
+
+        this.questions.set(filteredQuestions);
+
+        const filteredSections = this.questionService.getSections(filteredQuestions);
+        this.sections.set(filteredSections);
+
+        if (filteredSections.length === 0) {
+          this.loading.set(false);
+          return;
+        }
+
         const storedIndex = sessionStorage.getItem('uploadSectionIndex');
         if (storedIndex) {
-          this.currentSectionIndex.set(parseInt(storedIndex, 10));
+          const parsed = parseInt(storedIndex, 10);
+          if (!isNaN(parsed) && parsed >= 0 && parsed < filteredSections.length) {
+            this.currentSectionIndex.set(parsed);
+          } else {
+            this.currentSectionIndex.set(0);
+          }
           sessionStorage.removeItem('uploadSectionIndex');
         }
 
-        // Load completed sections from session
         const completedStr = sessionStorage.getItem('completedSections');
         if (completedStr) {
-          const completed = JSON.parse(completedStr);
-          this.completedSections.set(new Set(completed));
+          try {
+            const completed = JSON.parse(completedStr) as unknown;
+            if (Array.isArray(completed)) {
+              const valid = completed
+                .filter((v: unknown) => typeof v === 'number')
+                .filter((v: number) => v >= 0 && v < filteredSections.length);
+              this.completedSections.set(new Set(valid));
+            }
+          } catch {
+            this.completedSections.set(new Set());
+          }
         }
+
+        this.loading.set(false);
       },
       error: (err: unknown) => {
         console.error('Failed to load questions:', err);
@@ -85,12 +109,6 @@ export class UploadComponent implements OnInit {
       return;
     }
 
-    // Validate file type
-    const validTypes = [
-      'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', // xlsx
-      'application/vnd.ms-excel', // xls
-      'text/csv'
-    ];
     const validExtensions = ['.xlsx', '.xls', '.csv'];
     const fileExtension = file.name.toLowerCase().slice(file.name.lastIndexOf('.'));
 
@@ -126,18 +144,15 @@ export class UploadComponent implements OnInit {
           return;
         }
 
-        // Mark this section as completed
-        const completed = Array.from(this.completedSections());
-        completed.push(this.currentSectionIndex());
-        sessionStorage.setItem('completedSections', JSON.stringify(completed));
-        this.completedSections.set(new Set(completed));
+        const completed = new Set(this.completedSections());
+        completed.add(this.currentSectionIndex());
+        this.completedSections.set(completed);
+        sessionStorage.setItem('completedSections', JSON.stringify(Array.from(completed)));
 
-        // Store data and section info for the form
         sessionStorage.setItem('uploadedData', JSON.stringify(rows));
         sessionStorage.setItem('uploadedSection', this.currentSection());
         sessionStorage.setItem('uploadSectionIndex', this.currentSectionIndex().toString());
 
-        // Navigate to form
         this.router.navigate(['/form'], {
           queryParams: { section: this.currentSectionIndex(), fromUpload: true }
         });
@@ -194,5 +209,14 @@ export class UploadComponent implements OnInit {
   triggerFileInput(): void {
     const input = document.getElementById('fileInput') as HTMLInputElement;
     input?.click();
+  }
+
+  private getSelectedSections(): string[] {
+    try {
+      const raw = localStorage.getItem('selectedSections');
+      return raw ? JSON.parse(raw) : [];
+    } catch {
+      return [];
+    }
   }
 }

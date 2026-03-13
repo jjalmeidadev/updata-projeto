@@ -71,7 +71,7 @@ export class ModuleSelectorComponent implements OnInit {
       JSON.stringify(Array.from(this.selectedSections()))
     );
 
-    this.router.navigate(['/form']);
+    this.router.navigate(['/upload']);
   }
 
   private readSavedSelection(): string[] {
