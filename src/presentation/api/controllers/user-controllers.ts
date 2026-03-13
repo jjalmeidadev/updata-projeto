@@ -1,5 +1,5 @@
 import { Request, Response } from "express"
-import { checkUser } from "../../../business/services/user-service"
+import { checkUser } from "../../../business/services/user-service.js"
 
  // Handles authenticated user routing based on user email and company association.
 export const getPayload = async (
@@ -15,9 +15,18 @@ export const getPayload = async (
 
   try {
 
-    const payload = req.auth?.payload
+    const jwtPayload = req.auth?.payload
 
-    console.log(`[FLOW][${traceId}] controller:payload sub=${payload?.sub || "missing"}`)
+    if (!jwtPayload?.sub) {
+      console.log(`[FLOW][${traceId}] controller:missing_sub`)
+      return res.status(401).json({ error: "Invalid token payload", traceId })
+    }
+
+    const payload = {
+      sub: jwtPayload.sub,
+      name: typeof jwtPayload.name === "string" ? jwtPayload.name : undefined,
+      email: typeof jwtPayload.email === "string" ? jwtPayload.email : undefined,
+    }
 
     const user = await checkUser(payload, traceId)
 

@@ -1,5 +1,5 @@
-import { findUser, createUser, findCompanyByDomain } from "../../data/repositories/user-repository"
-import { UserEntity } from "../entities/user-entity"
+import { findUser, createUser, findCompanyByDomain } from "../../data/repositories/user-repository.js"
+import { UserEntity } from "../entities/user-entity.js"
 
 interface AuthPayload {
   sub: string
