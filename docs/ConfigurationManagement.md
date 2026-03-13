@@ -6,19 +6,19 @@ This document defines the configuration management practices adopted in the proj
 
 # Branching Strategy
 
-The project uses a simple branching strategy based on two main branches to organize development activities.
+The project follows a **GitFlow-inspired branching strategy** to organize development activities.
 
 ## Branch Structure
 
-The following branches are used in the repository:
-
 | Branch | Purpose |
 |------|------|
-| main | Stable version of the project |
-| develop | Main development branch where new changes are integrated |
+| main | Stable production-ready version |
+| develop | Integration branch for development |
+| feature/* | Development of new features |
+| release/* | Preparation of a new release |
+| hotfix/* | Urgent fixes in production |
 
-New features and fixes are developed in temporary branches created from **develop** and later merged back into it through Pull Requests.
-
+##### Feature branches are created from **develop** and merged back through Pull Requests after review.
 ---
 
 # Branch Naming Convention
