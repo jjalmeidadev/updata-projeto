@@ -73,3 +73,50 @@ A task is considered completed when:
 - Code is reviewed through a Pull Request  
 - Tests are passing  
 - Documentation is updated when necessary  
+
+# 3. Group Development Process Management
+
+## Daily Meetings
+
+Daily meetings are conducted to maintain team alignment and identify blockers.
+
+Each team member answers:
+
+- What did I do yesterday?
+- What will I do today?
+- Is there any blocker?
+
+The daily meeting lasts approximately **10–15 minutes**.
+
+---
+
+## GitHub Usage Policy
+
+The team follows the following rules for repository management:
+
+- No direct commits to the **main** branch
+- All changes must be submitted through **Pull Requests**
+- At least one team member must review the Pull Request before merging
+- Code must be functional before approval
+
+---
+
+## Commit Policy
+
+The project adopts **Conventional Commits** to standardize commit messages.
+
+## Format:
+
+type(scope): description
+
+
+## Examples:
+
+
+- feat(api): add user registration endpoint
+- fix(auth): resolve login validation bug
+- docs(readme): update project documentation
+- test(api): add unit tests for service layer
+
+
+#### This approach improves readability of the commit history and facilitates project tracking.
