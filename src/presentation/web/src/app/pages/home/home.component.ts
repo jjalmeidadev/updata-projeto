@@ -1,5 +1,4 @@
 import { Component, ElementRef, HostListener, inject } from '@angular/core';
-import { Component, ElementRef, HostListener, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { AuthService } from '@auth0/auth0-angular';
@@ -38,40 +37,7 @@ export class HomeComponent {
       }
 
       const email = (user?.email ?? '').trim();
-      if (!email) {
-        return 'U';
-      }
-
-      const emailName = email.split('@')[0];
-      const chunks = emailName.split(/[._-]+/).filter(Boolean);
-
-      if (chunks.length >= 2) {
-        return (chunks[0][0] + chunks[1][0]).toUpperCase();
-      }
-
-      return emailName.slice(0, 2).toUpperCase();
-    })
-  );
-
-  constructor(private readonly elRef: ElementRef<HTMLElement>) {}
-
-  readonly userEmail$ = this.auth.user$.pipe(
-    map(user => user?.email ?? '')
-  );
-
-  readonly userInitials$ = this.auth.user$.pipe(
-    map(user => {
-      const fullName = (user?.name ?? '').trim();
-
-      if (fullName) {
-        const parts = fullName.split(/\s+/).filter(Boolean);
-        return parts.slice(0, 2).map(part => part[0]?.toUpperCase() ?? '').join('');
-      }
-
-      const email = (user?.email ?? '').trim();
-      if (!email) {
-        return 'U';
-      }
+      if (!email) return 'U';
 
       const emailName = email.split('@')[0];
       const chunks = emailName.split(/[._-]+/).filter(Boolean);
@@ -123,11 +89,6 @@ export class HomeComponent {
 
   logout() {
     this.profileMenuOpen = false;
-    this.auth.logout({
-      logoutParams: {
-        returnTo: window.location.origin + '/login',
-      },
-    });
     this.auth.logout({
       logoutParams: {
         returnTo: window.location.origin + '/login',
