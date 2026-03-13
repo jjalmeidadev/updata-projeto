@@ -371,4 +371,4 @@ This section presents an analysis of Sprint 3 execution based on workflow, task 
   - Tasks move to **Doing** only when DoR is met  
   - Tasks can be **Closed** only when DoD is satisfied
 
-- **Configuration management documentation:** See [ConfigurationManagement.md](ConfigurationManagement.md) for branch naming, MR templates, and commit rules.
+- **Configuration management documentation:** See [configuration-management.md](configuration-management.md) for branch naming, MR templates, and commit rules.
