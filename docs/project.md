@@ -84,6 +84,7 @@
   - [20. Testing Tools and Environment](#20-testing-tools-and-environment)
     - [Automated Test Frameworks](#automated-test-frameworks)
   - [21. Test Coverage Discussion](#21-test-coverage-discussion)
+    - [21.1 Unit Tests (Backend): Strategy, Implementation, and Coverage](#211-unit-tests-backend-strategy-implementation-and-coverage)
   - [22. FR–NFR Correlation Matrix](#22-frnfr-correlation-matrix)
   - [23. User Stories and Traceability](#23-user-stories-and-traceability)
     - [User Stories](#user-stories)
@@ -808,6 +809,72 @@ Non-functional tests ensure that the system meets key operational requirements, 
 Together, these tests ensure that both business requirements and technical system constraints are validated.  
 The combination of functional, non-functional, and usability tests provides strong verification of system correctness, reliability, and user experience.
 
+### 21.1 Unit Tests (Backend): Strategy, Implementation, and Coverage
+
+Unit tests for the backend and business layer are implemented with **Vitest** (Node environment) and documented below in a single place.
+
+**Objective.** Ensure that the developed functionalities (backend and business layer) have automated unit tests, with mocks for external dependencies (database, HTTP), and that strategy, coverage, and results are documented.
+
+**Scope.**
+
+- **Included:** business layer (entities, DTOs, services), API controllers (upload, user), validations and data transformations.
+- **Excluded (in this phase):** E2E tests, integration tests with a real database, frontend Angular tests (these already exist under `tests/presentation/` for upload, login, onboarding).
+
+**Tools.**
+
+- **Vitest** for execution and assertions (also used at project root for the backend).
+- **Environment:** Node (services, mocked repositories, controllers).
+- **Coverage:** `@vitest/coverage-v8` for coverage reports.
+
+**Commands.**
+
+| Command | Description |
+|--------|-------------|
+| `npm test` | Run all backend unit tests once |
+| `npm run test:coverage` | Run tests and generate coverage (terminal + HTML in `coverage/`) |
+
+**Test suites implemented.**
+
+| Layer | File | Cases |
+|-------|------|--------|
+| Entities | `tests/business/entities/user-entity.spec.ts` | 4: `UserEntity.getEmailDomain()` (empty, no @, valid, multiple @) |
+| Entities | `tests/business/entities/upload-entity.spec.ts` | 3: `UploadEntity.normalizeKeys()` (trim/lowercase/underscore, values, already normalized) |
+| Services | `tests/business/services/upload-service.spec.ts` | 3: `mapRowsToEntities()` (null rows, empty array, valid rows) |
+| Services | `tests/business/services/user-service.spec.ts` | 4: `checkUser()` (missing payload, existing user, new user with/without company; repository mocked) |
+| Controllers | `tests/presentation/api/controllers/upload-controller.spec.ts` | 5: `handleUpload()` (400 missing/invalid rows, 200 with data/redirect, 500 on service error) |
+| Controllers | `tests/presentation/api/controllers/user-controllers.spec.ts` | 5: `getPayload()` (401 no sub, 200 /monitoring and /company/:id, 403 company not registered, 500 on error) |
+
+**Total:** 6 spec files, 24 tests, all passing.
+
+**Directory layout.**
+
+```
+tests/
+├── business/
+│   ├── entities/   (user-entity.spec.ts, upload-entity.spec.ts)
+│   └── services/   (upload-service.spec.ts, user-service.spec.ts)
+└── presentation/
+    └── api/controllers/   (upload-controller.spec.ts, user-controllers.spec.ts)
+```
+
+**Conventions.** One `*.spec.ts` file per tested module, mirroring `src/`. Use `vi.mock()` for DB/HTTP modules. Descriptive test names; Arrange–Act–Assert where appropriate.
+
+**Coverage (V8).** Scope: `src/business/**/*.ts` and `src/presentation/api/**/*.ts`. Example summary:
+
+| Metric | Value |
+|--------|--------|
+| Statements | ~86% |
+| Branches | ~80% |
+| Functions | ~73% |
+| Lines | ~86% |
+
+- **business/entities:** 100%.
+- **business/services:** 100% statements/lines.
+- **presentation/api/controllers:** ~97% statements/lines.
+- **Routes and middleware:** not covered by these unit tests (thin wiring); can be covered by integration or E2E.
+
+To refresh coverage numbers, run `npm run test:coverage` and check the terminal output or `coverage/index.html`.
+
 ## 22. FR–NFR Correlation Matrix
 
 | FR ID | Related NFRs | Justification                                                                  |
@@ -862,5 +929,5 @@ The combination of functional, non-functional, and usability tests provides stro
 | US12       | FR12        |
 
 ## 24. Conclusion
-x'
+
 The proposed solution establishes a structured and scalable foundation for transforming Equiem’s onboarding process from a fragmented, manual workflow into a reliable and strategically differentiated intake system. Through comprehensive business analysis, clear requirement definition, and a focused MVP strategy, the project directly addresses operational bottlenecks that currently limit efficiency, data integrity, and speed of deployment. By embedding validation, standardization, and collaborative capabilities at the point of data entry, the platform significantly reduces manual effort, minimizes rework, and enables parallel onboarding at scale. Ultimately, the initiative accelerates time-to-launch, enhances customer experience, and strengthens operational resilience, positioning onboarding not as a constraint, but as a sustainable competitive advantage for Equiem’s continued growth.
