@@ -1,0 +1,23 @@
+{
+  "extends": "../src/presentation/web/tsconfig.json",
+  "compilerOptions": {
+    "baseUrl": ".",
+    "types": [],
+    "paths": {
+      "@angular/core/testing": ["../src/presentation/web/node_modules/@angular/core/types/testing.d.ts"],
+      "@angular/common/http": ["../src/presentation/web/node_modules/@angular/common/types/http.d.ts"],
+      "@angular/common/http/testing": ["../src/presentation/web/node_modules/@angular/common/types/http-testing.d.ts"],
+      "@angular/router": ["../src/presentation/web/node_modules/@angular/router"],
+      "@auth0/auth0-angular": ["../src/presentation/web/node_modules/@auth0/auth0-angular"],
+      "rxjs": ["../src/presentation/web/node_modules/rxjs"],
+      "rxjs/*": ["../src/presentation/web/node_modules/rxjs/*"],
+      "vitest": ["../src/presentation/web/node_modules/vitest"],
+      "vitest/*": ["../src/presentation/web/node_modules/vitest/*"]
+    }
+  },
+  "include": [
+    "presentation/**/*.spec.ts",
+    "business/**/*.spec.ts",
+    "data/**/*.spec.ts"
+  ]
+}

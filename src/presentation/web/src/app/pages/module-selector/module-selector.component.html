@@ -1,0 +1,41 @@
+<div class="selector-shell">
+  <header class="selector-header">
+    <h1>Select sections for this onboarding</h1>
+    <p>Only the selected sections will appear in the form.</p>
+  </header>
+
+  @if (loading()) {
+    <p class="loading">Loading sections…</p>
+  } @else {
+    <section class="selector-card">
+      <div class="actions">
+        <button type="button" class="btn btn-secondary" (click)="selectAll()">Select all</button>
+        <button type="button" class="btn btn-secondary" (click)="clearAll()">Clear all</button>
+      </div>
+
+      <div class="section-list">
+        @for (section of sections(); track section) {
+          <label class="section-item">
+            <input
+              type="checkbox"
+              [checked]="isSelected(section)"
+              (change)="toggleSection(section)"
+            />
+            <span>{{ sectionLabels[section] ?? section }}</span>
+          </label>
+        }
+      </div>
+
+      <div class="footer">
+        <button
+          type="button"
+          class="btn btn-primary"
+          [disabled]="!canContinue()"
+          (click)="continueToForm()"
+        >
+          Continue
+        </button>
+      </div>
+    </section>
+  }
+</div>

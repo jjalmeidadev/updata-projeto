@@ -1,0 +1,69 @@
+.field-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 20px;
+}
+
+.field-label {
+  font-weight: 600;
+  font-size: 0.95rem;
+  color: #1a1a2e;
+}
+
+.field-description {
+  font-size: 0.82rem;
+  color: #666;
+  margin: 0;
+}
+
+.field-hint {
+  font-size: 0.78rem;
+  color: #999;
+  margin: 2px 0 0;
+}
+
+.field-input {
+  padding: 10px 12px;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  font-size: 0.95rem;
+  outline: none;
+  transition: border-color 0.2s;
+  background: #fff;
+}
+
+.field-input:focus {
+  border-color: #6366f1;
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.15);
+}
+
+.field-multiselect {
+  min-height: 120px;
+}
+
+.field-checkbox-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.field-checkbox {
+  width: 18px;
+  height: 18px;
+  accent-color: #6366f1;
+  cursor: pointer;
+}
+
+.field-boolean-options {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+}
+
+.boolean-option {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+}

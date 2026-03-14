@@ -1,0 +1,1197 @@
+[
+  {
+    "id": "q1",
+    "moduleId": "onboarding",
+    "sectionId": "building-setup",
+    "question": "Building name",
+    "description": "List all buildings on the site.",
+    "type": "text",
+    "order": 1
+  },
+  {
+    "id": "q2",
+    "moduleId": "onboarding",
+    "sectionId": "building-setup",
+    "question": "How many levels are there in each building?",
+    "description": "Insert the levels for each building, including non-occupier floors.",
+    "type": "text",
+    "order": 2
+  },
+  {
+    "id": "q3",
+    "moduleId": "onboarding",
+    "sectionId": "building-setup",
+    "question": "How many occupants are in the building?",
+    "description": "Roughly how many occupants are in the building.",
+    "type": "integer",
+    "order": 3
+  },
+  {
+    "id": "q4",
+    "moduleId": "onboarding",
+    "sectionId": "building-setup",
+    "question": "What is the daily footfall?",
+    "description": "Roughly how many people are in the building on a daily basis? Which days of the week are busiest?",
+    "type": "integer",
+    "order": 4
+  },
+  {
+    "id": "q5",
+    "moduleId": "onboarding",
+    "sectionId": "building-setup",
+    "question": "What is the building area?",
+    "description": "What is the size of the building (SQM or SQF)?",
+    "type": "integer",
+    "order": 5
+  },
+  {
+    "id": "q6",
+    "moduleId": "onboarding",
+    "sectionId": "building-setup",
+    "question": "Would you like to group one or more buildings into an area?",
+    "description": "Create a new area (e.g., North Plaza, South Plaza).",
+    "type": "text",
+    "order": 6
+  },
+    {
+  "id": "q7",
+  "moduleId": "onboarding",
+  "sectionId": "company-details",
+  "question": "Company name",
+  "description": "E.g. Equiem",
+  "type": "text",
+  "order": 7
+},
+{
+  "id": "q8",
+  "moduleId": "onboarding",
+  "sectionId": "company-details",
+  "question": "Company email domain(s)",
+  "description": "Everything after the @ symbol in the email address.",
+  "type": "text",
+  "order": 8
+},
+{
+  "id": "q9",
+  "moduleId": "onboarding",
+  "sectionId": "company-details",
+  "question": "Industry",
+  "type": "dropdown",
+  "options": [
+    "Accounting",
+    "Advertising/Public Relations",
+    "Aerospace",
+    "Agriculture",
+    "Airlines",
+    "Architectural Services",
+    "Automotive",
+    "Banking",
+    "Bars & Restaurants",
+    "Building Services",
+    "Communications",
+    "Construction",
+    "Defense",
+    "Drilling/Mining",
+    "Dry Cleaning",
+    "Educational Services",
+    "Electronics",
+    "Energy & Natural Resources",
+    "Engineering",
+    "Entertainment",
+    "Environment",
+    "Fashion",
+    "Finance",
+    "Food & Beverage",
+    "General Contractors",
+    "Government Services",
+    "Health Services",
+    "Hospitality",
+    "Information Technology",
+    "Insurance",
+    "Lawyers/Law Firms",
+    "Legal",
+    "Logistics",
+    "Manufacturing",
+    "Media",
+    "Not for Profit",
+    "Other",
+    "Parking",
+    "Pharmaceutical",
+    "Postal/Freight",
+    "Printing & Publishing",
+    "Professional Services",
+    "Real Estate",
+    "Recruitment & Consulting",
+    "Retail",
+    "Securities & Investment",
+    "Security",
+    "Sports & Fitness",
+    "Technology",
+    "Telecomms",
+    "Tourism",
+    "Transportation",
+    "Utilities",
+    "Venture Capital"
+  ],
+  "order": 9
+},
+{
+  "id": "q10",
+  "moduleId": "onboarding",
+  "sectionId": "company-details",
+  "question": "Company attribute",
+  "description": "Add your own options (e.g. Commercial, Retail, Coworking Tenant).",
+  "type": "text",
+  "order": 10
+},
+{
+  "id": "q11",
+  "moduleId": "onboarding",
+  "sectionId": "company-details",
+  "question": "Building they are located in",
+  "type": "text",
+  "order": 11
+},
+{
+  "id": "q12",
+  "moduleId": "onboarding",
+  "sectionId": "company-details",
+  "question": "Level(s) they are located on",
+  "type": "text",
+  "order": 12
+},
+{
+  "id": "q13",
+  "moduleId": "onboarding",
+  "sectionId": "company-details",
+  "question": "Approximate number of employees",
+  "type": "integer",
+  "order": 13
+},
+{
+  "id": "q14",
+  "moduleId": "onboarding",
+  "sectionId": "residential-details",
+  "question": "Apartment name or number",
+  "description": "E.g. 1010",
+  "type": "text",
+  "order": 14
+},
+{
+  "id": "q15",
+  "moduleId": "onboarding",
+  "sectionId": "residential-details",
+  "question": "Building",
+  "description": "Select the building where the apartment is located.",
+  "type": "text",
+  "order": 15
+},
+{
+  "id": "q16",
+  "moduleId": "onboarding",
+  "sectionId": "residential-details",
+  "question": "Level",
+  "description": "Which level the apartment is located on.",
+  "type": "integer",
+  "order": 16
+},
+{
+  "id": "q17",
+  "moduleId": "onboarding",
+  "sectionId": "amenity-details",
+  "question": "Building",
+  "description": "Which building is the amenity located in?",
+  "type": "text",
+  "order": 17
+},
+{
+  "id": "q18",
+  "moduleId": "onboarding",
+  "sectionId": "amenity-details",
+  "question": "Level",
+  "description": "Which level is the amenity located on?",
+  "type": "text",
+  "order": 18
+},
+{
+  "id": "q19",
+  "moduleId": "onboarding",
+  "sectionId": "amenity-details",
+  "question": "Amenity title",
+  "type": "text",
+  "order": 19
+},
+{
+  "id": "q20",
+  "moduleId": "onboarding",
+  "sectionId": "amenity-details",
+  "question": "Amenity type",
+  "description": "E.g. Meeting Room, Amenity, Gym, Lounge.",
+  "type": "text",
+  "order": 20
+},
+{
+  "id": "q21",
+  "moduleId": "onboarding",
+  "sectionId": "amenity-details",
+  "question": "Capacity",
+  "description": "Maximum number of people that can use the amenity.",
+  "type": "integer",
+  "order": 21
+},
+{
+  "id": "q22",
+  "moduleId": "onboarding",
+  "sectionId": "amenity-details",
+  "question": "Description",
+  "description": "Provide a description of the amenity.",
+  "type": "text",
+  "order": 22
+},
+{
+  "id": "q23",
+  "moduleId": "onboarding",
+  "sectionId": "amenity-details",
+  "question": "Images",
+  "description": "Upload images of the amenity or attach via email.",
+  "type": "file",
+  "order": 23
+},
+{
+  "id": "q24",
+  "moduleId": "onboarding",
+  "sectionId": "amenity-details",
+  "question": "Videos",
+  "description": "Provide a link to a video (e.g. Vimeo or YouTube).",
+  "type": "text",
+  "order": 24
+},
+{
+  "id": "q25",
+  "moduleId": "onboarding",
+  "sectionId": "amenity-details",
+  "question": "Hourly rate",
+  "description": "Price per hour.",
+  "type": "integer",
+  "order": 25
+},
+{
+  "id": "q26",
+  "moduleId": "onboarding",
+  "sectionId": "amenity-details",
+  "question": "Half day rate",
+  "type": "integer",
+  "order": 26
+},
+{
+  "id": "q27",
+  "moduleId": "onboarding",
+  "sectionId": "amenity-details",
+  "question": "Full day rate",
+  "type": "integer",
+  "order": 27
+},
+{
+  "id": "q28",
+  "moduleId": "onboarding",
+  "sectionId": "amenity-details",
+  "question": "Out of hours hourly rate",
+  "type": "integer",
+  "order": 28
+},
+{
+  "id": "q29",
+  "moduleId": "onboarding",
+  "sectionId": "amenity-rates",
+  "question": "Weekend hourly rate",
+  "type": "decimal",
+  "order": 29
+},
+{
+  "id": "q30",
+  "moduleId": "onboarding",
+  "sectionId": "amenity-rates",
+  "question": "Start of business hours",
+  "type": "time",
+  "order": 30
+},
+{
+  "id": "q31",
+  "moduleId": "onboarding",
+  "sectionId": "amenity-rates",
+  "question": "End of business hours",
+  "type": "time",
+  "order": 31
+},
+{
+  "id": "q32",
+  "moduleId": "onboarding",
+  "sectionId": "amenity-rates",
+  "question": "Half day duration (hours)",
+  "type": "integer",
+  "order": 32
+},
+{
+  "id": "q33",
+  "moduleId": "onboarding",
+  "sectionId": "amenity-rates",
+  "question": "Payment methods",
+  "description": "Select all supported payment methods.",
+  "type": "text",
+  "order": 33
+},
+{
+  "id": "q41",
+  "moduleId": "onboarding",
+  "sectionId": "amenity-configurations",
+  "question": "Room configuration",
+  "type": "text",
+  "order": 41
+},
+{
+  "id": "q42",
+  "moduleId": "onboarding",
+  "sectionId": "amenity-configurations",
+  "question": "Features",
+  "type": "text",
+  "order": 42
+},
+{
+  "id": "q43",
+  "moduleId": "onboarding",
+  "sectionId": "amenity-configurations",
+  "question": "Shared facilities",
+  "type": "text",
+  "order": 43
+},
+{
+  "id": "q44",
+  "moduleId": "onboarding",
+  "sectionId": "amenity-availability",
+  "question": "Start date",
+  "description": "Start date if the amenity is temporarily available.",
+  "type": "date",
+  "order": 44
+},
+{
+  "id": "q45",
+  "moduleId": "onboarding",
+  "sectionId": "amenity-availability",
+  "question": "End date",
+  "description": "End date if the amenity is temporarily available.",
+  "type": "date",
+  "order": 45
+},
+{
+  "id": "q46",
+  "moduleId": "onboarding",
+  "sectionId": "amenity-availability",
+  "question": "Prep time before booking (minutes)",
+  "description": "Time needed before a booking to prepare the amenity.",
+  "type": "integer",
+  "order": 46
+},
+{
+  "id": "q47",
+  "moduleId": "onboarding",
+  "sectionId": "amenity-availability",
+  "question": "Prep time after booking (minutes)",
+  "description": "Time needed after a booking to reset the amenity.",
+  "type": "integer",
+  "order": 47
+},
+{
+  "id": "q48",
+  "moduleId": "onboarding",
+  "sectionId": "amenity-availability",
+  "question": "Minimum notice before booking",
+  "description": "Minimum time required before a booking can be made.",
+  "type": "text",
+  "order": 48
+},
+{
+  "id": "q49",
+  "moduleId": "onboarding",
+  "sectionId": "amenity-availability",
+  "question": "Maximum time before booking",
+  "description": "How far in advance bookings can be made.",
+  "type": "text",
+  "order": 49
+},
+{
+  "id": "q50",
+  "moduleId": "onboarding",
+  "sectionId": "amenity-availability",
+  "question": "Booking type",
+  "description": "Choose whether bookings are flexible or use fixed slots.",
+  "type": "dropdown",
+  "options": [
+    "Flexible",
+    "Slots"
+  ],
+  "order": 50
+},
+{
+  "id": "q51",
+  "moduleId": "onboarding",
+  "sectionId": "amenity-availability",
+  "question": "Days available",
+  "description": "Select the days the amenity can be booked.",
+  "type": "multi-select",
+  "options": [
+    "Monday",
+    "Tuesday",
+    "Wednesday",
+    "Thursday",
+    "Friday",
+    "Saturday",
+    "Sunday"
+  ],
+  "order": 51
+},
+{
+  "id": "q52",
+  "moduleId": "onboarding",
+  "sectionId": "amenity-availability",
+  "question": "Available from (time)",
+  "type": "time",
+  "order": 52
+},
+{
+  "id": "q53",
+  "moduleId": "onboarding",
+  "sectionId": "amenity-availability",
+  "question": "Available to (time)",
+  "type": "time",
+  "order": 53
+},
+{
+  "id": "q54",
+  "moduleId": "onboarding",
+  "sectionId": "amenity-availability",
+  "question": "Minimum booking length (minutes)",
+  "type": "integer",
+  "order": 54
+},
+{
+  "id": "q55",
+  "moduleId": "onboarding",
+  "sectionId": "amenity-availability",
+  "question": "Maximum booking length (minutes)",
+  "type": "integer",
+  "order": 55
+},
+{
+  "id": "q56",
+  "moduleId": "onboarding",
+  "sectionId": "amenity-extras",
+  "question": "Add-ons",
+  "description": "Optional extras that can be added to a booking (e.g. projector, catering).",
+  "type": "text",
+  "order": 56
+},
+{
+  "id": "q57",
+  "moduleId": "onboarding",
+  "sectionId": "amenity-extras",
+  "question": "Required information",
+  "description": "Additional information required from users when booking.",
+  "type": "text",
+  "order": 57
+},
+{
+  "id": "q56",
+  "moduleId": "onboarding",
+  "sectionId": "amenity-extras",
+  "question": "Add-ons",
+  "description": "Optional extras that can be added to a booking (e.g. projector, catering).",
+  "type": "text",
+  "order": 56
+},
+{
+  "id": "q57",
+  "moduleId": "onboarding",
+  "sectionId": "amenity-extras",
+  "question": "Required information",
+  "description": "Additional information required from users when booking.",
+  "type": "text",
+  "order": 57
+},
+{
+  "id": "q56",
+  "moduleId": "onboarding",
+  "sectionId": "amenity-extras",
+  "question": "Add-ons",
+  "description": "Optional extras that can be added to a booking (e.g. projector, catering).",
+  "type": "text",
+  "order": 56
+},
+{
+  "id": "q57",
+  "moduleId": "onboarding",
+  "sectionId": "amenity-extras",
+  "question": "Required information",
+  "description": "Additional information required from users when booking.",
+  "type": "text",
+  "order": 57
+},
+{
+  "id": "q62",
+  "moduleId": "onboarding",
+  "sectionId": "amenity-settings",
+  "question": "Are recurring bookings allowed",
+  "description": "This option is only available if automatic approval is enabled.",
+  "type": "boolean",
+  "order": 62
+},
+{
+  "id": "q63",
+  "moduleId": "onboarding",
+  "sectionId": "amenity-settings",
+  "question": "Is this resource dependent on other resources",
+  "description": "For example: this room must be booked together with another room.",
+  "type": "text",
+  "order": 63
+},
+{
+  "id": "q64",
+  "moduleId": "onboarding",
+  "sectionId": "amenity-calendar",
+  "question": "Does this resource have its own calendar?",
+  "type": "boolean",
+  "order": 64
+},
+{
+  "id": "q65",
+  "moduleId": "onboarding",
+  "sectionId": "amenity-calendar",
+  "question": "Calendar email address",
+  "description": "Provide the calendar email address if the resource has its own calendar.",
+  "type": "text",
+  "order": 65
+},
+{
+  "id": "q66",
+  "moduleId": "onboarding",
+  "sectionId": "amenity-calendar",
+  "question": "ICS calendar link",
+  "description": "Provide the ICS link for syncing the calendar.",
+  "type": "text",
+  "order": 66
+},
+{
+  "id": "q67",
+  "moduleId": "onboarding",
+  "sectionId": "amenity-terms",
+  "question": "Booking terms and conditions",
+  "description": "Provide any terms and conditions that apply to bookings.",
+  "type": "text",
+  "order": 67
+},
+{
+  "id": "q68",
+  "moduleId": "onboarding",
+  "sectionId": "amenity-cancellation",
+  "question": "Notice required for cancellation",
+  "description": "Minimum notice required before a booking can be cancelled.",
+  "type": "text",
+  "order": 68
+},
+{
+  "id": "q69",
+  "moduleId": "onboarding",
+  "sectionId": "amenity-cancellation",
+  "question": "Cancellation policy and chargeable fees",
+  "description": "Define the cancellation rules and any associated fees.",
+  "type": "textarea",
+  "order": 69
+},
+{
+  "id": "q70",
+  "moduleId": "permits",
+  "sectionId": "Permit Configuration",
+  "question": "Will you use the Equiem question templates or provide your own?",
+  "description": "Templates can be found on the following tabs.",
+  "type": "text",
+  "order": 70
+},
+{
+  "id": "q71",
+  "moduleId": "permits",
+  "sectionId": "Permit Configuration",
+  "question": "Please indicate which question set(s) apply to which permit type: Access or Works",
+  "type": "text",
+  "order": 71
+},
+{
+  "id": "q72",
+  "moduleId": "permits",
+  "sectionId": "Permit Configuration",
+  "question": "Would you like question sets to be ticked or unticked by default?",
+  "description": "E.g. if ticked, a contractor will have to make a choice on which templates they don't require.",
+  "type": "text",
+  "order": 72
+},
+{
+  "id": "q73",
+  "moduleId": "permits",
+  "sectionId": "Permit Configuration",
+  "question": "Are comments mandatory?",
+  "type": "text",
+  "order": 73
+},
+{
+  "id": "q74",
+  "moduleId": "permits",
+  "sectionId": "Permit Configuration",
+  "question": "Would you like to capture the car registration?",
+  "type": "text",
+  "order": 74
+},
+{
+  "id": "q75",
+  "moduleId": "permits",
+  "sectionId": "Permit Configuration",
+  "question": "Will you be signing off permits digitally (ie. via iPad)?",
+  "description": "If yes, please confirm you have the device in place and who should be able to sign permits digitally. Name(s) and Email Address(es)",
+  "type": "textarea",
+  "order": 75
+},
+{
+  "id": "q76",
+  "moduleId": "permits",
+  "sectionId": "Permit Configuration",
+  "question": "Do you want to stop contractors submitting permits without uploading documentation?",
+  "type": "text",
+  "order": 76
+},
+{
+  "id": "q77",
+  "moduleId": "permits",
+  "sectionId": "Permit Configuration",
+  "question": "What is the minimum notice period for a permit to be submitted?",
+  "type": "text",
+  "order": 77
+},
+{
+  "id": "q78",
+  "moduleId": "permits",
+  "sectionId": "Permit Configuration",
+  "question": "What is the maximum duration of a permit?",
+  "type": "text",
+  "order": 78
+},
+{
+  "id": "q79",
+  "moduleId": "permits",
+  "sectionId": "Permit Configuration",
+  "question": "Is contractor phone number mandatory?",
+  "type": "text",
+  "order": 79
+},
+{
+  "id": "q80",
+  "moduleId": "permits",
+  "sectionId": "Permit Configuration",
+  "question": "Do you have an essential documents / required reading?",
+  "description": "E.g. House Rules & Regs. If yes, please provide as an attachment upon return of this template.",
+  "type": "text",
+  "order": 80
+},
+{
+  "id": "q81",
+  "moduleId": "permits",
+  "sectionId": "Permit Configuration",
+  "question": "Please list users who need to be notified of new permit submissions.",
+  "description": "Please provide name(s) and email address(es)",
+  "type": "text",
+  "order": 81
+},
+{
+  "id": "q82",
+  "moduleId": "permits",
+  "sectionId": "Permit Configuration",
+  "question": "Please list the Property Management team member(s) who need to be included in the training for this module, and what level of permit approval they require (1,2,3).",
+  "description": "Please provide name(s) and email address(es)",
+  "type": "text",
+  "order": 82
+},
+
+{
+  "id": "q83",
+  "moduleId": "permits",
+  "sectionId": "Confined Spaces",
+  "question": "Incoming services (gas; electric; water; steam) have been isolated",
+  "type": "boolean",
+  "order": 83
+},
+{
+  "id": "q84",
+  "moduleId": "permits",
+  "sectionId": "Confined Spaces",
+  "question": "Gas monitoring equipment requirements have been identified and equipment made available before commencement of work. Personnel are trained in the use of this equipment",
+  "type": "boolean",
+  "order": 84
+},
+{
+  "id": "q85",
+  "moduleId": "permits",
+  "sectionId": "Confined Spaces",
+  "question": "Respiratory Protection Equipment requirements have been identified and equipment made available before commencement of work. Personnel are trained in the use of RPE equipment",
+  "type": "boolean",
+  "order": 85
+},
+{
+  "id": "q86",
+  "moduleId": "permits",
+  "sectionId": "Confined Spaces",
+  "question": "Additional fire protection requirements have been identified and equipment made available before commencement of work. Personnel are trained in the use of this equipment",
+  "type": "boolean",
+  "order": 86
+},
+{
+  "id": "q87",
+  "moduleId": "permits",
+  "sectionId": "Confined Spaces",
+  "question": "Powered equipment/valves are isolated/shut off",
+  "type": "boolean",
+  "order": 87
+},
+{
+  "id": "q88",
+  "moduleId": "permits",
+  "sectionId": "Confined Spaces",
+  "question": "Certified safety belt and life line requirements have been identified and equipment made available before commencement of work. Personnel are trained in the use of this equipment",
+  "type": "boolean",
+  "order": 88
+},
+{
+  "id": "q89",
+  "moduleId": "permits",
+  "sectionId": "Confined Spaces",
+  "question": "Supervision is provided for duration of works. Provide name and emergency contact number",
+  "description": "Please use the comment box to provide the name and emergency contact number.",
+  "type": "boolean",
+  "order": 89
+},
+{
+  "id": "q90",
+  "moduleId": "permits",
+  "sectionId": "Confined Spaces",
+  "question": "Emergency and rescue procedures are in place and operatives trained",
+  "type": "boolean",
+  "order": 90
+},
+{
+  "id": "q91",
+  "moduleId": "permits",
+  "sectionId": "Confined Spaces",
+  "question": "Lighting equipment requirements have been identified and equipment made available before commencement of work",
+  "type": "boolean",
+  "order": 91
+},
+
+{
+  "id": "q92",
+  "moduleId": "permits",
+  "sectionId": "Electrical Works",
+  "question": "Contractor Must Provide Rubber Matting to BS 921 unless already in place",
+  "type": "boolean",
+  "order": 92
+},
+{
+  "id": "q93",
+  "moduleId": "permits",
+  "sectionId": "Electrical Works",
+  "question": "Contractor Must Provide Rubber Matting to BE EN 61111:2009",
+  "type": "boolean",
+  "order": 93
+},
+{
+  "id": "q94",
+  "moduleId": "permits",
+  "sectionId": "Electrical Works",
+  "question": "Regulation 14 Electricity at Work Regulations 1989. No Live working unless truly essential. Apparatus must be proven dead",
+  "type": "boolean",
+  "order": 94
+},
+{
+  "id": "q95",
+  "moduleId": "permits",
+  "sectionId": "Electrical Works",
+  "question": "Switching Schedule is attached",
+  "type": "boolean",
+  "order": 95
+},
+{
+  "id": "q96",
+  "moduleId": "permits",
+  "sectionId": "Electrical Works",
+  "question": "Prove apparatus dead with the use of suitable test instrument",
+  "type": "boolean",
+  "order": 96
+},
+{
+  "id": "q97",
+  "moduleId": "permits",
+  "sectionId": "Electrical Works",
+  "question": "The system/equipment is efficiently connected to earth at the following identified points",
+  "type": "boolean",
+  "order": 97
+},
+{
+  "id": "q98",
+  "moduleId": "permits",
+  "sectionId": "Electrical Works",
+  "question": "Specific Warning Notices on points of isolation/work to be provided",
+  "type": "boolean",
+  "order": 98
+},
+{
+  "id": "q99",
+  "moduleId": "permits",
+  "sectionId": "Electrical Works",
+  "question": "Reference No's of padlocks used, kept in a Safety Key Box",
+  "type": "boolean",
+  "order": 99
+},
+{
+  "id": "q100",
+  "moduleId": "permits",
+  "sectionId": "Fire Alarm Isolation",
+  "question": "Has a Fire Risk Assessment been conducted for the isolation/works and associated controls put in place",
+  "type": "boolean",
+  "order": 100
+  },
+  {
+  "id": "q101",
+  "moduleId": "permits",
+  "sectionId": "Fire Alarm Isolation",
+  "question": "If Hot Works are being performed ensure the HOT WORKS PERMIT section is completed",
+  "type": "boolean",
+  "order": 101
+  },
+  {
+  "id": "q102",
+  "moduleId": "permits",
+  "sectionId": "Fire Alarm Isolation",
+  "question": "Confirm smoke detectors are being capped during isolation and caps removed on completion of works",
+  "type": "boolean",
+  "order": 102
+  },
+  {
+  "id": "q103",
+  "moduleId": "permits",
+  "sectionId": "Fire Alarm Isolation",
+  "question": "How long the area will be isolated for is indicated on the permit or attached documents",
+  "type": "boolean",
+  "order": 103
+  },
+  {
+  "id": "q104",
+  "moduleId": "permits",
+  "sectionId": "Fire Alarm Isolation",
+  "question": "Confirm manual call points in the vicinity of the work area still active prior to works",
+  "type": "boolean",
+  "order": 104
+  },
+  {
+  "id": "q105",
+  "moduleId": "permits",
+  "sectionId": "Fire Alarm Isolation",
+  "question": "The type of area being isolated has been indicated on the permit or attached documents (including stating whether High Risk or Low Risk)",
+  "type": "boolean",
+  "order": 105
+  },
+  {
+  "id": "q106",
+  "moduleId": "permits",
+  "sectionId": "Fire Alarm Isolation",
+  "question": "Are the isolated detectors covering an emergency exit path? If so ensure Emergency Evacuation plans are in place/updated and all affected persons aware",
+  "type": "boolean",
+  "order": 106
+  },
+  {
+  "id": "q107",
+  "moduleId": "permits",
+  "sectionId": "Fire Alarm Isolation",
+  "question": "The date and approximate time when the system is to be re-instated has been indicated on the permit or attached documents",
+  "type": "boolean",
+  "order": 107
+  },
+  {
+  "id": "q108",
+  "moduleId": "permits",
+  "sectionId": "Fire Alarm Isolation",
+  "question": "Ensure that the de-isolation procedures are carried out as per the Fire Safety Manual",
+  "type": "boolean",
+  "order": 108
+  },
+  {
+  "id": "q109",
+  "moduleId": "permits",
+  "sectionId": "Fire Alarm Isolation",
+  "question": "The number of devices being isolated has been indicated on the permit or attached documents",
+  "type": "boolean",
+  "order": 109
+  },
+  {
+  "id": "q110",
+  "moduleId": "permits",
+  "sectionId": "Fire Alarm Isolation",
+  "question": "Does the Work area have sufficient Sprinkler coverage",
+  "type": "boolean",
+  "order": 110
+  },
+  {
+  "id": "q111",
+  "moduleId": "permits",
+  "sectionId": "Fire Alarm Isolation",
+  "question": "Is a manual Fire Watch in place? - state the frequency and who conducting in the comments",
+  "type": "boolean",
+  "order": 111
+  },
+  {
+  "id": "q112",
+  "moduleId": "permits",
+  "sectionId": "Fire Alarm Isolation",
+  "question": "Means to raise the alarm in the event of a fire have been provided? Please state what means will be available and what actions should be taken in the comments",
+  "type": "boolean",
+  "order": 112
+  },
+  {
+  "id": "q113",
+  "moduleId": "permits",
+  "sectionId": "Hot Works",
+  "question": "Site has been checked and all combustibles and flammable substances in the vicinity of the hot work will be removed or protected prior to commencement of works",
+  "type": "boolean",
+  "order": 113
+  },
+  {
+  "id": "q114",
+  "moduleId": "permits",
+  "sectionId": "Hot Works",
+  "question": "Fire detection system isolation has been agreed with Building Management",
+  "type": "boolean",
+  "order": 114
+  },
+  {
+  "id": "q115",
+  "moduleId": "permits",
+  "sectionId": "Hot Works",
+  "question": "Sprinkler system isolation agreed with Building Management and insurers notified where applicable",
+  "type": "boolean",
+  "order": 115
+  },
+  {
+  "id": "q116",
+  "moduleId": "permits",
+  "sectionId": "Hot Works",
+  "question": "Additional fire protection requirements have been identified and equipment made available prior to commencement of works. Personnel are familiar with the use of the Fire Equipment",
+  "type": "boolean",
+  "order": 116
+  },
+  {
+  "id": "q117",
+  "moduleId": "permits",
+  "sectionId": "Hot Works",
+  "question": "Fire watch to be posted and shall continue for a minimum of 30 minutes after the conclusion of the work; State by Whom and the Frequency",
+  "type": "boolean",
+  "order": 117
+  },
+  {
+  "id": "q118",
+  "moduleId": "permits",
+  "sectionId": "Hot Works",
+  "question": "Area to be inspected for combustion on completion of work and a Fire Watch conducted for a minimum of 30 minutes and shall continue for 30, 60 and 90 minutes after conclusion of the work. State who is",
+  "type": "boolean",
+  "order": 118
+  },
+  {
+  "id": "q119",
+  "moduleId": "permits",
+  "sectionId": "Hot Works",
+  "question": "Area to be inspected for combustion on completion of work and 30,60 and 90 minutes after",
+  "type": "boolean",
+  "order": 119
+  },
+  {
+  "id": "q120",
+  "moduleId": "permits",
+  "sectionId": "Hot Works",
+  "question": "Hot work conducted in areas with vertical or horizontal fire exposures that are not observable by a single individual shall have additional personnel assigned to fire watches to ensure that exposed areas are",
+  "type": "boolean",
+  "order": 120
+  },
+  {
+  "id": "q121",
+  "moduleId": "permits",
+  "sectionId": "Hot Works",
+  "question": "Fire alarm isolation has been agreed with Building Management",
+  "type": "boolean",
+  "order": 121
+  },
+  {
+  "id": "q122",
+  "moduleId": "permits",
+  "sectionId": "Hot Works",
+  "question": "All openings and gaps in walls, floors and risers, through which sparks could pass, are covered with sheets or non-combustible material. Beware of any risk of falls being created",
+  "type": "boolean",
+  "order": 122
+  },
+  {
+  "id": "q123",
+  "moduleId": "permits",
+  "sectionId": "Lone Working",
+  "question": "A specific Lone Working Risk Assessment and Safe System of Work is in place",
+  "type": "boolean",
+  "order": 123
+  },
+  {
+  "id": "q124",
+  "moduleId": "permits",
+  "sectionId": "Lone Working",
+  "question": "Lone Worker has been inducted on the site procedures and the area being worked in",
+  "type": "boolean",
+  "order": 124
+  },
+  {
+  "id": "q125",
+  "moduleId": "permits",
+  "sectionId": "Lone Working",
+  "question": "Site specific Lone Working procedures have been explained",
+  "type": "boolean",
+  "order": 125
+  },
+  {
+  "id": "q126",
+  "moduleId": "permits",
+  "sectionId": "Lone Working",
+  "question": "Security have been notified and a procedure is in place to ensure a communication log is kept to the prescribed frequency (no longer than every 30 minutes)",
+  "type": "boolean",
+  "order": 126
+  },
+  {
+  "id": "q127",
+  "moduleId": "permits",
+  "sectionId": "Lone Working",
+  "question": "A fully operational two way radio or other suitable means of communication has been tested and issued",
+  "type": "boolean",
+  "order": 127
+  },
+  {
+  "id": "q128",
+  "moduleId": "permits",
+  "sectionId": "Lone Working",
+  "question": "Any medical conditions that may affect the Operative conducting the works have been considered, and control measures implemented",
+  "type": "boolean",
+  "order": 128
+  },
+  {
+  "id": "q129",
+  "moduleId": "permits",
+  "sectionId": "Lone Working",
+  "question": "Emergency procedures and rescue plans are in place and operatives aware and trained in the procedures",
+  "type": "boolean",
+  "order": 129
+  },
+  {
+  "id": "q130",
+  "moduleId": "permits",
+  "sectionId": "Working At Height",
+  "question": "Are statutory inspections up to date and all safety equipment verified as safe to use",
+  "type": "boolean",
+  "order": 130
+  },
+  {
+  "id": "q131",
+  "moduleId": "permits",
+  "sectionId": "Working At Height",
+  "question": "Certified safety belt/harnesses and life line requirements have been identified and equipment made available before accessing work area",
+  "type": "boolean",
+  "order": 131
+  },
+  {
+  "id": "q132",
+  "moduleId": "permits",
+  "sectionId": "Working At Height",
+  "question": "Means to prevent falling equipment and materials are in place",
+  "type": "boolean",
+  "order": 132
+  },
+  {
+  "id": "q133",
+  "moduleId": "permits",
+  "sectionId": "Working At Height",
+  "question": "Emergency and rescue procedures are in place and operatives trained",
+  "type": "boolean",
+  "order": 133
+  },
+  {
+  "id": "q134",
+  "moduleId": "permits",
+  "sectionId": "Working At Height",
+  "question": "Fragile or non load bearing surfaces have been identified and control measures are in place for safe working",
+  "type": "boolean",
+  "order": 134
+  },
+  {
+  "id": "q135",
+  "moduleId": "permits",
+  "sectionId": "Working At Height",
+  "question": "Suitable communications are in place",
+  "type": "boolean",
+  "order": 135
+  },
+  {
+  "id": "q136",
+  "moduleId": "permits",
+  "sectionId": "Working At Height",
+  "question": "Personnel are trained in the use of all equipment associated with these works",
+  "type": "boolean",
+  "order": 136
+  },
+  {
+  "id": "q137",
+  "moduleId": "permits",
+  "sectionId": "Working At Height",
+  "question": "Weather conditions have been checked and considered suitable for works to proceed",
+  "type": "boolean",
+  "order": 137
+  },
+  {
+  "id": "q138",
+  "moduleId": "permits",
+  "sectionId": "Working At Height",
+  "question": "Work area will be cordoned off with suitable barriers and signage to prevent injury to others",
+  "type": "boolean",
+  "order": 138
+  },
+  {
+  "id": "q139",
+  "moduleId": "request-management",
+  "sectionId": "Request Management Configuration",
+  "question": "Please list users who need to be notified of new requests.",
+  "description": "Please provide name(s), email address(es) and company.",
+  "type": "text",
+  "order": 139
+  },
+  {
+  "id": "q140",
+  "moduleId": "request-management",
+  "sectionId": "Request Management Configuration",
+  "question": "Please list users who will be assigned requests to resolve (e.g. service partners).",
+  "description": "Please provide name(s), email address(es) and company.",
+  "type": "text",
+  "order": 140
+  },
+  {
+  "id": "q141",
+  "moduleId": "request-management",
+  "sectionId": "Request Management Configuration",
+  "question": "By default, all users from each company will be able to submit new requests. If you, or your tenants, want this to be nominated individuals only, please indicate who from each company should be able to submit requests.",
+  "description": "Please provide name(s), email address(es) and company.",
+  "type": "text",
+  "order": 141
+  }
+]

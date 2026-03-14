@@ -40,6 +40,7 @@
   - [Sprint 5: Large-Scale Processing](#sprint-5-large-scale-processing)
     - [Delivered in this sprint:](#delivered-in-this-sprint-3)
   - [Post-MVP Enhancements (Nice-to-Have)](#post-mvp-enhancements-nice-to-have)
+  - [12.1 Feature Development Progress and Deviations](#121-feature-development-progress-and-deviations)
   - [13. MVP Canvas](#13-mvp-canvas)
     - [13.1. MVP Proposal](#131-mvp-proposal)
     - [13.2. Segmented Personas](#132-segmented-personas)
@@ -47,7 +48,7 @@
     - [13.4. Features](#134-features)
     - [13.5. Expected Results](#135-expected-results)
     - [13.6. Metrics to Validate](#136-metrics-to-validate)
-    - [13.7. Cost \& Schedule](#137-cost--schedule)
+    - [13.7. Cost & Schedule](#137-cost--schedule)
   - [14. Project Risk Matrix and Action Table](#14-project-risk-matrix-and-action-table)
     - [14.1. THREATS](#141-threats)
     - [14.2. OPPORTUNITIES](#142-opportunities)
@@ -67,19 +68,42 @@
       - [FR11 – Onboarding Status and Feedback](#fr11--onboarding-status-and-feedback)
       - [FR12 – Data Consolidation and Secure Integration](#fr12--data-consolidation-and-secure-integration)
     - [16.2. Functional Requirements Validation Tests](#162-functional-requirements-validation-tests)
+    - [16.3. Functional Negative Test Scenarios](#163-functional-negative-test-scenarios)
   - [17. Non-Functional Requirements (NFRs)](#17-non-functional-requirements-nfrs)
     - [17.1. Non-Functional Requirement Details](#171-non-functional-requirement-details)
       - [NFR01 – Data Integrity Compliance](#nfr01--data-integrity-compliance)
       - [NFR02 – Large File Handling and Responsiveness](#nfr02--large-file-handling-and-responsiveness)
       - [NFR03 – Processing Reliability](#nfr03--processing-reliability)
-      - [NFR04 – Extensible File Format Support](#nfr04--extensible-file-format-support)
+      - [NFR04 – Security](#nfr04--security)
       - [NFR05 – Concurrent Submission Handling](#nfr05--concurrent-submission-handling)
     - [17.2. Non-Functional Requirements Validation Tests](#172-non-functional-requirements-validation-tests)
-  - [18. FR–NFR Correlation Matrix](#18-frnfr-correlation-matrix)
-  - [19. User Stories and Traceability](#19-user-stories-and-traceability)
+    - [17.3. Non-Functional Negative Test Scenarios](#173-non-functional-negative-test-scenarios)
+  - [18. Functional Test Execution Strategy](#18-functional-test-execution-strategy)
+    - [Test Execution Instructions](#test-execution-instructions)
+  - [19. Non-Functional Test Execution Strategy](#19-non-functional-test-execution-strategy)
+    - [Execution Method](#execution-method)
+  - [20. Testing Tools and Environment](#20-testing-tools-and-environment)
+    - [Automated Test Frameworks](#automated-test-frameworks)
+  - [21. Test Coverage Discussion](#21-test-coverage-discussion)
+    - [21.1 Unit Tests (Backend): Strategy, Implementation, and Coverage](#211-unit-tests-backend-strategy-implementation-and-coverage)
+  - [22. FR–NFR Correlation Matrix](#22-frnfr-correlation-matrix)
+  - [23. User Stories and Traceability](#23-user-stories-and-traceability)
     - [User Stories](#user-stories)
     - [User Stories and FR Traceability](#user-stories-and-fr-traceability)
-  - [20. Conclusion](#20-conclusion)
+    - [24. Revision of the Proposed Solution](#24-Revision-of-the-Proposed-Solution)
+  - [25. Deployment Architecture](#25-deployment-architecture)
+    - [25.1. Overview](#251-overview)
+    - [25.2. System Infrastructure](#252-system-infrastructure)
+    - [25.3. Frontend Deployment](#253-frontend-deployment)
+    - [25.4. Backend Deployment](#254-backend-deployment)
+    - [25.5. Messaging Infrastructure](#255-messaging-infrastructure)
+    - [25.6. Worker Processing Layer](#256-worker-processing-layer)
+    - [25.7. Database Layer](#257-database-layer)
+    - [25.8. Authentication Service](#258-authentication-service)
+    - [25.9. Communication Protocols](#259-communication-protocols)
+    - [25.10. Deployment Rationale](#2510-deployment-rationale)
+    - [25.11. Performance Considerations](#2511-performance-considerations)
+    - [25.12. Security Considerations](#2512-security-considerations)
 
 ## 1. Introduction
 
@@ -391,6 +415,124 @@ If time allows, the team may implement additional enhancements such as:
 - Tooltips
 - Dark mode
 
+## 12.1 Feature Development Progress and Deviations
+
+This section documents the implementation status of each planned feature and any deviations from the original plan (Section 11 – Feature Brainstorming, Section 12 – Delivery Sequencing, and Section 16 – Functional Requirements). It is updated as development advances.
+
+### Functional Requirement Coverage in This Artefact (50%)
+
+For this artefact, the team scope was to cover **half of the functional requirements** defined in Section 16.
+
+- Total FRs in the project: **12**
+- FRs covered in this artefact scope: **6/12 (50%)**
+
+Covered FR scope in this artefact:
+
+- **FR01** – Structured Onboarding Data Upload (**implemented**)
+- **FR02** – Data Standardization (**implemented**)
+- **FR03** – Intermediate Data Persistence (**partially covered / deviated**)  
+  Current implementation persists state only in client session storage.
+- **FR07** – Automatic Progress Persistence (**partially covered / deviated**)  
+  Current implementation is session-based only.
+- **FR08** – Dynamic Onboarding Interface (**implemented**)  
+- **FR11** – Onboarding Status and Feedback (**partially covered / limited**)  
+  Basic flow/error feedback exists, but full state model is not yet implemented.
+
+### Summary by Planned Delivery
+
+| Planned item (Sprint / FR) | Status | Implementation notes | Deviations |
+| -------------------------- | ------ | ------------------- | ---------- |
+| **Sprint 2: Secure authentication** | Done | Auth0 (JWT) + `GET /api/users`; redirect by user/company. Guard on `/home`, `/form`, `/upload`. | Main app uses Auth0 redirect flow; mock page (`user-mock-auth.html` + `user-mock-listener.js`) is available for token-based testing. |
+| **Sprint 2: Clear submission interface** | Done | Angular SPA: Login, Signup, Home, Upload, Form; routes and guards. | README and early docs referred to Next.js; implemented stack is **Angular**. |
+| **Sprint 2: Standardized templates** | Partial | Onboarding sections and questions from static `questions.json`; section labels and dynamic fields. | No server-side template engine; scope is fixed by JSON. |
+| **Sprint 3: File uploads** (FR01) | Done | `POST /api/upload`; Angular `UploadComponent` and standalone `upload-page.html` + `upload-listener.ts`. CSV, XLSX, XLS. | Plan mentioned CSV and XLSX only; **XLS** also supported. Two front-end entry points (Angular and standalone). |
+| **Sprint 3: File preview before submission** | Partial | User selects file and uploads; backend returns normalized data; form is pre-filled. | No dedicated “preview table” step before sending to backend. |
+| **Sprint 3: Save progress across sessions** (FR07) | Partial | Progress and upload result stored in **sessionStorage** (section index, completed sections, uploaded data). | **Deviation:** No server-side persistence; progress is lost when the session ends or on another device. |
+| **Sprint 3: Real-time validation** | Partial | Backend validates payload shape and normalizes keys; frontend shows upload errors. | No mandatory-field, format, or duplicate checks in backend yet. |
+| **Sprint 3: Mandatory field checks** (FR04) | Not implemented | — | — |
+| **Sprint 3: Duplicate detection** (FR04) | Not implemented | — | — |
+| **Sprint 3: Clear error messages** | Done | 400/500 with `error` and `traceId`; frontend displays upload and auth errors. | — |
+| **FR02: Data standardization** | Done | Backend normalizes spreadsheet keys (e.g. snake_case) in `upload-entity` and `upload-service`; typed DTO. | — |
+| **FR03: Intermediate data persistence** | Deviation | No server-side staging or versioning. | Upload result and form state only in **sessionStorage**; no multi-version storage or controlled consolidation. |
+| **FR04: Data validation and conflict detection** | Not implemented | — | — |
+| **FR05: Safe data correction via re-submission** | Not implemented | — | — |
+| **FR06: Change comparison visualization** | Not implemented | — | — |
+| **FR07: Automatic progress persistence** | Partial | sessionStorage only (see above). | Same as “Save progress across sessions”. |
+| **FR08: Dynamic onboarding interface** | Partial | Sections and dynamic fields from `questions.json`; navigation by section. | **Deviation:** No module-driven visibility; all sections from JSON are shown (no “active modules” filter). |
+| **FR09: Section dependency enforcement** | Not implemented | — | — |
+| **FR10: Collaborative section assignment** (Sprint 4) | Not implemented | — | — |
+| **FR11: Onboarding status and feedback** | Partial | Basic feedback exists for auth/upload outcomes and flow transitions. | Full per-section/per-file finite states (Not Started, In Progress, Processing, Completed, Failed) are not implemented yet. |
+| **FR12: Data consolidation and secure integration** | Not implemented | — | No CSV/JSON export or JWT-authenticated push to external systems. |
+| **Sprint 4: Parallel onboarding / collaboration** | Not implemented | — | — |
+| **Sprint 5: Large uploads / scalable processing** | Not implemented | — | Processing is **synchronous** in the request path; no async queue or large-file strategy. |
+
+### Architecture and Standards Deviations
+
+- **Frontend stack:** Project README and some docs referred to **Next.js** (components, pages). The application is implemented in **Angular** (Angular 18+), with Auth0 Angular SDK and Angular Router. This is a deliberate stack choice; docs should be read with Angular in mind.
+- **Backend API:** Coding standards mention **GraphQL (Apollo)** and **TypeORM**. The current backend uses **REST (Express)** and **PostgreSQL** via `pg` (node-postgres). User and upload flows are REST endpoints; no GraphQL or ORM in use.
+- **Persistence:** Staging and onboarding progress are **client-only** (sessionStorage). There is no server-side staging layer, versioning, or progress persistence for the onboarding form.
+
+### Feature-to-File Traceability (Existing Files)
+
+Below are only files that currently exist in the repository.
+
+- **Authentication and user routing (Sprint 2 / FR scope support)**
+  - `src/presentation/web/src/app/pages/login/login.component.ts`
+  - `src/presentation/web/src/app/pages/signup/signup.component.ts`
+  - `src/presentation/web/src/app/app.routes.ts`
+  - `src/presentation/web/src/app/app.config.ts`
+  - `src/presentation/api/routes/user-routes.ts`
+  - `src/presentation/api/controllers/user-controllers.ts`
+  - `src/presentation/api/middleware/auth-middleware.ts`
+  - `src/business/services/user-service.ts`
+  - `src/data/repositories/user-repository.ts`
+
+- **Upload and normalization (FR01, FR02)**
+  - `src/presentation/web/src/app/pages/upload/upload.component.ts`
+  - `src/presentation/web/src/app/pages/upload/upload.component.html`
+  - `src/presentation/web/pages/upload-page.html`
+  - `src/presentation/web/scripts/upload-listener.ts`
+  - `src/presentation/api/routes/upload-routes.ts`
+  - `src/presentation/api/controllers/upload-controller.ts`
+  - `src/business/services/upload-service.ts`
+  - `src/business/entities/upload-entity.ts`
+  - `src/business/dto/upload-row-dto.ts`
+
+- **Onboarding form and dynamic sections (FR08 partial)**
+  - `src/presentation/web/src/app/onboarding-form/onboarding-form.component.ts`
+  - `src/presentation/web/src/app/onboarding-form/onboarding-form.component.html`
+  - `src/presentation/web/src/app/components/dynamic-field/dynamic-field.component.ts`
+  - `src/presentation/web/src/app/services/question.service.ts`
+  - `src/presentation/web/public/questions.json`
+
+- **Progress persistence (FR03/FR07 partial, client-side only)**
+  - `src/presentation/web/src/app/pages/upload/upload.component.ts`
+  - `src/presentation/web/src/app/onboarding-form/onboarding-form.component.ts`
+
+### How to Run the Project Locally
+
+To run the application, use **two terminals**: one for backend and one for frontend.
+
+1. **Backend terminal**
+   - Directory:
+     - `g05/`
+   - Command:
+     - `npm run dev`
+
+2. **Frontend terminal**
+   - Directory:
+     - `g05/src/presentation/web/`
+   - Command:
+     - `npm start`
+
+3. **Expected ports**
+   - Frontend (Angular): `http://localhost:4200`
+   - Backend (Express): `http://localhost:3000`
+
+4. **Important note**
+   - The frontend uses proxy configuration (`proxy.conf.json`) for `/api` requests.
+   - If backend is not running, frontend requests like `/api/users` will fail with `ECONNREFUSED`.
+
 ## 13. MVP Canvas
 
 <div align="center">
@@ -505,26 +647,26 @@ The project will be executed in a 10 week cycle. The governance structure includ
 
 | ID   | Title                                     | Functional Requirement Description                                                                                                                                                                                                                                                           |
 | ---- | ----------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| FR01 | Structured Onboarding Data Upload         | The system must allow authenticated users to submit onboarding data files associated with a specific onboarding process by uploading CSV and XLSX files through the onboarding submission interface, supporting large datasets and multiple files while keeping user interaction responsive. |
+| FR01 | Structured Onboarding Data Upload         | The system must allow authenticated users to submit onboarding data files (CSV and XLSX formats only) associated with a specific onboarding process through the onboarding submission interface. File size limits and responsiveness requirements are defined in NFR02. |
 | FR02 | Data Standardization                      | The system must transform all submitted onboarding data into predefined internal data models and standardized field structures before any validation or consolidation occurs.                                                                                                                |
 | FR03 | Intermediate Data Persistence             | The system must persist submitted onboarding data in an intermediate storage layer to enable validation, correction cycles, and controlled consolidation without overwriting previous versions or the final dataset prematurely.                                                             |
-| FR04 | Data Validation and Conflict Detection    | The system must validate submitted onboarding data by checking mandatory fields, data formats, data types, and business constraints, and must identify duplicates or conflicting records.                                                                                                    |
+| FR04 | Data Validation and Conflict Detection    | The system must validate submitted onboarding data by checking: (1) presence of mandatory fields defined per dataset schema, (2) field data types, (3) format rules (date format YYYY-MM-DD, valid email pattern), and (4) uniqueness constraints based on predefined natural identifiers. The system must identify duplicate or conflicting records based on these identifiers.                                                                                                    |
 | FR05 | Safe Data Correction via Re-Submission    | The system must allow users to correct invalid onboarding data by re-submitting updated files that safely replace previous entries based on natural identifiers defined for each dataset.                                                                                                    |
 | FR06 | Change Comparison Visualization           | The system must present a comparison view that highlights differences between the latest and previous submission for the same dataset or section, focusing on changed fields or records.                                                                                                     |
 | FR07 | Automatic Progress Persistence            | The system must automatically preserve onboarding progress across sessions, ensuring users can resume completion without re-entering previously submitted information.                                                                                                                       |
 | FR08 | Dynamic Onboarding Interface              | The system must dynamically present onboarding sections based on the client’s active modules, ensuring that users only access forms and fields relevant to the selected configuration scope.                                                                                                 |
-| FR09 | Section Dependency Enforcement            | The system must enforce dependencies between onboarding sections, preventing submission of dependent sections before prerequisite sections reach a completed state.                                                                                                                          |
+| FR09 | Section Dependency Enforcement            | The system must enforce dependencies between onboarding sections, preventing submission of dependent sections before prerequisite sections reach a "Completed" state as defined in FR11.                                                                                                                          |
 | FR10 | Collaborative Section Assignment          | The system must enable collaborative onboarding by allowing administrators to assign sections to multiple contributors and support parallel completion of independent sections.                                                                                                              |
-| FR11 | Onboarding Status and Feedback            | The system must track and display onboarding and processing states per section and per file submission (e.g., Not Started, In Progress, Processing, Completed, Failed) and must inform users when processing succeeds or fails.                                                              |
-| FR12 | Data Consolidation and Secure Integration | The system must generate consolidated onboarding datasets in CSV or JSON format and transmit approved data packages to external systems through authenticated integration mechanisms.                                                                                                        |
+| FR11 | Onboarding Status and Feedback            | The system must track and display the following onboarding and processing states per section and per file submission: "Not Started", "In Progress", "Processing", "Completed", and "Failed". These states are finite and exclusive. The system must inform users when processing transitions to either "Completed" or "Failed".                                                              |
+| FR12 | Data Consolidation and Secure Integration | The system must generate consolidated onboarding datasets in CSV or JSON format and transmit approved data packages to external systems via authenticated REST API calls using JWT-based authentication with signature validation.                                                                                                        |
 
 ### 16.1. Functional Requirement Details
 
 #### FR01 – Structured Onboarding Data Upload
 
 - Applies only to onboarding submission interfaces
-- Supports large files and multiple simultaneous uploads
-- Maintains responsive user experience
+- Accepts CSV and XLSX formats only
+- File size and responsiveness constraints defined in NFR02
 
 #### FR02 – Data Standardization
 
@@ -540,9 +682,10 @@ The project will be executed in a 10 week cycle. The governance structure includ
 
 #### FR04 – Data Validation and Conflict Detection
 
-- Verifies required fields
-- Applies format and type rules
-- Detects duplicates and inconsistencies
+- Verifies required fields defined per dataset schema
+- Applies explicit format and type validation rules
+- Enforces uniqueness based on natural identifiers
+- Detects duplicates and inconsistencies deterministically
 
 #### FR05 – Safe Data Correction via Re-Submission
 
@@ -568,7 +711,7 @@ The project will be executed in a 10 week cycle. The governance structure includ
 #### FR09 – Section Dependency Enforcement
 
 - Controls onboarding flow order
-- Ensures consistent completion logic
+- Requires prerequisite sections to be in "Completed" state
 
 #### FR10 – Collaborative Section Assignment
 
@@ -577,80 +720,294 @@ The project will be executed in a 10 week cycle. The governance structure includ
 
 #### FR11 – Onboarding Status and Feedback
 
-- Displays processing and completion states
-- Notifies users of outcomes
+- Uses fixed states: Not Started, In Progress, Processing, Completed, Failed
+- States are mutually exclusive
+- Notifies users on state transition to Completed or Failed
 
 #### FR12 – Data Consolidation and Secure Integration
 
-- Generates export datasets
-- Sends approved data securely
+- Generates export datasets in CSV or JSON
+- Sends approved data via authenticated REST API using JWT
+- Requires successful authentication before transmission
 
-### 16.2. Functional Requirements Validation Tests
+  ### 16.2. Functional Requirements Validation Tests
 
-| ID   | Test                    | Pre-condition            | Procedure                | Expected Result                | Post-condition           |
-| ---- | ----------------------- | ------------------------ | ------------------------ | ------------------------------ | ------------------------ |
-| FR01 | Upload onboarding files | User authenticated       | Upload CSV/XLSX files    | Processing starts responsively | Files stored in staging  |
-| FR02 | Standardize data        | Files uploaded           | Trigger transformation   | Data matches schemas           | Ready for validation     |
-| FR03 | Persist staging data    | Standardized data exists | Save to staging          | Data stored                    | Available for correction |
-| FR04 | Validate data           | Data in staging          | Run validation           | Errors identified              | Report generated         |
-| FR05 | Re-submit data          | Errors exist             | Upload corrected version | Data replaced safely           | Updated dataset stored   |
-| FR06 | Compare submissions     | Multiple versions        | Open comparison          | Changes highlighted            | Review complete          |
-| FR07 | Resume onboarding       | Progress saved           | Reopen system            | Progress restored              | Flow continues           |
-| FR08 | Dynamic sections        | Modules set              | Open onboarding          | Relevant sections shown        | Correct scope            |
-| FR09 | Enforce dependencies    | Parent incomplete        | Access child             | Access blocked                 | Flow maintained          |
-| FR10 | Assign contributors     | Admin logged in          | Assign sections          | Users assigned                 | Parallel work            |
-| FR11 | Track status            | Upload triggered         | Monitor states           | Correct updates                | User informed            |
-| FR12 | Export & integrate      | Sections approved        | Generate and send        | Data transmitted               | External system updated  |
+  | ID   | Test                    | Pre-condition            | Procedure                | Positive Scenario | Expected Result                                                                 | Post-condition           |
+  | ---- | ----------------------- | ------------------------ | ------------------------ | ------------------------------------------------------------------------------ | ------------------------ | -- |
+  | FR01 | Upload onboarding files | User authenticated       | Upload CSV/XLSX files ≤ size defined in NFR02 | A user uploads a valid 50MB CSV file containing correctly structured onboarding data. | File stored in staging layer and submission record created                     | Files stored in staging  | 
+  | FR02 | Standardize data        | Files uploaded           | Trigger transformation   | The system processes a dataset with raw headers and varying date formats, successfully mapping them to the correct internal structure. |Output matches predefined internal schema without structural deviations        | Ready for validation     |
+  | FR03 | Persist staging data    | Standardized data exists | Save to staging          | The user saves a standardized dataset, and the system stores it without overwriting any other data. |New version record created without overwriting previous versions               | Available for correction |
+  | FR04 | Validate data           | Data in staging          | Run validation           | The system scans a dataset where all mandatory fields are present, types match, and no duplicate identifiers exist. | Validation report generated listing schema, format, or uniqueness violations   | Report generated         |
+  | FR05 | Re-submit data          | Errors exist             | Upload corrected version | The user uploads a corrected file fixing previous errors; the system matches the natural identifiers and safely updates those specific records. |Records replaced only where natural identifiers match                          | Updated dataset stored   |
+  | FR06 | Compare submissions     | Multiple versions        | Open comparison          | The user selects Version 1 and Version 2 of a dataset to review recent corrections. |System displays field-level differences between selected versions               | Review complete          |
+  | FR07 | Resume onboarding       | Progress saved           | Reopen system            | A user logs out halfway through section completion and logs back in to resume their work. | Previously saved state restored without data loss                              | Flow continues           |
+  | FR08 | Dynamic sections        | Modules set              | Open onboarding          | A client with only the "Tenant Experience" module activated logs in to view their required onboarding tasks. |Only sections mapped to active modules are rendered                            | Correct scope            |
+  | FR09 | Enforce dependencies    | Parent not "Completed"   | Attempt child submission | A user successfully submits the "Building Info" parent section and attempts to access the "Space Info" child section. | System blocks submission and returns dependency validation message             | Flow maintained          |
+  | FR10 | Assign contributors     | Admin authenticated      | Assign sections          | An admin assigns the "User Roles" section to a specific contributor, who logs in to edit it simultaneously. |Section assignment persisted and visible to assigned users                     | Parallel work enabled    |
+  | FR11 | Track status            | Upload triggered         | Monitor states           | A user uploads a file and watches the UI for processing feedback until validation finishes successfully. | Status transitions follow defined state set and invalid states are rejected    | User informed            |
+  | FR12 | Export & integrate      | Sections approved        | Generate and send        | The admin approves the final dataset, and the system transmits the JSON payload via the API. |API request sent with valid JWT; external system returns HTTP 2xx confirmation | External system updated  |
+
+### 16.3. Functional Negative Test Scenarios
+| ID | Functional Requirement | Negative Scenario | Expected Result |
+| --- | --- | --- | --- |
+| **FR01** | Structured Data Upload | Attempt to upload a prohibited file type (e.g., `.pdf`, `.exe`). | System blocks the upload and displays an "Invalid Format" error. |
+| **FR02** | Data Standardization | Upload a file where column names do not match the required template. | System fails normalization and identifies the incorrect columns. |
+| **FR03** | Intermediate Persistence | Attempt to access a submission version that has been deleted or does not exist. | System returns a "Resource Not Found" error. |
+| **FR04** | Data Validation | Submit a file with invalid email patterns or duplicate natural identifiers. | System lists all specific errors and prevents data consolidation. |
+| **FR05** | Safe Data Correction | Re-submit data where the natural identifier has been altered. | System treats it as a new record or alerts the user of the inconsistency. |
+| **FR06** | Change Visualization | Attempt to compare a version with a corrupted or empty dataset. | System informs the user that comparison is not possible due to data gaps. |
+| **FR07** | Progress Persistence | Close the browser during a large upload before the "Saved" confirmation. | System restores the last stable state without corrupted partial data. |
+| **FR08** | Dynamic Interface | Attempt to access an inactive module's section via direct URL. | System redirects to the home page or displays "Access Denied". |
+| **FR09** | Dependency Enforcement | Attempt to submit a child section while the parent is "In Progress". | System blocks submission and displays a dependency error. |
+| **FR10** | Section Assignment | An unassigned user attempts to edit a section restricted to another collaborator. | System prevents editing and shows the section is locked/assigned. |
+| **FR11** | Status Tracking | Simulate a connection failure during processing to test hangs. | System triggers a timeout and moves the status to "Failed". |
+| **FR12** | Secure Integration | Attempt to push data while the target external system is offline. | System logs the integration failure and allows for a later retry. |
+
 
 ## 17. Non-Functional Requirements (NFRs)
 
 | ID    | Title                                  | Non-Functional Requirement Description                                                                                                                                                    |
 | ----- | -------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| NFR01 | Data Integrity Compliance              | The system must enforce full compliance with predefined internal data schemas before and during validation, consolidation, and export to ensure consistent and clean onboarding datasets. |
-| NFR02 | Large File Handling and Responsiveness | The system must support large onboarding file uploads (up to 100 MB per file) while maintaining responsive user interaction during processing.                                            |
-| NFR03 | Processing Reliability                 | The system must prevent data corruption or loss during ingestion, validation, staging, and consolidation activities.                                                                      |
-| NFR04 | Extensible File Format Support         | The system architecture must allow new supported file formats to be added without modifying existing ingestion or validation logic.                                                       |
-| NFR05 | Concurrent Submission Handling         | The system must support multiple simultaneous onboarding submissions without degradation of responsiveness or validation accuracy.                                                        |
+| NFR01 | Strict Data Integrity and Consistency | The system shall maintain 100% data consistency across all storage layers, ensuring that no orphaned or schema-violating records exist within the production environment at any time. |
+| NFR02 | Large File Handling | The system shall support onboarding file uploads of up to 100 MB per file and process them without causing application crashes, request timeouts, or interruption of other active user sessions.           |
+| NFR03 | Processing Reliability                 | The system shall ensure transactional consistency during ingestion, validation, staging, and consolidation processes, preventing partial writes and automatically rolling back incomplete operations in case of failure.                                                       |
+| NFR04 | Security  | All stored onboarding data must be encrypted at rest (AES-256) and in transit (TLS 1.2+), with access restricted through AWS IAM role-based policies.                                                       |
+| NFR05 | Concurrent Submission Handling         | The system shall support multiple concurrent onboarding submissions and ensure that each submission is processed independently without data mixing, corruption, or validation inconsistency.                                                      |
 
 ### 17.1. Non-Functional Requirement Details
 
 #### NFR01 – Data Integrity Compliance
 
-- Enforces schema consistency
-- Blocks malformed records
-- Guarantees clean exports
+- The system must validate 100% of uploaded records against the predefined internal schema.
+- The system must reject any record that fails schema validation before it reaches the staging area.
+- The system must prevent any dataset from proceeding to consolidation or export unless it has been fully validated.
 
 #### NFR02 – Large File Handling and Responsiveness
 
-- Supports high-volume uploads
-- Maintains UI usability
+- The system must accept file uploads up to 100 MB per file.
+- File processing must occur without application crashes or unhandled exceptions.
+- Uploading a large file must not terminate or block other active user sessions.
+- Files exceeding 100 MB must be rejected with a clear validation message.
 
 #### NFR03 – Processing Reliability
 
-- Avoids partial writes
-- Preserves correctness across failures
+- 100% of failed transactions must be rolled back automatically.
+- All ingestion, validation, and consolidation operations must execute within transactional boundaries.
+- Incomplete or failed operations must be automatically rolled back.
+- No partial writes shall persist in the database after a failure.
 
-#### NFR04 – Extensible File Format Support
+#### NFR04 – Security
 
-- Modular ingestion design
-- No system refactoring for new formats
+- All stored onboarding data must be encrypted at rest using AES-256 encryption.
+- All data transmitted between client and server must use TLS 1.2 or higher.
+- Access to stored data must be restricted using AWS IAM role-based access control.
+- Unauthorized access attempts must be denied by default.
 
 #### NFR05 – Concurrent Submission Handling
 
-- Parallel onboarding support
-- Stable performance
+- The system must support at least 10 multiple concurrent onboarding submissions.
+- Each submission must be processed independently.
+- Concurrent processing must not cause data mixing between submissions.
 
 ### 17.2. Non-Functional Requirements Validation Tests
 
-| ID    | Test                       | Pre-condition      | Procedure             | Expected Result              | Post-condition      |
-| ----- | -------------------------- | ------------------ | --------------------- | ---------------------------- | ------------------- |
-| NFR01 | Validate schema compliance | Data uploaded      | Run standardization   | Only compliant data proceeds | Clean dataset       |
-| NFR02 | Upload large files         | User authenticated | Upload large dataset  | UI remains responsive        | Data ingested       |
-| NFR03 | Simulate failure           | Processing active  | Trigger interruption  | No data loss                 | Recovery successful |
-| NFR04 | Add new format             | System configured  | Ingest new format     | Existing flows unaffected    | Format supported    |
-| NFR05 | Parallel uploads           | Multiple users     | Upload simultaneously | No degradation               | All processed       |
+| ID    | Test                                            | Pre-condition                                            | Procedure                                                          | Positive Scenario |Expected Result                                                                                                        | Post-condition                               |
+| ----- | ----------------------------------------------- | -------------------------------------------------------- | -----| ------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------- | -------------------------------------------- |
+| NFR01 | Strict Data Integrity and Consistency                   | System is active with a predefined schema; a dataset containing valid and invalid records. | Execute schema validation process                                  | A dataset with 500 valid records and 5 schema-violating records is ingested; the system successfully identifies and filters the corrupted data automatically. | 100% of invalid records are blocked                                            | System remains in a 100% consistent state with no corrupted data.              |
+| NFR02 | Maximum file size handling                      | User authenticated                                       | Upload file ≤ 100 MB and upload file > 100 MB                      | A user uploads a dense, 98 MB .xlsx file containing thousands of rows, and the system processes it seamlessly. |Files ≤ 100 MB are processed successfully; files > 100 MB are rejected with validation message; no system crash occurs | Valid file ingested; oversized file rejected |
+| NFR03 | Transaction rollback verification               | Processing operation active                              | Force system interruption during database write operation          | A database connection is intentionally interrupted mid-write, and the system successfully triggers its automated rollback protocol to protect the dataset. |  100% of interrupted transactions are rolled back; no partial writes persist in database                                | Database remains in consistent state         |
+| NFR04 | Data encryption and access control verification | System deployed in production configuration              | Inspect storage configuration and attempt unauthorized data access | An authorized internal security tool audits the database and network layers to verify that all active encryption protocols are functioning correctly. | Data is encrypted at rest (AES-256); communication occurs via TLS 1.2+; unauthorized access attempt is denied          | Data remains protected                       |
+| NFR05 | Concurrent submission handling                  | At least 10 users authenticated                          | Simulate 10 concurrent onboarding submissions                      | Ten independent customer administrators trigger massive dataset validations at the exact same second, and the system routes them safely into separate processing queues. | All 10 submissions are processed independently without data mixing or processing errors                                | All submissions completed correctly          |
 
-## 18. FR–NFR Correlation Matrix
+### 17.3. Non-Functional Negative Test Scenarios
+| ID | Non-Functional Requirement | Negative Scenario | Expected Result (Negative) |
+| --- | --- | --- | --- |
+| **NFR01** | Strict Data Integrity and Consistency | Manually insert a schema-violating record into the staging database and attempt a dataset export. | The export process detects the violation and rejects the dataset. |
+| **NFR02** | Large File Handling | Attempt to upload a 105 MB file (exceeding the limit). | System instantly rejects the file and notifies the user of the 100 MB limit. |
+| **NFR03** | Processing Reliability | Force a server shutdown during a database write operation. | Transaction is rolled back; no partial data persists in the database. |
+| **NFR04** | Security | Attempt to access the endpoint without a token or with an expired JWT. | System returns HTTP 401 Unauthorized and blocks access. |
+| **NFR05** | Concurrent Submissions | Two users attempt to save conflicting changes to the same section simultaneously. | System applies optimistic locking and alerts the second user. |
+
+## 18. Functional Test Execution Strategy
+
+The purpose of functional testing is to verify that the system behaves according to the defined Functional Requirements (FRs).  
+Each test defined in section 16.2 validates a specific functional capability of the onboarding system.
+
+Functional tests focus on verifying:
+
+- correct onboarding data upload and processing
+- proper transformation and standardization of datasets
+- reliable staging and persistence mechanisms
+- validation of data formats and schema compliance
+- collaborative onboarding workflows
+- correct enforcement of section dependencies
+- accurate status tracking
+- secure integration with external systems
+
+### Test Execution Instructions
+
+Functional tests are executed using integration testing in an isolated environment.
+
+Test execution generally follows these steps:
+
+1. Deploy the system in a controlled testing environment.
+2. Initialize the database with the required schema.
+3. Prepare test datasets (valid and invalid onboarding files).
+4. Execute the system operation defined in the test procedure.
+5. Observe the system output and behavior.
+6. Compare the obtained results with the expected results defined in the test tables.
+
+Integration tests are executed using **Testcontainers**, which allows the database and system dependencies to run inside isolated containers during testing. This ensures reproducibility and avoids the use of mocked components.
+
+---
+
+## 19. Non-Functional Test Execution Strategy
+
+Non-functional tests verify system qualities that are critical for operational reliability and scalability.
+
+The tests defined in section 17.2 validate the following aspects:
+
+- data integrity
+- performance and large file handling
+- transactional reliability
+- system security
+- concurrent submission handling
+
+### Execution Method
+
+Non-functional tests are executed using controlled test environments where specific stress or failure conditions are simulated.
+
+Examples include:
+
+- uploading large datasets close to the 100 MB limit
+- simulating concurrent onboarding submissions
+- forcing transaction interruptions to validate rollback mechanisms
+- verifying encryption and access control configurations
+
+These tests confirm that the system maintains reliability, performance, and security under realistic operational conditions.
+
+---
+
+## 20. Testing Tools and Environment
+
+The following tools are used to support test execution:
+
+**Testcontainers**  
+Used to create isolated containerized environments for integration testing.  
+It allows the database and system dependencies to run inside containers, ensuring consistent test environments across development machines.
+
+**PostgreSQL**  
+Used as the primary database system during testing to validate persistence, transactions, and schema constraints.
+
+**Automated Test Frameworks**
+
+The system tests may be implemented using testing frameworks compatible with the project’s technology stack:
+
+- **Jest / Vitest** for TypeScript components
+- **Pytest** for Python services
+
+These frameworks allow automated execution of integration and validation tests to verify system behavior against the defined requirements.
+
+Mocks are not used for integration testing. Instead, real dependencies are executed inside containerized environments to ensure realistic behavior and accurate validation of system functionality.
+
+---
+
+## 21. Test Coverage Discussion
+
+The defined test plan provides comprehensive coverage of the onboarding system’s functional and non-functional requirements.
+
+Functional tests cover the entire onboarding workflow, including:
+
+- onboarding data file upload
+- dataset transformation and standardization
+- intermediate staging persistence
+- schema validation and conflict detection
+- safe data correction and re-submission
+- comparison between dataset versions
+- dynamic onboarding interfaces
+- enforcement of section dependencies
+- collaborative onboarding workflows
+- onboarding status tracking
+- export and integration with external systems
+
+Non-functional tests ensure that the system meets key operational requirements, including:
+
+- strict schema compliance and data integrity
+- large file handling capabilities
+- transactional reliability during processing
+- secure data storage and transmission
+- concurrent submission handling
+
+Together, these tests ensure that both business requirements and technical system constraints are validated.  
+The combination of functional, non-functional, and usability tests provides strong verification of system correctness, reliability, and user experience.
+
+### 21.1 Unit Tests (Backend): Strategy, Implementation, and Coverage
+
+Unit tests for the backend and business layer are implemented with **Vitest** (Node environment) and documented below in a single place.
+
+**Objective.** Ensure that the developed functionalities (backend and business layer) have automated unit tests, with mocks for external dependencies (database, HTTP), and that strategy, coverage, and results are documented.
+
+**Scope.**
+
+- **Included:** business layer (entities, DTOs, services), API controllers (upload, user), validations and data transformations.
+- **Excluded (in this phase):** E2E tests, integration tests with a real database, frontend Angular tests (these already exist under `tests/presentation/` for upload, login, onboarding).
+
+**Tools.**
+
+- **Vitest** for execution and assertions (also used at project root for the backend).
+- **Environment:** Node (services, mocked repositories, controllers).
+- **Coverage:** `@vitest/coverage-v8` for coverage reports.
+
+**Commands.**
+
+| Command | Description |
+|--------|-------------|
+| `npm test` | Run all backend unit tests once |
+| `npm run test:coverage` | Run tests and generate coverage (terminal + HTML in `coverage/`) |
+
+**Test suites implemented.**
+
+| Layer | File | Cases |
+|-------|------|--------|
+| Entities | `tests/business/entities/user-entity.spec.ts` | 4: `UserEntity.getEmailDomain()` (empty, no @, valid, multiple @) |
+| Entities | `tests/business/entities/upload-entity.spec.ts` | 3: `UploadEntity.normalizeKeys()` (trim/lowercase/underscore, values, already normalized) |
+| Services | `tests/business/services/upload-service.spec.ts` | 3: `mapRowsToEntities()` (null rows, empty array, valid rows) |
+| Services | `tests/business/services/user-service.spec.ts` | 4: `checkUser()` (missing payload, existing user, new user with/without company; repository mocked) |
+| Controllers | `tests/presentation/api/controllers/upload-controller.spec.ts` | 5: `handleUpload()` (400 missing/invalid rows, 200 with data/redirect, 500 on service error) |
+| Controllers | `tests/presentation/api/controllers/user-controllers.spec.ts` | 5: `getPayload()` (401 no sub, 200 /monitoring and /company/:id, 403 company not registered, 500 on error) |
+
+**Total:** 6 spec files, 24 tests, all passing.
+
+**Directory layout.**
+
+```
+tests/
+├── business/
+│   ├── entities/   (user-entity.spec.ts, upload-entity.spec.ts)
+│   └── services/   (upload-service.spec.ts, user-service.spec.ts)
+└── presentation/
+    └── api/controllers/   (upload-controller.spec.ts, user-controllers.spec.ts)
+```
+
+**Conventions.** One `*.spec.ts` file per tested module, mirroring `src/`. Use `vi.mock()` for DB/HTTP modules. Descriptive test names; Arrange–Act–Assert where appropriate.
+
+**Coverage (V8).** Scope: `src/business/**/*.ts` and `src/presentation/api/**/*.ts`. Example summary:
+
+| Metric | Value |
+|--------|--------|
+| Statements | ~86% |
+| Branches | ~80% |
+| Functions | ~73% |
+| Lines | ~86% |
+
+- **business/entities:** 100%.
+- **business/services:** 100% statements/lines.
+- **presentation/api/controllers:** ~97% statements/lines.
+- **Routes and middleware:** not covered by these unit tests (thin wiring); can be covered by integration or E2E.
+
+To refresh coverage numbers, run `npm run test:coverage` and check the terminal output or `coverage/index.html`.
+
+## 22. FR–NFR Correlation Matrix
 
 | FR ID | Related NFRs | Justification                                                                  |
 | ----- | ------------ | ------------------------------------------------------------------------------ |
@@ -667,7 +1024,7 @@ The project will be executed in a 10 week cycle. The governance structure includ
 | FR11  | NFR03        | Status tracking depends on reliable processing.                                |
 | FR12  | NFR01, NFR03 | Export requires integrity and fault tolerance.                                 |
 
-## 19. User Stories and Traceability
+## 23. User Stories and Traceability
 
 ### User Stories
 
@@ -703,6 +1060,204 @@ The project will be executed in a 10 week cycle. The governance structure includ
 | US11       | FR11        |
 | US12       | FR12        |
 
-## 20. Conclusion
+## 24. Revision of the Proposed Solution
 
 The proposed solution establishes a structured and scalable foundation for transforming Equiem’s onboarding process from a fragmented, manual workflow into a reliable and strategically differentiated intake system. Through comprehensive business analysis, clear requirement definition, and a focused MVP strategy, the project directly addresses operational bottlenecks that currently limit efficiency, data integrity, and speed of deployment. By embedding validation, standardization, and collaborative capabilities at the point of data entry, the platform significantly reduces manual effort, minimizes rework, and enables parallel onboarding at scale. Ultimately, the initiative accelerates time-to-launch, enhances customer experience, and strengthens operational resilience, positioning onboarding not as a constraint, but as a sustainable competitive advantage for Equiem’s continued growth.
+
+## 25. Deployment Architecture
+
+### 25.1. Overview
+
+The deployment diagram represents the **target production architecture** of the onboarding automation platform developed in partnership with Equiem.
+
+The diagram illustrates how the system components are distributed across cloud infrastructure resources and how different services interact within the production environment. It presents the servers, middleware, services, and databases required to operate the system, as well as the communication protocols used between them.
+
+The architecture follows a **distributed cloud-based deployment model**, separating the system into distinct layers responsible for presentation, application logic, asynchronous processing, and data persistence.
+
+The main components of the architecture include:
+
+- Web browser interface used by onboarding specialists
+- Frontend web application deployed on cloud infrastructure
+- Backend API services responsible for business logic
+- Messaging infrastructure supporting asynchronous processing
+- Worker services responsible for data processing tasks
+- Managed relational database infrastructure
+- External authentication services
+
+The deployment architecture was designed to satisfy the project's non-functional requirements, particularly those related to performance, scalability, availability, and security.
+
+Figure 10 illustrates the deployment architecture of the onboarding automation platform.
+
+For better visualization, please access the following [link](https://drive.google.com/file/d/1jHnyVEm3KI1-ERu1pNhjq-7KT3i-hlVW/view?usp=sharing).
+
+<div align="center">
+<sub>FIGURE 10 – Deployment Architecture Diagram</sub><br>
+  <img src="assets/deployment_map.svg" width="100%" alt="Deployment Architecture Diagram"><br>
+  <sup>Source: Material produced by the authors, 2026.</sup>
+</div>
+
+### 25.2. System Infrastructure
+
+The system is deployed using cloud infrastructure services provided by **Amazon Web Services (AWS)**.
+
+Different infrastructure nodes are used to host specific components of the system, allowing the architecture to remain modular and scalable.
+
+The main infrastructure elements are:
+
+| Infrastructure Component | Description |
+|--|-|
+| AWS EC2 (Frontend) | Hosts the web application frontend |
+| AWS EC2 (Backend) | Hosts backend API services |
+| AWS EC2 (Worker) | Hosts background worker services responsible for asynchronous processing |
+| Amazon RDS | Managed relational database service used for persistent storage |
+| Amazon SQS | Messaging middleware responsible for asynchronous job processing |
+| Auth0 Cloud Service | External authentication and identity management provider |
+
+All application services are deployed using **Docker containers**, ensuring consistent runtime environments and simplifying deployment and infrastructure management.
+
+### 25.3. Frontend Deployment
+
+The frontend application is deployed on an **AWS EC2 instance** within a Docker container environment.
+
+The frontend is implemented using **Angular and TypeScript**, forming a single-page application responsible for presenting the onboarding interface used by administrators and onboarding specialists.
+
+The frontend node contains the following components:
+
+| Component | Description |
+|-|-|
+| Angular + TypeScript | Core frontend application responsible for rendering the onboarding UI |
+| Static Assets | Compiled JavaScript files, stylesheets, and other UI resources |
+
+Users interact with the system through a web browser. Requests are sent through the internet to the frontend server using **secure HTTPS connections**.
+
+The frontend communicates with backend services through HTTPS API requests.
+
+### 25.4. Backend Deployment
+
+The backend application is deployed on a dedicated **AWS EC2 instance**, also running within a Docker container.
+
+The backend follows a **layered architecture** that separates responsibilities into logical modules responsible for handling API requests, business logic, and database interaction.
+
+The backend node includes the following components:
+
+| Component | Responsibility |
+|-|-|
+| Controller Layer | Handles incoming HTTP requests and exposes REST API endpoints |
+| Service Layer | Implements business logic and system workflows |
+| Repository Layer | Handles database access and persistence operations |
+| HubSpot Integration Module | Retrieves deal information and enabled modules |
+| Equiem Integration Module | Prepares structured onboarding data for system integration |
+| Queue Publisher | Sends asynchronous processing jobs to Amazon SQS |
+
+This layered design improves maintainability, separation of concerns, and long-term system extensibility.
+
+### 25.5. Messaging Infrastructure
+
+The system incorporates **Amazon Simple Queue Service (SQS)** as a messaging middleware to support asynchronous processing.
+
+When operations require heavy data processing, such as parsing uploaded onboarding files or validating large configuration datasets, the backend publishes job messages to the SQS queue.
+
+The queue acts as a decoupling mechanism between the API layer and background processing services.
+
+Using a messaging infrastructure provides several architectural benefits:
+
+- decoupling between system components
+- improved system scalability
+- support for asynchronous workflows
+- improved system reliability through retry mechanisms
+
+This architecture prevents long-running operations from blocking API responses and improves overall system responsiveness.
+
+### 25.6. Worker Processing Layer
+
+The architecture includes a **worker processing layer** responsible for executing asynchronous data processing tasks.
+
+Worker services are deployed on a separate AWS EC2 node within Docker containers.
+
+These worker services consume messages from the SQS queue and execute the necessary processing tasks.
+
+The worker node includes the following components:
+
+| Component | Responsibility |
+|-|-|
+| Job Consumer | Retrieves job messages from the SQS queue |
+| File Processor | Parses uploaded CSV or XLSX onboarding files |
+| Data Standardizer | Transforms and standardizes onboarding data structures |
+
+This architecture allows heavy processing operations to be handled independently from the main application services.
+
+Separating the processing layer from the API layer improves system scalability and ensures that the main application remains responsive even when processing large onboarding datasets.
+
+### 25.7. Database Layer
+
+The system uses **Amazon Relational Database Service (RDS)** as the primary database infrastructure.
+
+The database is responsible for storing all persistent system data, including:
+
+- onboarding configuration data
+- uploaded dataset information
+- validation results
+- processing states
+- system metadata
+
+The backend communicates with the database using **TCP/IP connections**, following standard relational database communication protocols.
+
+Using a managed database service provides operational advantages such as:
+
+- automated backups
+- improved reliability
+- built-in monitoring
+- simplified infrastructure management
+
+### 25.8. Authentication Service
+
+User authentication and identity management are handled by **Auth0**, a cloud-based authentication platform.
+
+Auth0 provides identity services using **OAuth 2.0 and OpenID Connect protocols**.
+
+When a user attempts to access the onboarding platform, the frontend redirects the authentication request to Auth0. After successful authentication, Auth0 returns a secure token used by the frontend to authenticate API requests.
+
+The backend validates authentication tokens using **JWT validation**, ensuring that only authorized users can access protected system endpoints.
+
+This architecture eliminates the need to implement custom authentication mechanisms while maintaining a high level of security.
+
+### 25.9. Communication Protocols
+
+System components communicate using secure and reliable communication protocols.
+
+| Source | Destination | Protocol | Purpose |
+|--------|-------------|----------|---------|
+| User Browser | Internet / Frontend Server | HTTPS | Access to the onboarding web interface |
+| Frontend Application | Backend API | HTTPS | Communication with backend services |
+| Frontend Application | Auth0 | HTTPS (OAuth2 / OpenID Connect) | User authentication and login flow |
+| Backend API | Auth0 | HTTPS (JWT Validation) | Verification of authentication tokens |
+| Backend API | Amazon SQS | HTTPS (AWS SDK) | Publishing asynchronous processing jobs |
+| Worker Service | Amazon SQS | HTTPS (AWS SDK Polling) | Consuming background processing jobs |
+| Backend API | Amazon RDS | TCP/IP | Database communication |
+
+All external communications use HTTPS to ensure encrypted data transmission.
+
+### 25.10. Deployment Rationale
+
+- The deployment architecture was designed to ensure scalability, modularity, and long-term maintainability of the onboarding automation platform.
+- Separating frontend, backend, and worker services into independent infrastructure nodes allows the system to scale horizontally as demand increases.
+- Containerization using Docker ensures consistent execution environments across development, testing, and production environments.
+- The use of Amazon SQS enables asynchronous processing of heavy workloads, preventing computationally intensive operations from blocking the main application workflow.
+- Amazon RDS provides a reliable and managed database environment that reduces operational overhead while maintaining high availability and durability.
+- External authentication services such as Auth0 provide secure identity management while reducing development complexity.
+
+### 25.11. Performance Considerations
+
+- The deployment architecture addresses performance-related non-functional requirements by separating processing responsibilities across multiple components.
+- The asynchronous processing model enabled by Amazon SQS allows the system to process large onboarding datasets without impacting API responsiveness.
+- Worker services handle computationally intensive tasks independently, allowing the backend API to remain responsive to user interactions.
+- Additionally, containerized services allow horizontal scaling of backend and worker nodes when processing demand increases.
+- This architecture ensures efficient handling of onboarding workflows even when large datasets are uploaded.
+
+### 25.12. Security Considerations
+
+- Security is a fundamental aspect of the deployment architecture.
+- All communication between system components occurs through **HTTPS**, ensuring encrypted data transmission across the network.
+- Authentication and identity management are handled through Auth0 using OAuth 2.0 and OpenID Connect protocols.
+- The backend validates JWT tokens to ensure that only authenticated users can access system functionality.
+- Using managed AWS infrastructure also provides additional security mechanisms, including network isolation, access policies, and infrastructure-level protections.

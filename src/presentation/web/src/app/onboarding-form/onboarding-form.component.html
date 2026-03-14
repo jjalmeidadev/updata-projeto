@@ -1,0 +1,72 @@
+<div class="form-shell">
+  <header class="form-header">
+    <h1>Onboarding Form</h1>
+
+    @if (!loading() && !submitted()) {
+      <div class="progress-bar-container">
+        <div class="progress-bar" [style.width.%]="progressPercent()">
+          {{ progressPercent() }}%
+        </div>
+      </div>
+      <p class="progress-label">Step {{ currentSectionIndex() + 1 }} of {{ sections().length }}</p>
+    }
+  </header>
+
+  @if (loading()) {
+    <p class="loading">Loading questions…</p>
+  } @else if (submitted()) {
+    <div class="success">
+      <h2>✓ Submission received</h2>
+      <p>Your onboarding data has been submitted successfully.</p>
+    </div>
+  } @else {
+    <!-- Section nav tabs -->
+    <nav class="section-tabs" aria-label="Form sections">
+      @for (section of sections(); track section; let i = $index) {
+        <button
+          class="tab-btn"
+          [class.active]="i === currentSectionIndex()"
+          [class.visited]="i < currentSectionIndex()"
+          (click)="goTo(i)"
+          type="button">
+          {{ sectionLabels[section] ?? section }}
+        </button>
+      }
+    </nav>
+
+    <!-- Current section -->
+    <section class="form-section">
+      <div class="section-header">
+        <h2 class="section-title">{{ currentSectionLabel() }}</h2>
+        <button class="upload-btn" type="button" (click)="goToUpload()" title="Upload data for this section">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" width="18" height="18">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+          </svg>
+          Upload CSV/XLSX
+        </button>
+      </div>
+
+      <form [formGroup]="form()">
+        @for (question of currentQuestions(); track question.id) {
+          <app-dynamic-field
+            [question]="question"
+            [control]="control(question.id)" />
+        }
+      </form>
+
+      <div class="form-nav">
+        @if (!isFirstSection()) {
+          <button class="btn btn-secondary" type="button" (click)="previous()">← Previous</button>
+        } @else {
+          <span></span>
+        }
+
+        @if (isLastSection()) {
+          <button class="btn btn-primary" type="button" (click)="submit()">Submit</button>
+        } @else {
+          <button class="btn btn-primary" type="button" (click)="next()">Next →</button>
+        }
+      </div>
+    </section>
+  }
+</div>

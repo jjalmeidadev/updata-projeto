@@ -25,6 +25,11 @@
    - [Sprint 3 Backlog and Task Allocation](#32-backlog-and-task-allocation)
    - [Sprint Capacity](#33-sprint-capacity)
    - [Execution Improvements](#34-execution-improvements)
+   - [Sprint 3 Analysis](#35-sprint-3-analysis)
+   - [Strengths](#351-strengths)
+   - [Weaknesses](#352-weaknesses)
+   - [Improvement Backlog for Sprint 4](#353-improvement-backlog-for-sprint-4)
+   - [Risk Analysis and Tracking](#354-risk-analysis-and-tracking)
 
 4. [Group Development Process Management](#4-group-development-process-management)
    - [Daily Meetings Policy](#41-daily-meetings-policy)
@@ -271,8 +276,75 @@ This section presents an analysis of Sprint 2 execution based on workflow, task 
 - **PMO alignment:** All artifacts versioned in GitLab; MR approvals required.  
 - **Improved communication:** Daily structured updates; mid-sprint checkpoints for DB and architecture.
 
+## 3.5 Sprint 3 Analysis
+
+This section presents an analysis of Sprint 3 execution based on workflow, task completion, and team dynamics.
+
+### 3.5.1 Strengths
+
+- **Incremental backend and frontend development improved integration**  
+  - Backend and frontend components were implemented progressively during the sprint.  
+  - **Impact:** Reduced integration risks and allowed earlier validation of system functionality.
+
+- **Clear coding architecture improved development organization**  
+  - The project directory structure and coding architecture were defined and documented.  
+  - **Impact:** Facilitated collaboration between developers and improved repository clarity.
+
+- **Testing activities supported early issue identification**  
+  - Functional, non-functional, and usability tests were conducted during the sprint.  
+  - **Impact:** Enabled early identification of potential usability and performance issues.
+
+- **Merge Request reviews improved code quality**  
+  - Code changes were validated through peer-reviewed MRs before integration.  
+  - **Impact:** Reduced the probability of defects entering the shared development branches.
+
 ---
 
+### 3.5.2 Weaknesses
+
+- **Some development tasks required more time than estimated**  
+  - Backend and frontend tasks involved additional adjustments during implementation.  
+  - **Effect:** Minor delays in completing certain development tasks.  
+  - **Action for Sprint 4:** Refine estimation practices using previous sprint metrics.
+
+- **Testing execution depended on development completion**  
+  - Some tests could only start after certain modules were implemented.  
+  - **Effect:** Reduced the available time window for iterative testing cycles.  
+  - **Action for Sprint 4:** Introduce earlier testing checkpoints during development.
+
+- **Integration checkpoints occurred late in the sprint**  
+  - Some integration issues were only detected after multiple components were completed.  
+  - **Effect:** Increased effort required to resolve integration inconsistencies.  
+  - **Action for Sprint 4:** Increase integration validation during feature implementation.
+
+---
+
+### 3.5.3 Improvement Backlog for Sprint 4
+
+| Action | Owner | Target Sprint | Metric | Evidence | Status | Observed Result |
+|------|------|------|------|------|------|------|
+| Improve task estimation for development tasks | Scrum Master | Sprint 4 | % tasks delivered within estimated time | Sprint board | Planned | To be measured at Sprint 4 Review |
+| Start testing earlier during development | QA Team | Sprint 4 | Number of tests executed mid-sprint | Test logs | Planned | To be measured mid-sprint |
+| Increase integration checkpoints between frontend and backend | Tech Lead | Sprint 4 | Number of late integration issues | MR logs | Planned | To be measured in Sprint 4 Retrospective |
+
+---
+
+### 3.5.4 Risk Analysis and Tracking
+
+#### Risk Register
+
+| Risk | Description | Probability | Impact | Owner | Status | Trend | Mitigation |
+|-----|-----|-----|-----|-----|-----|-----|-----|
+| Integration conflicts | Backend and frontend modules may introduce compatibility issues | Medium | Medium | Tech Lead | Open | Stable | Increase integration checkpoints |
+| Estimation inaccuracies | Tasks may exceed planned time | Medium | Medium | Scrum Master | Open | Stable | Use historical sprint data to refine sizing |
+| Testing delays | Testing depends on feature completion | Medium | Medium | QA Team | Open | Stable | Start testing earlier in development cycle |
+
+- **Risk Tracking:** Risks are reviewed during Sprint Planning, Mid-Sprint Checkpoints, and Sprint Retrospective.  
+- **Status definitions:** Open, Mitigating, Closed.  
+- **Trend:** Increasing, Stable, Decreasing.
+
+
+---
 ## 4. Group Development Process Management
 
 ### 4.1 Daily Meetings Policy
@@ -299,4 +371,4 @@ This section presents an analysis of Sprint 2 execution based on workflow, task 
   - Tasks move to **Doing** only when DoR is met  
   - Tasks can be **Closed** only when DoD is satisfied
 
-- **Configuration management documentation:** See [ConfigurationManagement.md](ConfigurationManagement.md) for branch naming, MR templates, and commit rules.
+- **Configuration management documentation:** See [configuration-management.md](configuration-management.md) for branch naming, MR templates, and commit rules.
