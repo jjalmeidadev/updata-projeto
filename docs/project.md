@@ -40,6 +40,7 @@
   - [Sprint 5: Large-Scale Processing](#sprint-5-large-scale-processing)
     - [Delivered in this sprint:](#delivered-in-this-sprint-3)
   - [Post-MVP Enhancements (Nice-to-Have)](#post-mvp-enhancements-nice-to-have)
+  - [12.1 Feature Development Progress and Deviations](#121-feature-development-progress-and-deviations)
   - [13. MVP Canvas](#13-mvp-canvas)
     - [13.1. MVP Proposal](#131-mvp-proposal)
     - [13.2. Segmented Personas](#132-segmented-personas)
@@ -400,6 +401,124 @@ If time allows, the team may implement additional enhancements such as:
 - Version history
 - Tooltips
 - Dark mode
+
+## 12.1 Feature Development Progress and Deviations
+
+This section documents the implementation status of each planned feature and any deviations from the original plan (Section 11 – Feature Brainstorming, Section 12 – Delivery Sequencing, and Section 16 – Functional Requirements). It is updated as development advances.
+
+### Functional Requirement Coverage in This Artefact (50%)
+
+For this artefact, the team scope was to cover **half of the functional requirements** defined in Section 16.
+
+- Total FRs in the project: **12**
+- FRs covered in this artefact scope: **6/12 (50%)**
+
+Covered FR scope in this artefact:
+
+- **FR01** – Structured Onboarding Data Upload (**implemented**)
+- **FR02** – Data Standardization (**implemented**)
+- **FR03** – Intermediate Data Persistence (**partially covered / deviated**)  
+  Current implementation persists state only in client session storage.
+- **FR07** – Automatic Progress Persistence (**partially covered / deviated**)  
+  Current implementation is session-based only.
+- **FR08** – Dynamic Onboarding Interface (**implemented**)  
+- **FR11** – Onboarding Status and Feedback (**partially covered / limited**)  
+  Basic flow/error feedback exists, but full state model is not yet implemented.
+
+### Summary by Planned Delivery
+
+| Planned item (Sprint / FR) | Status | Implementation notes | Deviations |
+| -------------------------- | ------ | ------------------- | ---------- |
+| **Sprint 2: Secure authentication** | Done | Auth0 (JWT) + `GET /api/users`; redirect by user/company. Guard on `/home`, `/form`, `/upload`. | Main app uses Auth0 redirect flow; mock page (`user-mock-auth.html` + `user-mock-listener.js`) is available for token-based testing. |
+| **Sprint 2: Clear submission interface** | Done | Angular SPA: Login, Signup, Home, Upload, Form; routes and guards. | README and early docs referred to Next.js; implemented stack is **Angular**. |
+| **Sprint 2: Standardized templates** | Partial | Onboarding sections and questions from static `questions.json`; section labels and dynamic fields. | No server-side template engine; scope is fixed by JSON. |
+| **Sprint 3: File uploads** (FR01) | Done | `POST /api/upload`; Angular `UploadComponent` and standalone `upload-page.html` + `upload-listener.ts`. CSV, XLSX, XLS. | Plan mentioned CSV and XLSX only; **XLS** also supported. Two front-end entry points (Angular and standalone). |
+| **Sprint 3: File preview before submission** | Partial | User selects file and uploads; backend returns normalized data; form is pre-filled. | No dedicated “preview table” step before sending to backend. |
+| **Sprint 3: Save progress across sessions** (FR07) | Partial | Progress and upload result stored in **sessionStorage** (section index, completed sections, uploaded data). | **Deviation:** No server-side persistence; progress is lost when the session ends or on another device. |
+| **Sprint 3: Real-time validation** | Partial | Backend validates payload shape and normalizes keys; frontend shows upload errors. | No mandatory-field, format, or duplicate checks in backend yet. |
+| **Sprint 3: Mandatory field checks** (FR04) | Not implemented | — | — |
+| **Sprint 3: Duplicate detection** (FR04) | Not implemented | — | — |
+| **Sprint 3: Clear error messages** | Done | 400/500 with `error` and `traceId`; frontend displays upload and auth errors. | — |
+| **FR02: Data standardization** | Done | Backend normalizes spreadsheet keys (e.g. snake_case) in `upload-entity` and `upload-service`; typed DTO. | — |
+| **FR03: Intermediate data persistence** | Deviation | No server-side staging or versioning. | Upload result and form state only in **sessionStorage**; no multi-version storage or controlled consolidation. |
+| **FR04: Data validation and conflict detection** | Not implemented | — | — |
+| **FR05: Safe data correction via re-submission** | Not implemented | — | — |
+| **FR06: Change comparison visualization** | Not implemented | — | — |
+| **FR07: Automatic progress persistence** | Partial | sessionStorage only (see above). | Same as “Save progress across sessions”. |
+| **FR08: Dynamic onboarding interface** | Partial | Sections and dynamic fields from `questions.json`; navigation by section. | **Deviation:** No module-driven visibility; all sections from JSON are shown (no “active modules” filter). |
+| **FR09: Section dependency enforcement** | Not implemented | — | — |
+| **FR10: Collaborative section assignment** (Sprint 4) | Not implemented | — | — |
+| **FR11: Onboarding status and feedback** | Partial | Basic feedback exists for auth/upload outcomes and flow transitions. | Full per-section/per-file finite states (Not Started, In Progress, Processing, Completed, Failed) are not implemented yet. |
+| **FR12: Data consolidation and secure integration** | Not implemented | — | No CSV/JSON export or JWT-authenticated push to external systems. |
+| **Sprint 4: Parallel onboarding / collaboration** | Not implemented | — | — |
+| **Sprint 5: Large uploads / scalable processing** | Not implemented | — | Processing is **synchronous** in the request path; no async queue or large-file strategy. |
+
+### Architecture and Standards Deviations
+
+- **Frontend stack:** Project README and some docs referred to **Next.js** (components, pages). The application is implemented in **Angular** (Angular 18+), with Auth0 Angular SDK and Angular Router. This is a deliberate stack choice; docs should be read with Angular in mind.
+- **Backend API:** Coding standards mention **GraphQL (Apollo)** and **TypeORM**. The current backend uses **REST (Express)** and **PostgreSQL** via `pg` (node-postgres). User and upload flows are REST endpoints; no GraphQL or ORM in use.
+- **Persistence:** Staging and onboarding progress are **client-only** (sessionStorage). There is no server-side staging layer, versioning, or progress persistence for the onboarding form.
+
+### Feature-to-File Traceability (Existing Files)
+
+Below are only files that currently exist in the repository.
+
+- **Authentication and user routing (Sprint 2 / FR scope support)**
+  - `src/presentation/web/src/app/pages/login/login.component.ts`
+  - `src/presentation/web/src/app/pages/signup/signup.component.ts`
+  - `src/presentation/web/src/app/app.routes.ts`
+  - `src/presentation/web/src/app/app.config.ts`
+  - `src/presentation/api/routes/user-routes.ts`
+  - `src/presentation/api/controllers/user-controllers.ts`
+  - `src/presentation/api/middleware/auth-middleware.ts`
+  - `src/business/services/user-service.ts`
+  - `src/data/repositories/user-repository.ts`
+
+- **Upload and normalization (FR01, FR02)**
+  - `src/presentation/web/src/app/pages/upload/upload.component.ts`
+  - `src/presentation/web/src/app/pages/upload/upload.component.html`
+  - `src/presentation/web/pages/upload-page.html`
+  - `src/presentation/web/scripts/upload-listener.ts`
+  - `src/presentation/api/routes/upload-routes.ts`
+  - `src/presentation/api/controllers/upload-controller.ts`
+  - `src/business/services/upload-service.ts`
+  - `src/business/entities/upload-entity.ts`
+  - `src/business/dto/upload-row-dto.ts`
+
+- **Onboarding form and dynamic sections (FR08 partial)**
+  - `src/presentation/web/src/app/onboarding-form/onboarding-form.component.ts`
+  - `src/presentation/web/src/app/onboarding-form/onboarding-form.component.html`
+  - `src/presentation/web/src/app/components/dynamic-field/dynamic-field.component.ts`
+  - `src/presentation/web/src/app/services/question.service.ts`
+  - `src/presentation/web/public/questions.json`
+
+- **Progress persistence (FR03/FR07 partial, client-side only)**
+  - `src/presentation/web/src/app/pages/upload/upload.component.ts`
+  - `src/presentation/web/src/app/onboarding-form/onboarding-form.component.ts`
+
+### How to Run the Project Locally
+
+To run the application, use **two terminals**: one for backend and one for frontend.
+
+1. **Backend terminal**
+   - Directory:
+     - `g05/`
+   - Command:
+     - `npm run dev`
+
+2. **Frontend terminal**
+   - Directory:
+     - `g05/src/presentation/web/`
+   - Command:
+     - `npm start`
+
+3. **Expected ports**
+   - Frontend (Angular): `http://localhost:4200`
+   - Backend (Express): `http://localhost:3000`
+
+4. **Important note**
+   - The frontend uses proxy configuration (`proxy.conf.json`) for `/api` requests.
+   - If backend is not running, frontend requests like `/api/users` will fail with `ECONNREFUSED`.
 
 ## 13. MVP Canvas
 

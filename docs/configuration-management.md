@@ -142,8 +142,6 @@ git push origin --delete <branch-name>
 
 ### Merge a branch
 
-### Merge a branch
-
 Local merges via terminal are not allowed for integration into protected branches.
 
 All integrations into `develop` and `main` must occur exclusively through GitLab Merge Requests.
