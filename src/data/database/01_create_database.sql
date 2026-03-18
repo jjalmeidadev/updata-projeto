@@ -19,6 +19,7 @@ CREATE TYPE role_scope_level_enum AS ENUM ('site', 'building', 'company');
 CREATE TYPE bookable_resource_status_enum AS ENUM ('active', 'inactive');
 CREATE TYPE booking_status_enum AS ENUM ('pending', 'confirmed', 'cancelled');
 CREATE TYPE space_ownership_type_enum AS ENUM ('leased', 'owned', 'common');
+CREATE TYPE site_type_enum AS ENUM ('office', 'residential', 'mixed_use');
 
 -- ===============
 -- CORE STRUCTURE
@@ -26,6 +27,7 @@ CREATE TYPE space_ownership_type_enum AS ENUM ('leased', 'owned', 'common');
 
 CREATE TABLE IF NOT EXISTS customer (
   customer_id INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+  external_id VARCHAR(100) UNIQUE,
   customer_name VARCHAR(255) NOT NULL,
   customer_email VARCHAR(255),
   region VARCHAR(100) NOT NULL,
@@ -34,11 +36,12 @@ CREATE TABLE IF NOT EXISTS customer (
 
 CREATE TABLE IF NOT EXISTS site (
   site_id INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+  external_id VARCHAR(100) UNIQUE,
   customer_id INT NOT NULL,
   site_name VARCHAR(255) NOT NULL,
   address VARCHAR(255) NOT NULL,
   timezone VARCHAR(100) NOT NULL,
-  site_type VARCHAR(50) NOT NULL,
+  site_type site_type_enum NOT NULL,
 
   CONSTRAINT fk_site_customer
     FOREIGN KEY (customer_id)
@@ -49,6 +52,7 @@ CREATE TABLE IF NOT EXISTS site (
 
 CREATE TABLE IF NOT EXISTS building (
   building_id INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+  external_id VARCHAR(100) UNIQUE,
   site_id INT NOT NULL,
   building_name VARCHAR(255) NOT NULL,
   display_order INT NOT NULL DEFAULT 1,
@@ -65,8 +69,9 @@ CREATE TABLE IF NOT EXISTS building (
 
 CREATE TABLE IF NOT EXISTS levels (
   levels_id INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+  external_id VARCHAR(100) UNIQUE,
   building_id INT NOT NULL,
-  level_name VARCHAR(255) NOT NULL,
+  name VARCHAR(255) NOT NULL,
   level_type VARCHAR(255),
   level_number INT NOT NULL,
   display_order INT NOT NULL,
@@ -81,6 +86,7 @@ CREATE TABLE IF NOT EXISTS levels (
 
 CREATE TABLE IF NOT EXISTS space (
   space_id INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+  external_id VARCHAR(100) UNIQUE,
   space_name VARCHAR(255) NOT NULL,
   ownership_type space_ownership_type_enum NOT NULL,
   levels_id INT NOT NULL,
@@ -92,7 +98,7 @@ CREATE TABLE IF NOT EXISTS space (
     ON DELETE CASCADE
 );
 
--- Internal booking/building subdivision entity
+-- Internal building/booking subdivision
 CREATE TABLE IF NOT EXISTS "group" (
   group_id INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
   building_id INT NOT NULL,
@@ -175,9 +181,9 @@ CREATE TABLE IF NOT EXISTS scheduling_type (
     ON DELETE RESTRICT
 );
 
--- ===============
+-- ============
 -- ROOM DOMAIN
--- ===============
+-- ============
 
 CREATE TABLE IF NOT EXISTS room (
   room_id INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
@@ -337,6 +343,7 @@ CREATE TABLE IF NOT EXISTS industry (
 
 CREATE TABLE IF NOT EXISTS company (
   company_id INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+  external_id VARCHAR(100) UNIQUE,
   site_id INT NOT NULL,
   company_name VARCHAR(255) NOT NULL,
   company_email VARCHAR(255),
@@ -448,8 +455,9 @@ CREATE TABLE IF NOT EXISTS "user" (
   password VARCHAR(255),
   auth0_id TEXT UNIQUE,
 
-  user_status user_status_enum NOT NULL DEFAULT 'pending',
+  status user_status_enum NOT NULL DEFAULT 'pending',
   user_type user_type_enum NOT NULL,
+  member_since TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
 
   company_id INT,
   apartment_id INT,
@@ -544,7 +552,6 @@ CREATE TABLE IF NOT EXISTS isequiem (
     ON DELETE CASCADE
 );
 
--- Identity/user grouping concept matching Equiem GroupInput
 CREATE TABLE IF NOT EXISTS identity_group (
   identity_group_id INT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
   name VARCHAR(255) NOT NULL UNIQUE
