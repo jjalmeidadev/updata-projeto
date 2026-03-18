@@ -16,12 +16,12 @@ describe("user-service", () => {
   })
 
   describe("checkUser", () => {
-    it("lança 'No payload found' quando payload é undefined", async () => {
+    it("throws 'No payload found' when payload is undefined", async () => {
       await expect(checkUser(undefined, "trace-1")).rejects.toThrow("No payload found")
       expect(userRepo.findUser).not.toHaveBeenCalled()
     })
 
-    it("retorna usuário existente quando findUser encontra", async () => {
+    it("returns existing user when findUser resolves", async () => {
       const existing = {
         user_id: 1,
         user_name: "Jane",
@@ -41,7 +41,7 @@ describe("user-service", () => {
       expect(userRepo.createUser).not.toHaveBeenCalled()
     })
 
-    it("chama createUser e retorna novo usuário quando findUser retorna null", async () => {
+    it("calls createUser and returns new user when findUser returns null", async () => {
       vi.mocked(userRepo.findUser).mockResolvedValue(null)
       vi.mocked(userRepo.findCompanyByDomain).mockResolvedValue(5)
       const newUser = {
@@ -71,7 +71,7 @@ describe("user-service", () => {
       )
     })
 
-    it("cria usuário sem company_id quando findCompanyByDomain retorna null", async () => {
+    it("creates user without company_id when findCompanyByDomain returns null", async () => {
       vi.mocked(userRepo.findUser).mockResolvedValue(null)
       vi.mocked(userRepo.findCompanyByDomain).mockResolvedValue(null)
       const newUser = {

@@ -3,15 +3,15 @@ import { mapRowsToEntities } from "../../../src/business/services/upload-service
 
 describe("upload-service", () => {
   describe("mapRowsToEntities", () => {
-    it("lança quando rows é null", () => {
+    it("throws when rows is null", () => {
       expect(() => mapRowsToEntities(null as unknown as never[], "trace-1")).toThrow("No rows received")
     })
 
-    it("lança quando rows é array vazio", () => {
+    it("throws when rows is an empty array", () => {
       expect(() => mapRowsToEntities([], "trace-1")).toThrow("No rows received")
     })
 
-    it("retorna entidades com fields normalizados para rows válidos", () => {
+    it("returns entities with normalized fields for valid rows", () => {
       const rows = [
         { "Building Name": "Tower A", Company: "Acme" },
         { "Building Name": "Tower B", Company: "Beta" },

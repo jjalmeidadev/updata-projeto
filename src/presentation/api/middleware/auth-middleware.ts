@@ -5,3 +5,5 @@ export const authMiddleware = auth({
   audience: "https://api.updata.com",
   issuerBaseURL: "https://dev-6imaiajbfe843lz7.us.auth0.com/"
 });
+
+export default authMiddleware
