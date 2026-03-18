@@ -1,10 +1,8 @@
 import dotenv from "dotenv"
 import { ReceiveMessageCommand, DeleteMessageCommand } from "@aws-sdk/client-sqs"
-import { PutObjectCommand } from "@aws-sdk/client-s3"
+import { GetObjectCommand } from "@aws-sdk/client-s3"
 import { s3Client, sqsClient } from "../../config/aws-clients.ts"
-
-// Worker simples que consome mensagens da SQS e grava um snapshot
-// do payload normalizado em um bucket S3 para processamento assíncrono.
+import Papa from "papaparse"
 
 dotenv.config({ path: "config/.env" })
 
@@ -26,48 +24,74 @@ if (!bucketName) {
 
 interface UploadJobMessage {
   traceId: string
-  rows: Record<string, unknown>[]
+  s3Key: string
+  fileName: string
 }
 
 async function processMessage(message: UploadJobMessage): Promise<void> {
   const traceId = message.traceId || `worker-${Date.now()}`
 
-  if (!bucketName) {
-    console.warn(`[FLOW][${traceId}] worker:missing_bucket AWS_S3_BUCKET not set`)
+  if (!bucketName || !message.s3Key) {
+    console.warn(`[FLOW][${traceId}] worker:invalid_payload`)
     return
   }
 
-  const key = `uploads/${traceId}-${Date.now()}.json`
-  const body = JSON.stringify({
-    traceId,
-    rows: message.rows
-  })
+  try {
+    // 1. Baixar CSV do S3
+    console.log(`[FLOW][${traceId}] worker:s3_get_object s3Key=${message.s3Key}`)
 
-  console.log(`[FLOW][${traceId}] worker:s3_put_object bucket=${bucketName} key=${key}`)
+    const getCommand = new GetObjectCommand({
+      Bucket: bucketName,
+      Key: message.s3Key
+    })
 
-  const command = new PutObjectCommand({
-    Bucket: bucketName,
-    Key: key,
-    Body: body,
-    ContentType: "application/json"
-  })
+    const response = await s3Client.send(getCommand)
+    const csvContent = await response.Body?.transformToString()
 
-  await s3Client.send(command)
+    if (!csvContent) {
+      throw new Error("CSV content is empty")
+    }
 
-  console.log(`[FLOW][${traceId}] worker:s3_put_object_success`)
+    console.log(`[FLOW][${traceId}] worker:csv_downloaded s3Key=${message.s3Key}`)
+
+    // 2. Parse CSV com papaparse
+    const rows: Record<string, unknown>[] = await new Promise((resolve, reject) => {
+      Papa.parse(csvContent, {
+        header: true,
+        skipEmptyLines: true,
+        complete: (results) => resolve(results.data as Record<string, unknown>[]),
+        error: (error: Error) => reject(error)
+      })
+    })
+
+    console.log(`[FLOW][${traceId}] worker:csv_parsed rows=${rows.length}`)
+
+    // 3. Validar e normalizar (exemplo básico)
+    const validRows = rows.filter((row) => {
+      const hasData = Object.values(row).some((v) => v !== "" && v !== null && v !== undefined)
+      return hasData
+    })
+
+    console.log(`[FLOW][${traceId}] worker:csv_validated validRows=${validRows.length}`)
+
+    // 4. Aqui você pode gravar no banco, fazer outras operações, etc.
+    // Por enquanto, vamos só logar que processou com sucesso
+    console.log(`[FLOW][${traceId}] worker:processing_complete`)
+
+  } catch (error) {
+    console.error(`[FLOW][${traceId}] worker:processing_error`, error)
+    throw error // Re-throw para SQS retry
+  }
 }
 
 async function pollQueue(): Promise<void> {
   if (!queueUrl) {
+    console.error("[WORKER] Queue URL not set, cannot start polling")
     return
   }
 
   console.log(`[WORKER] Starting SQS long polling on ${queueUrl}`)
 
-  // Loop simples; em produção, considerar backoff/exponencial e sinais de parada.
-  // Aqui é suficiente para demonstração do fluxo assíncrono.
-
-  // eslint-disable-next-line no-constant-condition
   while (true) {
     try {
       const command = new ReceiveMessageCommand({
@@ -77,7 +101,6 @@ async function pollQueue(): Promise<void> {
       })
 
       const response = await sqsClient.send(command)
-
       const messages = response.Messages || []
 
       if (messages.length === 0) {
@@ -110,17 +133,20 @@ async function pollQueue(): Promise<void> {
           })
 
           await sqsClient.send(deleteCmd)
+          console.log(`[FLOW][${parsed.traceId}] worker:message_deleted`)
         } catch (error) {
-          console.error("[WORKER] Error processing message", error)
+          console.error(`[WORKER] Error processing message`, error)
+          // Em produção: usar dead-letter queue ou retry logic
         }
       }
     } catch (error) {
       console.error("[WORKER] Error polling SQS", error)
+      // Backoff exponencial em produção
+      await new Promise((resolve) => setTimeout(resolve, 5000))
     }
   }
 }
 
-// Inicia o worker sempre que este arquivo é executado via `tsx`.
 pollQueue().catch((error) => {
   console.error("[WORKER] Fatal error", error)
   process.exit(1)

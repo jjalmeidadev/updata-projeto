@@ -3,14 +3,15 @@ import { sqsClient } from "../../config/aws-clients.ts"
 
 interface UploadJobMessage {
   traceId: string
-  rows: Record<string, unknown>[]
+  s3Key: string
+  fileName: string
 }
 
 // Enfileira um job de processamento de upload na AWS SQS.
 // A fila é configurada via variável de ambiente AWS_SQS_QUEUE_URL.
 
 async function enqueueUploadJob(
-  rows: Record<string, unknown>[],
+  metadata: { s3Key: string; fileName: string },
   traceId = "no-trace"
 ): Promise<void> {
   const queueUrl = (globalThis as any).process?.env?.AWS_SQS_QUEUE_URL as string | undefined
@@ -22,7 +23,8 @@ async function enqueueUploadJob(
 
   const payload: UploadJobMessage = {
     traceId,
-    rows
+    s3Key: metadata.s3Key,
+    fileName: metadata.fileName
   }
 
   const command = new SendMessageCommand({

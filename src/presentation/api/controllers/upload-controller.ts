@@ -1,6 +1,6 @@
 import { Request, Response } from "express"
-import { UploadRowDto } from "../../../business/dto/upload-row-dto.ts"
-import { mapRowsToEntities } from "../../../business/services/upload-service.ts"
+import { PutObjectCommand } from "@aws-sdk/client-s3"
+import { s3Client } from "../../../config/aws-clients.ts"
 import { enqueueUploadJob } from "../../../business/queue/upload-queue.ts"
 
 function isUploadRowArray(payload: unknown): payload is UploadRowDto[] {
@@ -27,43 +27,47 @@ export const handleUpload = async (
 
   try {
 
-    const rows = req.body?.rows as unknown
+    const file = (req as any).file  // multer middleware
 
-    if (!isUploadRowArray(rows) || rows.length === 0) {
-      console.log(`[FLOW][${traceId}] controller:missing_rows`)
+    if (!file) {
       return res.status(400).json({
-        error: "Missing rows payload",
+        error: "Missing CSV file",
         traceId
       })
     }
 
-    const entities = mapRowsToEntities(rows, traceId)
+    // Salvar CSV original no S3
+    const s3Key = `uploads/${traceId}/${file.originalname}`
+    
+    const putCommand = new PutObjectCommand({
+      Bucket: (globalThis as any).process?.env?.AWS_S3_BUCKET,
+      Key: s3Key,
+      Body: file.buffer,  // arquivo binário
+      ContentType: "text/csv"
+    })
 
-    console.log(`[FLOW][${traceId}] controller:entities_processed count=${entities.length}`)
+    await s3Client.send(putCommand)
+    console.log(`[FLOW][${traceId}] controller:s3_upload s3Key=${s3Key}`)
 
-    const normalizedRows = entities.map((entity) => entity.fields)
-
-    try {
-      await enqueueUploadJob(normalizedRows, traceId)
-    } catch (queueError) {
-      console.error(`[FLOW][${traceId}] controller:queue_error`, queueError)
-    }
+    // Enfileirar S3 key (não mais o JSON)
+    await enqueueUploadJob(
+      { s3Key, fileName: file.originalname },  // apenas metadados
+      traceId
+    )
 
     return res.json({
       redirect: "/form",
-      data: normalizedRows,
+      s3Key,
+      fileName: file.originalname,
       traceId
     })
 
   } catch (error) {
-
     console.error(`[FLOW][${traceId}] controller:error`, error)
-
     return res.status(500).json({
       error: "Error processing upload",
       traceId
     })
-
   }
 
 }

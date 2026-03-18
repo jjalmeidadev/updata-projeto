@@ -68,7 +68,6 @@ async function sendParsedData(rows: SheetRow[]): Promise<UploadResponse> {
 async function handleUpload(event: Event): Promise<void> {
 
   const target = event.target as HTMLInputElement
-
   const file = target.files?.[0]
 
   if (!file) {
@@ -76,44 +75,21 @@ async function handleUpload(event: Event): Promise<void> {
     return
   }
 
-  setStatus(`Reading ${file.name}...`)
+  const formData = new FormData()
+  formData.append("file", file)
 
-  const reader = new FileReader()
-
-  reader.onload = async (e: ProgressEvent<FileReader>) => {
-
-    const result = e.target?.result
-
-    if (!result) {
-      console.error("FileReader returned empty result")
-      return
-    }
-
-    const data = new Uint8Array(result as ArrayBuffer)
-
-    const workbook = XLSX.read(data, { type: "array" })
-
-    const sheet = workbook.Sheets[workbook.SheetNames[0]]
-
-    const rows = XLSX.utils.sheet_to_json(sheet) as SheetRow[]
-
-    try {
-
-      const apiResult = await sendParsedData(rows)
-
-      console.log("Upload processed:", apiResult)
-
-      redirectToForm(apiResult.data)
-
-    } catch (error) {
-
-      console.error("Upload error:", error)
-
-    }
-
+  try {
+    const response = await fetch("/api/upload", {
+      method: "POST",
+      body: formData  // ← CSV como binary, não JSON
+    })
+    
+    const result = await response.json()
+    console.log("Upload processed:", result)
+    redirectToForm(result.data)
+  } catch (error) {
+    console.error("Upload error:", error)
   }
-
-  reader.readAsArrayBuffer(file)
 
 }
 
