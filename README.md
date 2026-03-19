@@ -216,6 +216,74 @@ The exact dependency flow of the src/ directory is:
 Presentation Layer → Business Layer → Data Layer
 ```
 
+### ▶️ Running the Application Locally
+
+Follow the steps below to set up and run the application on your local machine. This project consists of two main parts:
+
+- Backend: Node.js + Express API
+
+- Frontend: Angular application
+
+Both services must be running for the system to work correctly.
+
+1. Clone the repository (via HTTPS)
+
+    ```
+    git clone https://git.inteli.edu.br/graduacao/2026-1a/t17/g05.git
+
+    cd g05
+    ```
+2. Install dependencies
+
+    ```
+    npm install
+    ```
+
+3. Install and run the Angular Application
+
+    Navigate to the frontend directory.
+
+        cd src/presentation/web
+    
+
+    Install Angular project dependencies globally.
+
+        npm install -g @angular/cli
+
+    Start the Angular development server.
+
+        ng serve
+
+4. Run the application
+
+    ```
+    npm start
+    ```
+
+5. Open the application
+
+    After running the server, open your browser and go to:
+
+        http://localhost:3000
+
+    The application should now be running locally.
+
+6. Troubleshooting
+
+    If you encounter issues during setup:
+
+    - Ensure Node.js (v18+) is installed. Verify the installation:
+
+            node -v
+
+    - Ensure Angular CLI is installed. Verify the installation:
+
+            ng version
+
+    - Verify that the .env file exists in the backend directory
+    - Check that ports 3000 is available
+
+
 ## 🗃 Release History
 
 * 1.0.0 - 10/04/2026 
