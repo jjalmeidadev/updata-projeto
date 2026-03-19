@@ -1,9 +1,23 @@
 import { Component, OnInit, inject, signal, computed } from '@angular/core';
 import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { ActivatedRoute, Params, Router } from '@angular/router';
-import { QuestionService, SECTION_LABELS } from '../services/question.service';
-import { Question } from '../models/question.model';
+import { QuestionService, SECTION_LABELS, SOURCE_OPTIONS } from '../services/question.service';
+import { Question, QuestionType } from '../models/question.model';
 import { DynamicFieldComponent } from '../components/dynamic-field/dynamic-field.component';
+
+interface ReviewIssue {
+  id: string;
+  label: string;
+  value: unknown;
+  type: QuestionType;
+  options?: string[];
+  error: string;
+}
+
+const REVIEW_ISSUES_KEY = 'reviewIssues';
+const REVIEW_CORRECTIONS_KEY = 'reviewCorrections';
+const REVIEW_FORM_DRAFT_KEY = 'reviewFormDraft';
+const REVIEW_SECTION_INDEX_KEY = 'reviewSectionIndex';
 
 @Component({
   selector: 'app-onboarding-form',
@@ -52,6 +66,8 @@ export class OnboardingFormComponent implements OnInit {
             if (!isNaN(sectionIndex) && sectionIndex >= 0 && sectionIndex < this.sections().length) {
               this.currentSectionIndex.set(sectionIndex);
             }
+          } else {
+            this.restoreReviewSectionIndex();
           }
           if (params['fromUpload']) {
             this.fromUpload.set(true);
@@ -60,6 +76,7 @@ export class OnboardingFormComponent implements OnInit {
 
         // Handle uploaded data
         this.handleUploadedData(builtForm);
+        this.applyReviewCorrections(builtForm);
       },
       error: (err: unknown) => {
         console.error('Failed to load questions:', err);
@@ -158,8 +175,164 @@ export class OnboardingFormComponent implements OnInit {
   }
 
   submit(): void {
+    const reviewIssues = this.collectReviewIssues();
+
+    if (reviewIssues.length > 0) {
+      sessionStorage.setItem(REVIEW_ISSUES_KEY, JSON.stringify(reviewIssues));
+      sessionStorage.setItem(REVIEW_FORM_DRAFT_KEY, JSON.stringify(this.form().getRawValue()));
+      sessionStorage.setItem(REVIEW_SECTION_INDEX_KEY, this.currentSectionIndex().toString());
+      this.router.navigate(['/review'], { state: { reviewIssues } });
+      return;
+    }
+
+    this.clearReviewStorage();
+
     this.submitted.set(true);
     console.log('Onboarding form submitted:', this.form().value);
+  }
+
+  private applyReviewCorrections(form: FormGroup): void {
+    const draftValues = this.parseObjectValues(sessionStorage.getItem(REVIEW_FORM_DRAFT_KEY));
+    this.applyValuesToForm(form, draftValues);
+
+    const fromState = history.state?.['correctedValues'];
+    const stateValues = this.parseObjectValues(fromState);
+    const storageValues = this.parseObjectValues(sessionStorage.getItem(REVIEW_CORRECTIONS_KEY));
+    const correctedValues = Object.keys(stateValues).length > 0 ? stateValues : storageValues;
+
+    this.applyValuesToForm(form, correctedValues);
+
+    if (Object.keys(correctedValues).length > 0) {
+      sessionStorage.removeItem(REVIEW_CORRECTIONS_KEY);
+      sessionStorage.removeItem(REVIEW_ISSUES_KEY);
+    }
+  }
+
+  private parseObjectValues(source: unknown): Record<string, unknown> {
+    try {
+      const parsed = typeof source === 'string' ? JSON.parse(source) : source;
+      if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) {
+        return {};
+      }
+
+      return parsed as Record<string, unknown>;
+    } catch {
+      return {};
+    }
+  }
+
+  private applyValuesToForm(form: FormGroup, values: Record<string, unknown>): void {
+    for (const [fieldId, value] of Object.entries(values)) {
+      const control = form.get(fieldId);
+      if (!control) {
+        continue;
+      }
+
+      control.setValue(value);
+    }
+  }
+
+  private restoreReviewSectionIndex(): void {
+    const rawIndex = sessionStorage.getItem(REVIEW_SECTION_INDEX_KEY);
+    if (!rawIndex) {
+      return;
+    }
+
+    const sectionIndex = parseInt(rawIndex, 10);
+    if (!Number.isNaN(sectionIndex) && sectionIndex >= 0 && sectionIndex < this.sections().length) {
+      this.currentSectionIndex.set(sectionIndex);
+    }
+
+    sessionStorage.removeItem(REVIEW_SECTION_INDEX_KEY);
+  }
+
+  private clearReviewStorage(): void {
+    sessionStorage.removeItem(REVIEW_ISSUES_KEY);
+    sessionStorage.removeItem(REVIEW_CORRECTIONS_KEY);
+    sessionStorage.removeItem(REVIEW_FORM_DRAFT_KEY);
+    sessionStorage.removeItem(REVIEW_SECTION_INDEX_KEY);
+  }
+
+  private collectReviewIssues(): ReviewIssue[] {
+    const values = this.form().value as Record<string, unknown>;
+
+    return this.questions().reduce((issues: ReviewIssue[], question: Question) => {
+      const value = values[question.id];
+      const error = this.validateQuestionValue(question.type, value);
+
+      if (!error) {
+        return issues;
+      }
+
+      issues.push({
+        id: question.id,
+        label: question.question,
+        value,
+        type: question.type,
+        options: this.resolveQuestionOptions(question),
+        error,
+      });
+
+      return issues;
+    }, []);
+  }
+
+  private validateQuestionValue(type: QuestionType, value: unknown): string {
+    if (type === 'file') {
+      if (!Array.isArray(value) || value.length === 0) {
+        return 'Please upload at least one file.';
+      }
+      return '';
+    }
+
+    if (type === 'multi-select') {
+      if (!Array.isArray(value) || value.length === 0) {
+        return 'Please select at least one option.';
+      }
+      return '';
+    }
+
+    if (type === 'boolean') {
+      if (typeof value !== 'boolean') {
+        return 'Please choose Yes or No.';
+      }
+      return '';
+    }
+
+    const textValue = value === null || value === undefined ? '' : String(value).trim();
+    if (!textValue) {
+      return 'This field is required.';
+    }
+
+    if (type === 'integer' && !/^-?\d+$/.test(textValue)) {
+      return 'Please use whole numbers only.';
+    }
+
+    if (type === 'decimal' && !/^-?\d+([.,]\d+)?$/.test(textValue)) {
+      return 'Please enter a valid decimal number.';
+    }
+
+    if (type === 'time' && !/^([01]\d|2[0-3]):([0-5]\d)$/.test(textValue)) {
+      return 'Please enter the time in HH:MM format.';
+    }
+
+    if (type === 'date' && Number.isNaN(Date.parse(textValue))) {
+      return 'Please enter a valid date.';
+    }
+
+    return '';
+  }
+
+  private resolveQuestionOptions(question: Question): string[] {
+    if (question.options && question.options.length > 0) {
+      return question.options;
+    }
+
+    if (question.source && SOURCE_OPTIONS[question.source]) {
+      return SOURCE_OPTIONS[question.source];
+    }
+
+    return [];
   }
 
   private getSelectedSections(): string[] {

@@ -1,0 +1,81 @@
+<div class="form-shell">
+	<header class="form-header">
+		<h1>Review Invalid Data</h1>
+		<p class="subtitle">
+			Update the fields below. The warning next to each field explains what needs to be fixed.
+		</p>
+
+		@if (hasIssues()) {
+			<div class="summary-alert" role="status" aria-live="polite">
+				<strong>{{ invalidCount() }}</strong>
+				{{ invalidCount() === 1 ? 'field needs correction' : 'fields need correction' }}
+			</div>
+		}
+	</header>
+
+	@if (!hasIssues()) {
+		<div class="empty-state">
+			<h2>No errors found</h2>
+			<p>There are no items to review right now.</p>
+			<button type="button" class="btn btn-secondary" (click)="goBack()">Back to form</button>
+		</div>
+	} @else {
+		<section class="form-section">
+			<div class="review-list" role="list">
+			@for (issue of issues(); track issue.id) {
+				<article class="review-card" role="listitem">
+					<div class="field-content">
+						<label class="field-label" [for]="issue.id">{{ issue.label }}</label>
+
+						@if (issue.type === 'textarea') {
+							<textarea
+								[id]="issue.id"
+								class="field-input"
+								rows="4"
+								[ngModel]="issue.value"
+								(ngModelChange)="onValueChange(issue.id, $event)"
+								[ngModelOptions]="{ standalone: true }"></textarea>
+						} @else if (issue.type === 'dropdown' && issue.options.length > 0) {
+							<select
+								[id]="issue.id"
+								class="field-input"
+								[ngModel]="issue.value"
+								(ngModelChange)="onValueChange(issue.id, $event)"
+								[ngModelOptions]="{ standalone: true }">
+								<option value="">-- Select --</option>
+								@for (option of issue.options; track option) {
+									<option [value]="option">{{ option }}</option>
+								}
+							</select>
+						} @else {
+							<input
+								[id]="issue.id"
+								class="field-input"
+								[type]="inputType(issue.type)"
+								[ngModel]="issue.value"
+								(ngModelChange)="onValueChange(issue.id, $event)"
+								[ngModelOptions]="{ standalone: true }" />
+						}
+					</div>
+
+					<aside class="error-side" [class.ok]="!issue.error" aria-live="polite">
+						<span class="badge" [class.bad]="issue.error" [class.good]="!issue.error">
+							{{ issue.error ? 'Error' : 'OK' }}
+						</span>
+						<p>{{ issue.error || 'Field validated successfully.' }}</p>
+					</aside>
+				</article>
+			}
+			</div>
+
+			@if (pageMessage()) {
+				<p class="form-message">{{ pageMessage() }}</p>
+			}
+
+			<div class="form-nav">
+				<button type="button" class="btn btn-secondary" (click)="goBack()">Back without saving</button>
+				<button type="button" class="btn btn-primary" (click)="saveCorrections()">Save changes</button>
+			</div>
+		</section>
+	}
+</div>
