@@ -8,11 +8,11 @@ interface AuthPayload {
 }
 
 interface UserRecord {
-  user_id: number
+  user_id: string
   user_name: string
   user_email: string
   auth0_id: string
-  company_id: number | null
+  company_id: string | null
 }
 
 // Ensures the authenticated user exists and is linked to a company when possible.
