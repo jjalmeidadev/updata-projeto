@@ -99,9 +99,10 @@ SELECT gen_random_uuid(),NOW(),NOW()+interval '1 hour','confirmed','Meeting',
 FROM generate_series(1,10);
 
 -- ONBOARDING
-INSERT INTO onboarding_batch VALUES (gen_random_uuid(),'api','pending',NOW());
+INSERT INTO onboarding_batch (id, source, status, created_at)
+VALUES (gen_random_uuid(),'api','pending',NOW());
 
-INSERT INTO onboarding_payload
+INSERT INTO onboarding_payload (id, batch_id, entity_type, raw_data)
 SELECT gen_random_uuid(),
 (SELECT id FROM onboarding_batch LIMIT 1),
 'customer',
@@ -109,13 +110,13 @@ jsonb_build_object('name','Test '||i)
 FROM generate_series(1,4) i;
 
 -- PROCESSING
-INSERT INTO processing_job
+INSERT INTO processing_job (id, batch_id, type, status)
 SELECT gen_random_uuid(),
 (SELECT id FROM onboarding_batch LIMIT 1),
 'import','queued'
 FROM generate_series(1,4);
 
-INSERT INTO processing_log
+INSERT INTO processing_log (id, job_id, message)
 SELECT gen_random_uuid(),
 (SELECT id FROM processing_job ORDER BY random() LIMIT 1),
 'started'

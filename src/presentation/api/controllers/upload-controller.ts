@@ -3,16 +3,22 @@ import { PutObjectCommand } from "@aws-sdk/client-s3"
 import { s3Client } from "../../../config/aws-clients.ts"
 import { enqueueUploadJob } from "../../../business/queue/upload-queue.ts"
 
-function isUploadRowArray(payload: unknown): payload is UploadRowDto[] {
+function getContentType(fileName: string): string {
+  const extension = fileName.toLowerCase().split(".").pop() || ""
 
-  if (!Array.isArray(payload)) {
-    return false
+  if (extension === "csv") {
+    return "text/csv"
   }
 
-  return payload.every(
-    (row) => typeof row === "object" && row !== null && !Array.isArray(row)
-  )
+  if (extension === "xlsx") {
+    return "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+  }
 
+  if (extension === "xls") {
+    return "application/vnd.ms-excel"
+  }
+
+  return "application/octet-stream"
 }
 
 export const handleUpload = async (
@@ -31,19 +37,19 @@ export const handleUpload = async (
 
     if (!file) {
       return res.status(400).json({
-        error: "Missing CSV file",
+        error: "Missing upload file",
         traceId
       })
     }
 
-    // Salvar CSV original no S3
+    // Salvar arquivo original no S3 para processamento assíncrono.
     const s3Key = `uploads/${traceId}/${file.originalname}`
     
     const putCommand = new PutObjectCommand({
       Bucket: (globalThis as any).process?.env?.AWS_S3_BUCKET,
       Key: s3Key,
-      Body: file.buffer,  // arquivo binário
-      ContentType: "text/csv"
+      Body: file.buffer,
+      ContentType: getContentType(file.originalname)
     })
 
     await s3Client.send(putCommand)

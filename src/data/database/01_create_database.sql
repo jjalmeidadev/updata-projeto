@@ -162,14 +162,22 @@ CREATE TABLE onboarding_batch (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   source VARCHAR(50),
   status VARCHAR(50),
+  trace_id VARCHAR(120),
+  file_name VARCHAR(255),
+  s3_key TEXT,
+  error_message TEXT,
+  processed_at TIMESTAMPTZ,
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
 
 CREATE TABLE onboarding_payload (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   batch_id UUID REFERENCES onboarding_batch(id) ON DELETE CASCADE,
+  row_number INT,
   entity_type VARCHAR(50),
-  raw_data JSONB
+  raw_data JSONB,
+  is_valid BOOLEAN DEFAULT TRUE,
+  validation_errors JSONB DEFAULT '[]'::jsonb
 );
 
 CREATE TABLE onboarding_mapping (
@@ -184,11 +192,17 @@ CREATE TABLE processing_job (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   batch_id UUID REFERENCES onboarding_batch(id) ON DELETE CASCADE,
   type VARCHAR(50),
-  status VARCHAR(50)
+  status VARCHAR(50),
+  external_reference VARCHAR(255),
+  error_message TEXT,
+  started_at TIMESTAMPTZ,
+  finished_at TIMESTAMPTZ
 );
 
 CREATE TABLE processing_log (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   job_id UUID REFERENCES processing_job(id) ON DELETE CASCADE,
-  message TEXT
+  level VARCHAR(20) DEFAULT 'info',
+  message TEXT,
+  created_at TIMESTAMPTZ DEFAULT NOW()
 );

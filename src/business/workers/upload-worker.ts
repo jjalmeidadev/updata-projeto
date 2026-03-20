@@ -2,7 +2,18 @@ import dotenv from "dotenv"
 import { ReceiveMessageCommand, DeleteMessageCommand } from "@aws-sdk/client-sqs"
 import { GetObjectCommand } from "@aws-sdk/client-s3"
 import { s3Client, sqsClient } from "../../config/aws-clients.ts"
-import Papa from "papaparse"
+import { parseUploadFile } from "../services/upload-file-parser-service.ts"
+import { mapRowsForProcessing, buildEquiemPayload } from "../services/upload-payload-mapper-service.ts"
+import {
+  createOnboardingBatch,
+  createProcessingJob,
+  createProcessingLog,
+  saveOnboardingPayloads,
+  saveOnboardingMappings,
+  updateOnboardingBatchStatus,
+  updateProcessingJobStatus,
+} from "../../data/repositories/onboarding-repository.js"
+import { sendToEquiemApi } from "../../data/integrations/equiem-api-client.js"
 
 dotenv.config({ path: "config/.env" })
 
@@ -28,8 +39,16 @@ interface UploadJobMessage {
   fileName: string
 }
 
+interface EquiemResponseRecord {
+  entityType: string
+  externalId: string
+  internalId: string
+}
+
 async function processMessage(message: UploadJobMessage): Promise<void> {
   const traceId = message.traceId || `worker-${Date.now()}`
+  let batchId = ""
+  let jobId = ""
 
   if (!bucketName || !message.s3Key) {
     console.warn(`[FLOW][${traceId}] worker:invalid_payload`)
@@ -37,7 +56,23 @@ async function processMessage(message: UploadJobMessage): Promise<void> {
   }
 
   try {
-    // 1. Baixar CSV do S3
+    batchId = await createOnboardingBatch({
+      source: "upload",
+      status: "queued",
+      fileName: message.fileName,
+      s3Key: message.s3Key,
+      traceId,
+    })
+
+    jobId = await createProcessingJob({
+      batchId,
+      type: "upload_ingestion",
+      status: "processing",
+    })
+
+    await createProcessingLog(jobId, "info", "Upload message received by worker")
+    await updateOnboardingBatchStatus(batchId, "processing")
+
     console.log(`[FLOW][${traceId}] worker:s3_get_object s3Key=${message.s3Key}`)
 
     const getCommand = new GetObjectCommand({
@@ -46,40 +81,106 @@ async function processMessage(message: UploadJobMessage): Promise<void> {
     })
 
     const response = await s3Client.send(getCommand)
-    const csvContent = await response.Body?.transformToString()
+    const fileContent = await response.Body?.transformToByteArray()
 
-    if (!csvContent) {
-      throw new Error("CSV content is empty")
+    if (!fileContent || fileContent.length === 0) {
+      throw new Error("Uploaded file content is empty")
     }
 
-    console.log(`[FLOW][${traceId}] worker:csv_downloaded s3Key=${message.s3Key}`)
+    console.log(`[FLOW][${traceId}] worker:file_downloaded s3Key=${message.s3Key}`)
+    await createProcessingLog(jobId, "info", "File downloaded from S3")
 
-    // 2. Parse CSV com papaparse
-    const rows: Record<string, unknown>[] = await new Promise((resolve, reject) => {
-      Papa.parse(csvContent, {
-        header: true,
-        skipEmptyLines: true,
-        complete: (results) => resolve(results.data as Record<string, unknown>[]),
-        error: (error: Error) => reject(error)
+    const rows = parseUploadFile(fileContent, message.fileName, traceId)
+
+    if (rows.length === 0) {
+      throw new Error("No data rows found in uploaded file")
+    }
+
+    const records = mapRowsForProcessing(rows, traceId)
+
+    await saveOnboardingPayloads(
+      batchId,
+      records.map((record) => ({
+        rowNumber: record.rowNumber,
+        entityType: record.entityType,
+        rawData: record.rawData,
+        isValid: record.isValid,
+        validationErrors: record.validationErrors,
+      }))
+    )
+
+    const validRecords = records.filter((record) => record.isValid)
+    const invalidRecords = records.filter((record) => !record.isValid)
+
+    await createProcessingLog(
+      jobId,
+      "info",
+      `Rows mapped. valid=${validRecords.length} invalid=${invalidRecords.length}`
+    )
+
+    if (validRecords.length === 0) {
+      await updateProcessingJobStatus(jobId, "invalid", {
+        errorMessage: "No valid rows after validation",
       })
+      await updateOnboardingBatchStatus(batchId, "invalid", "No valid rows after validation")
+      await createProcessingLog(jobId, "error", "Processing finished with no valid rows")
+      return
+    }
+
+    const equiemPayload = buildEquiemPayload(validRecords, {
+      traceId,
+      fileName: message.fileName,
+      batchId,
     })
 
-    console.log(`[FLOW][${traceId}] worker:csv_parsed rows=${rows.length}`)
+    const equiemResult = await sendToEquiemApi(equiemPayload, traceId)
 
-    // 3. Validar e normalizar (exemplo básico)
-    const validRows = rows.filter((row) => {
-      const hasData = Object.values(row).some((v) => v !== "" && v !== null && v !== undefined)
-      return hasData
+    if (!equiemResult.sent) {
+      await updateProcessingJobStatus(jobId, "pending_external_send", {
+        errorMessage: equiemResult.reason || "Equiem endpoint not configured",
+      })
+      await updateOnboardingBatchStatus(batchId, "pending_external_send", equiemResult.reason)
+      await createProcessingLog(jobId, "warn", "Payload prepared but external send was skipped")
+      console.log(`[FLOW][${traceId}] worker:pending_external_send`)
+      return
+    }
+
+    const mappingCandidates = (
+      (equiemResult.responseBody as { mappings?: EquiemResponseRecord[] } | undefined)?.mappings || []
+    ).filter((item) => Boolean(item.entityType && item.externalId && item.internalId))
+
+    await saveOnboardingMappings(
+      mappingCandidates.map((item) => ({
+        entityType: item.entityType,
+        externalId: item.externalId,
+        internalId: item.internalId,
+      }))
+    )
+
+    await updateProcessingJobStatus(jobId, "completed", {
+      externalReference: equiemResult.externalReference,
     })
+    await updateOnboardingBatchStatus(batchId, "completed")
 
-    console.log(`[FLOW][${traceId}] worker:csv_validated validRows=${validRows.length}`)
+    await createProcessingLog(jobId, "info", "Processing completed and payload sent to Equiem")
 
-    // 4. Aqui você pode gravar no banco, fazer outras operações, etc.
-    // Por enquanto, vamos só logar que processou com sucesso
     console.log(`[FLOW][${traceId}] worker:processing_complete`)
 
   } catch (error) {
     console.error(`[FLOW][${traceId}] worker:processing_error`, error)
+    const errorMessage = error instanceof Error ? error.message : "Unknown processing error"
+
+    if (jobId) {
+      await updateProcessingJobStatus(jobId, "failed", {
+        errorMessage,
+      })
+      await createProcessingLog(jobId, "error", errorMessage)
+    }
+
+    if (batchId) {
+      await updateOnboardingBatchStatus(batchId, "failed", errorMessage)
+    }
+
     throw error // Re-throw para SQS retry
   }
 }
