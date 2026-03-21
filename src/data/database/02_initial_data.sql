@@ -23,6 +23,7 @@ SELECT gen_random_uuid(),'bldg-'||i,'Building '||i,i,
 (SELECT id FROM site ORDER BY random() LIMIT 1)
 FROM generate_series(1,6) i;
 
+-- =========
 -- LEVELS
 INSERT INTO level
 SELECT gen_random_uuid(),'lvl-'||i,'Level '||i,i,5,
