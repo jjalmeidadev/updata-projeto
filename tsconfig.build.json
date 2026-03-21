@@ -1,0 +1,20 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "noEmit": false,
+    "allowImportingTsExtensions": false,
+    "outDir": "dist",
+    "rootDir": "src"
+  },
+  "include": [
+    "src/server.ts",
+    "src/presentation/api/**/*.ts",
+    "src/business/**/*.ts",
+    "src/data/**/*.ts"
+  ],
+  "exclude": [
+    "src/presentation/web/**",
+    "src/presentation/api/routes/user-repository.ts",
+    "tests/**"
+  ]
+}

@@ -1,5 +1,5 @@
-import { UploadEntity } from "../entities/upload-entity.ts"
-import { UploadRowDto } from "../dto/upload-row-dto.ts"
+import { UploadEntity } from "../entities/upload-entity.js"
+import { UploadRowDto } from "../dto/upload-row-dto.js"
 
 
 // Creates normalized upload entities from parsed spreadsheet rows.

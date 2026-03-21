@@ -1,6 +1,6 @@
 import { Request, Response } from "express"
-import { UploadRowDto } from "../../../business/dto/upload-row-dto.ts"
-import { mapRowsToEntities } from "../../../business/services/upload-service.ts"
+import { UploadRowDto } from "../../../business/dto/upload-row-dto.js"
+import { mapRowsToEntities } from "../../../business/services/upload-service.js"
 
 function isUploadRowArray(payload: unknown): payload is UploadRowDto[] {
 

@@ -1,0 +1,54 @@
+services:
+  database:
+    image: postgres:16-alpine
+    container_name: g05-database-prod
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: postgres
+    volumes:
+      - postgres_data_prod:/var/lib/postgresql/data
+    networks:
+      - app-network
+
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile.prod
+    container_name: g05-backend-prod
+    restart: unless-stopped
+    depends_on:
+      - database
+    environment:
+      NODE_ENV: production
+      DB_HOST: database
+      DB_PORT: 5432
+      DB_USER: postgres
+      DB_PASSWORD: postgres
+      DB_DATABASE: postgres
+      DB_SSL: "false"
+    ports:
+      - "3000:3000"
+    networks:
+      - app-network
+
+  frontend:
+    build:
+      context: ./src/presentation/web
+      dockerfile: Dockerfile.prod
+    container_name: g05-frontend-prod
+    restart: unless-stopped
+    depends_on:
+      - backend
+    ports:
+      - "80:80"
+    networks:
+      - app-network
+
+volumes:
+  postgres_data_prod:
+
+networks:
+  app-network:
+    driver: bridge
