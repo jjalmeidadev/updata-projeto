@@ -1,17 +1,16 @@
 import express from "express";
-import userRoutes from "./presentation/api/routes/user-routes.ts";
-import uploadRoutes from "./presentation/api/routes/upload-routes.ts";
+import userRoutes from "./presentation/api/routes/user-routes.js";
+import uploadRoutes from "./presentation/api/routes/upload-routes.js";
 
 const app = express();
 
-// API endpoints in this app only accept JSON payloads.
-// Parse JSON request bodies for API endpoints.
 app.use(express.json());
 
-// Mount all user-related API routes.
-app.use(userRoutes);
+app.get("/", (req, res) => {
+  res.send("API funcionando 🚀");
+});
 
-// Mount all upload-related API routes.
+app.use(userRoutes);
 app.use(uploadRoutes);
 
 app.listen(3000, () => {

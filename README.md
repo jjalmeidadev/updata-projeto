@@ -194,7 +194,7 @@ Contains application configuration files, because separating configuration from 
 
 To ensure consistency, readability, and maintainability across the project, the following naming conventions were adopted.
 
-- Kebab-case is used for all folder and file names (e.g., user-controller.ts, mock-api/);
+- Kebab-case is used for all folder and file names (e.g., user-controller.js, mock-api/);
 
 - Folder names are strictly descriptive and responsibility-based;
 

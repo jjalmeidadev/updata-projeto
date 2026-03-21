@@ -4,14 +4,14 @@ export default defineConfig({
   test: {
     environment: "node",
     include: [
-      "tests/business/**/*.spec.ts",
-      "tests/presentation/api/**/*.spec.ts",
+      "tests/business/**/*.spec.js",
+      "tests/presentation/api/**/*.spec.js",
     ],
     coverage: {
       provider: "v8",
       reporter: ["text", "html"],
-      include: ["src/business/**/*.ts", "src/presentation/api/**/*.ts"],
-      exclude: ["**/*.spec.ts", "**/node_modules/**"],
+      include: ["src/business/**/*.js", "src/presentation/api/**/*.js"],
+      exclude: ["**/*.spec.js", "**/node_modules/**"],
     },
   },
 })

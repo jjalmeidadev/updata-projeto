@@ -1,4 +1,4 @@
-import { UploadRowDto } from "../dto/upload-row-dto.ts"
+import { UploadRowDto } from "../dto/upload-row-dto.js"
 
 class UploadEntity {
 
