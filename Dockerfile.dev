@@ -2,9 +2,11 @@ FROM node:20-alpine
 
 WORKDIR /app
 
+# Development runtime settings.
 ENV NODE_ENV=development
 ENV NODE_OPTIONS=--max-old-space-size=96
 
+# Install dependencies first to leverage Docker layer caching.
 COPY package*.json ./
 RUN npm ci && npm cache clean --force
 
@@ -12,4 +14,5 @@ COPY . .
 
 EXPOSE 3000
 
+# Start backend in watch mode for fast iteration.
 CMD ["npm", "run", "dev"]

@@ -2,14 +2,18 @@ FROM node:20-alpine AS builder
 
 WORKDIR /app
 
+# Raise build-time heap to avoid Angular build OOM.
 ENV NODE_OPTIONS=--max-old-space-size=512
 
+# Install dependencies in a cache-friendly layer.
 COPY package*.json ./
 RUN npm ci --no-audit --no-fund && npm cache clean --force
 
 COPY . .
+# Produce optimized static assets.
 RUN npm run build -- --configuration production
 
+# Use unprivileged Nginx image for safer static hosting.
 FROM nginxinc/nginx-unprivileged:alpine
 
 COPY --from=builder /app/dist/meu-app/browser /usr/share/nginx/html

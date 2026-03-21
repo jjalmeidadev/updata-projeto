@@ -2,10 +2,12 @@ FROM node:20-alpine
 
 WORKDIR /app
 
+# Development-friendly settings for Angular/Vite-style live reload.
 ENV NODE_ENV=development
 ENV NODE_OPTIONS=--max-old-space-size=384
 ENV CHOKIDAR_USEPOLLING=true
 
+# Dependency layer cached independently from source code.
 COPY package*.json ./
 RUN npm ci && npm cache clean --force
 
@@ -13,4 +15,5 @@ COPY . .
 
 EXPOSE 4200
 
+# Bind to all interfaces for container access from host.
 CMD ["npm", "run", "start", "--", "--host", "0.0.0.0", "--port", "4200"]
