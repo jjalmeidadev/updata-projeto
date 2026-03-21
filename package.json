@@ -3,13 +3,14 @@
   "version": "1.0.0",
   "private": true,
   "type": "module",
-  "scripts": {
-    "dev": "tsx watch src/server.ts",
-    "start": "tsx src/server.ts",
-    "typecheck": "tsc --noEmit",
-    "test": "vitest run",
-    "test:coverage": "vitest run --coverage"
-  },
+"scripts": {
+  "dev": "tsx watch src/server.ts",
+  "start": "tsx src/server.ts",
+  "typecheck": "tsc --noEmit",
+  "test": "vitest run",
+  "test:coverage": "vitest run --coverage"
+},
+
   "dependencies": {
     "cors": "^2.8.6",
     "dotenv": "^16.4.5",

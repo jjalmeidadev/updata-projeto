@@ -1,0 +1,117 @@
+# Three-Tier Application with Docker
+
+## Description
+
+This project is a three-tier application composed of:
+
+- Database: PostgreSQL  
+- Backend: Node.js with TypeScript  
+- Frontend: Angular  
+
+The objective was to containerize the application using Docker in order to:
+
+- Simplify deployment  
+- Ensure portability  
+- Standardize development and production environments  
+
+---
+
+## Architecture
+
+The application is structured in three layers:
+
+1. Database (PostgreSQL)  
+2. Backend API (Node.js + TypeScript)  
+3. Frontend (Angular)  
+
+All services are orchestrated using Docker Compose and communicate through a shared Docker network.
+
+---
+
+## Docker Configuration
+
+A total of 6 Docker files were created:  
+- 3 for development  
+- 3 for production  
+
+---
+
+## Development Environment
+
+### Dockerfile.backend.dev
+- Runs the backend in development mode  
+- Uses `tsx` to execute TypeScript directly  
+- Enables live reload  
+
+### Dockerfile.frontend.dev
+- Runs Angular using `ng serve`  
+- Enables hot reload for development  
+
+### docker-compose.dev.yml
+- Starts the full application stack:
+  - PostgreSQL  
+  - Backend  
+  - Frontend  
+- Uses:
+  - Volumes to sync code with containers  
+  - A Docker network for communication between services  
+
+---
+
+## Production Environment
+
+### Dockerfile.backend.prod
+- Runs the backend in a container  
+- Uses Node.js with `tsx` to execute TypeScript  
+- Configured for Docker execution  
+
+### Dockerfile.frontend.prod
+- Builds the Angular application  
+- Uses Nginx to serve static files  
+- Optimized for production  
+
+### docker-compose.prod.yml
+- Orchestrates:
+  - PostgreSQL database  
+  - Backend API  
+  - Frontend served via Nginx  
+- Includes:
+  - Persistent volume for database data  
+  - Docker network  
+  - Service dependencies  
+
+---
+
+## How to Run the Application
+
+### Development Mode
+
+To start the full application stack in development mode, run:
+
+`docker compose -f docker-compose.dev.yml up --build`
+
+Access:
+
+Frontend: http://localhost:4200
+
+Backend: http://localhost:3000
+
+Database: PostgreSQL on port 5432
+
+This configuration is intended for development and uses volumes to synchronize the source code with the containers, allowing live reload and easier testing.
+
+### Production Mode
+
+To start the full application stack in production mode, run:
+
+`docker compose -f docker-compose.prod.yml up --build`
+
+Access:
+
+Frontend: http://localhost:4200
+
+Backend: http://localhost:3000
+
+Database: PostgreSQL on port 5432
+
+This configuration is intended for a more stable and portable environment, with the frontend served by Nginx and the backend running inside its own production container.

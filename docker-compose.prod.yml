@@ -1,0 +1,55 @@
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: g05-db-prod
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: equiem_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data_prod:/var/lib/postgresql/data
+    networks:
+      - g05-network-prod
+
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile.backend.prod
+    container_name: g05-backend-prod
+    restart: unless-stopped
+    depends_on:
+      - db
+    environment:
+      DB_HOST: db
+      DB_PORT: 5432
+      DB_USER: postgres
+      DB_PASSWORD: postgres
+      DB_DATABASE: equiem_db
+      DB_SSL: "false"
+    ports:
+      - "3000:3000"
+    networks:
+      - g05-network-prod
+
+  frontend:
+    build:
+      context: ./src/presentation/web
+      dockerfile: Dockerfile.frontend.prod
+    container_name: g05-frontend-prod
+    restart: unless-stopped
+    depends_on:
+      - backend
+    ports:
+      - "4200:80"
+    networks:
+      - g05-network-prod
+
+volumes:
+  postgres_data_prod:
+
+networks:
+  g05-network-prod:
+    driver: bridge
