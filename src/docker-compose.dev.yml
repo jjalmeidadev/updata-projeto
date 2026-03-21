@@ -1,0 +1,67 @@
+name: g05-dev
+
+services:
+  backend:
+    build:
+      context: ..
+      dockerfile: src/business/docker-file.dev
+    env_file:
+      - ../config/.env
+    environment:
+      NODE_ENV: development
+      PORT: 3000
+      DATABASE_URL: postgres://postgres:postgres@postgres:5432/g05
+    ports:
+      - "3000:3000"
+    volumes:
+      - ..:/app
+      - backend_node_modules:/app/node_modules
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
+    mem_limit: 128m
+    cpus: 0.50
+
+  frontend:
+    profiles: ["frontend"]
+    build:
+      context: ..
+      dockerfile: src/presentation/docker-file.dev
+    environment:
+      NODE_ENV: development
+    ports:
+      - "4200:4200"
+    volumes:
+      - ../src/presentation/web:/app
+      - frontend_node_modules:/app/node_modules
+    depends_on:
+      backend:
+        condition: service_started
+    restart: unless-stopped
+    mem_limit: 128m
+    cpus: 0.50
+
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: g05
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d g05"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    restart: unless-stopped
+    mem_limit: 128m
+    cpus: 0.50
+
+volumes:
+  postgres_data:
+  backend_node_modules:
+  frontend_node_modules:

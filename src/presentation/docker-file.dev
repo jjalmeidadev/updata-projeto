@@ -1,0 +1,21 @@
+FROM node:20-alpine
+
+WORKDIR /app
+
+ENV NODE_ENV=development
+ENV NG_CLI_ANALYTICS=false
+ENV NODE_OPTIONS=--max-old-space-size=96
+
+# Cache frontend deps before copying full source.
+COPY --chown=node:node src/presentation/web/package*.json ./
+
+USER node
+
+RUN npm ci --no-audit --no-fund
+
+# Angular source for live dev server.
+COPY --chown=node:node src/presentation/web .
+
+EXPOSE 4200
+
+CMD ["npm", "run", "start", "--", "--host", "0.0.0.0", "--port", "4200"]

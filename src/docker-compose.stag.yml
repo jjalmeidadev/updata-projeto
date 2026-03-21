@@ -1,0 +1,54 @@
+name: g05-stag
+
+services:
+  backend:
+    build:
+      context: ..
+      dockerfile: src/business/docker-file.stag
+    env_file:
+      - ../config/.env
+    environment:
+      NODE_ENV: staging
+      PORT: 3000
+      DATABASE_URL: ${DATABASE_URL:-postgres://postgres:postgres@postgres:5432/g05_stag}
+    ports:
+      - "3001:3000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
+    mem_limit: 128m
+    cpus: 0.50
+
+  frontend:
+    build:
+      context: ..
+      dockerfile: src/presentation/docker-file.stag
+    ports:
+      - "8081:80"
+    depends_on:
+      backend:
+        condition: service_started
+    restart: unless-stopped
+    mem_limit: 128m
+    cpus: 0.50
+
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: g05_stag
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    volumes:
+      - postgres_data_stag:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d g05_stag"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    restart: unless-stopped
+    mem_limit: 128m
+    cpus: 0.50
+
+volumes:
+  postgres_data_stag:
