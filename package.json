@@ -8,7 +8,8 @@
     "start": "tsx src/server.ts",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
-    "test:coverage": "vitest run --coverage"
+    "test:coverage": "vitest run --coverage",
+    "test:staged": "bash ./scripts/test-staged.sh"
   },
   "dependencies": {
     "cors": "^2.8.6",
