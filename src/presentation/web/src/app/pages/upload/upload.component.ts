@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { QuestionService, SECTION_LABELS } from '../../services/question.service';
 import { Question } from '../../models/question.model';
+import ExcelJS from 'exceljs';
 
 interface UploadApiResponse {
   redirect?: string;
@@ -216,5 +217,129 @@ export class UploadComponent implements OnInit {
     } catch {
       return [];
     }
+  }
+
+  async downloadTemplate(): Promise<void> {
+    const sections = this.sections();
+    const questions = this.questions();
+
+    if (!sections.length || !questions.length) {
+      this.errorMessage.set('No sections available to generate template.');
+      return;
+    }
+
+    const workbook = new ExcelJS.Workbook();
+    const usedSheetNames = new Set<string>();
+
+    for (const sectionId of sections) {
+      const sectionQuestions = this.questionService
+        .getQuestionsBySection(questions, sectionId)
+        .sort((a, b) => a.order - b.order);
+
+      const sectionLabel = this.sectionLabels[sectionId] ?? sectionId;
+      const baseName = this.sheetName(sectionLabel);
+      const uniqueName = this.uniqueSheetName(baseName, usedSheetNames);
+      const ws = workbook.addWorksheet(uniqueName, { views: [{ state: 'frozen', ySplit: 4 }] });
+
+      const colCount = Math.max(sectionQuestions.length, 1);
+
+      ws.mergeCells(1, 1, 1, colCount);
+      const title = ws.getCell(1, 1);
+      title.value = sectionLabel.toUpperCase();
+      title.font = { bold: true, color: { argb: 'FFFFFFFF' }, size: 14 };
+      title.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF2B2D42' } };
+      title.alignment = { horizontal: 'center', vertical: 'middle' };
+      ws.getRow(1).height = 28;
+
+      sectionQuestions.forEach((q, i) => {
+        const c = i + 1;
+        const isBoolean = q.type === 'boolean';
+
+        ws.getCell(2, c).value = q.question;                 // Header
+        ws.getCell(3, c).value = q.description ?? '';        // Description
+        ws.getCell(4, c).value = isBoolean ? 'Answer with Yes or No' : ''; // Instructions only when useful
+
+        ws.getColumn(c).width = Math.min(42, Math.max(20, Math.ceil((q.question?.length ?? 20) / 1.2)));
+
+        if (isBoolean) {
+          for (let row = 5; row <= 200; row++) {
+            const cell = ws.getCell(row, c);
+            cell.dataValidation = {
+              type: 'list',
+              allowBlank: true,
+              formulae: ['"Yes,No"'],
+              showErrorMessage: true,
+              errorTitle: 'Invalid value',
+              error: 'Please select Yes or No.'
+            };
+          }
+        }
+      });
+
+      [2, 3, 4].forEach((r) => {
+        ws.getRow(r).eachCell({ includeEmpty: true }, (cell, col) => {
+          if (col > colCount) return;
+          cell.alignment = { wrapText: true, vertical: 'top', horizontal: r === 2 ? 'center' : 'left' };
+          cell.border = {
+            top: { style: 'thin', color: { argb: 'FFBDBDBD' } },
+            left: { style: 'thin', color: { argb: 'FFBDBDBD' } },
+            bottom: { style: 'thin', color: { argb: 'FFBDBDBD' } },
+            right: { style: 'thin', color: { argb: 'FFBDBDBD' } },
+          };
+        });
+      });
+
+      ws.getRow(2).font = { bold: true };
+      ws.getRow(2).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFBFE7E2' } }; // verde água
+      ws.getRow(3).font = { italic: true, color: { argb: 'FF1F2937' } };
+      ws.getRow(4).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFF3F4F6' } };
+
+      for (let r = 5; r <= 12; r++) {
+        for (let c = 1; c <= colCount; c++) {
+          const cell = ws.getCell(r, c);
+          cell.border = {
+            top: { style: 'thin', color: { argb: 'FFE5E7EB' } },
+            left: { style: 'thin', color: { argb: 'FFE5E7EB' } },
+            bottom: { style: 'thin', color: { argb: 'FFE5E7EB' } },
+            right: { style: 'thin', color: { argb: 'FFE5E7EB' } },
+          };
+        }
+      }
+
+      ws.autoFilter = { from: { row: 2, column: 1 }, to: { row: 2, column: colCount } };
+    }
+
+    const buffer = await workbook.xlsx.writeBuffer();
+    const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `equiem-template-${new Date().toISOString().slice(0, 10)}.xlsx`;
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
+  private sheetName(label: string): string {
+    return label.replace(/[\\/?*[\]:]/g, '').slice(0, 31);
+  }
+
+  private uniqueSheetName(base: string, used: Set<string>): string {
+    let name = base || 'Sheet';
+    let index = 1;
+    while (used.has(name.toLowerCase())) {
+      const suffix = `-${index++}`;
+      name = `${base.slice(0, 31 - suffix.length)}${suffix}`;
+    }
+    used.add(name.toLowerCase());
+    return name;
+  }
+
+  private getExampleValue(type: string, question: string): string {
+    if (type === 'integer' || type === 'decimal') return '0';
+    if (type === 'boolean') return 'true/false';
+    if (type === 'date') return 'YYYY-MM-DD';
+    if (type === 'time') return 'HH:mm';
+    if (question.toLowerCase().includes('email')) return 'example@company.com';
+    return 'example';
   }
 }

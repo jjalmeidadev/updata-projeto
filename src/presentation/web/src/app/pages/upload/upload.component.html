@@ -36,7 +36,12 @@
 
     <!-- Upload Section -->
     <section class="form-section">
-      <h2 class="section-title">{{ currentSectionLabel() }}</h2>
+      <div class="section-header">
+        <h2 class="section-title">{{ currentSectionLabel() }}</h2>
+        <button class="template-btn btn btn-primary" type="button" (click)="downloadTemplate()">
+          Download CSV template
+        </button>
+      </div>
 
       <!-- Upload Area -->
       <div class="upload-area">

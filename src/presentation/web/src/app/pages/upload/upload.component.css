@@ -102,8 +102,17 @@
 }
 
 .section-title {
-  font-size: 1.25rem;
-  margin-bottom: 28px;
+  margin-bottom: 0;
+  padding-bottom: 0;
+  border-bottom: none;
+}
+
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 20px;
   padding-bottom: 12px;
   border-bottom: 1px solid #f0f0f0;
 }
@@ -284,4 +293,23 @@
   font-size: 1rem;
   padding: 40px 0;
   text-align: center;
+}
+
+.template-btn {
+  margin-top: 14px;
+  padding: 10px 14px;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  background: #ffffff;
+  color: #374151;
+  font-weight: 600;
+  cursor: pointer;
+}
+.template-btn:hover {
+  background: #f9fafb;
+}
+
+.template-btn {
+  padding: 10px 16px;
+  white-space: nowrap;
 }
