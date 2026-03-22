@@ -1,7 +1,7 @@
 import { Component, OnInit, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
-import { QuestionService, SECTION_LABELS } from '../../services/question.service';
+import { QuestionService } from '../../services/question.service';
 import { Question } from '../../models/question.model';
 import ExcelJS from 'exceljs';
 
@@ -25,80 +25,23 @@ export class UploadComponent implements OnInit {
   private readonly questionService = inject(QuestionService);
 
   readonly questions = signal<Question[]>([]);
-  readonly sections = signal<string[]>([]);
-  readonly currentSectionIndex = signal(0);
   readonly loading = signal(true);
   readonly uploading = signal(false);
   readonly fileName = signal<string | null>(null);
   readonly errorMessage = signal<string | null>(null);
   readonly successMessage = signal<string | null>(null);
-  readonly completedSections = signal<Set<number>>(new Set());
 
-  readonly sectionLabels = SECTION_LABELS;
-
-  readonly currentSection = computed(() => this.sections()[this.currentSectionIndex()]);
-  readonly currentSectionLabel = computed(() => this.sectionLabels[this.currentSection()] ?? this.currentSection());
-  readonly isFirstSection = computed(() => this.currentSectionIndex() === 0);
-  readonly isLastSection = computed(() => this.currentSectionIndex() === this.sections().length - 1);
-
-  readonly currentSectionQuestions = computed(() =>
-    this.questionService.getQuestionsBySection(this.questions(), this.currentSection())
-  );
-
-  readonly progressPercent = computed(() => {
-    const sections = this.sections();
-    if (sections.length === 0) return 0;
-    const completed = this.completedSections().size;
-    return Math.round((completed / sections.length) * 100);
-  });
-
-  readonly currentSectionQuestionsLength = computed(() => this.currentSectionQuestions().length);
+  readonly totalQuestionsLength = computed(() => this.questions().length);
+  readonly uploadProgress = computed(() => (this.uploading() ? 50 : 0));
 
   ngOnInit(): void {
     this.questionService.getQuestions().subscribe({
       next: (allQuestions: Question[]) => {
         const selected = this.getSelectedSections();
-
         const filteredQuestions = selected.length
           ? allQuestions.filter((q: Question) => selected.includes(q.sectionId))
           : allQuestions;
-
         this.questions.set(filteredQuestions);
-
-        const filteredSections = this.questionService.getSections(filteredQuestions);
-        this.sections.set(filteredSections);
-
-        if (filteredSections.length === 0) {
-          this.loading.set(false);
-          return;
-        }
-
-        const storedIndex = sessionStorage.getItem('uploadSectionIndex');
-        if (storedIndex) {
-          const parsed = parseInt(storedIndex, 10);
-          if (!isNaN(parsed) && parsed >= 0 && parsed < filteredSections.length) {
-            this.currentSectionIndex.set(parsed);
-          } else {
-            this.currentSectionIndex.set(0);
-          }
-          sessionStorage.removeItem('uploadSectionIndex');
-        }
-
-        const completedStr = sessionStorage.getItem('completedSections');
-        if (completedStr) {
-          try {
-            const completed = JSON.parse(completedStr) as unknown;
-            if (Array.isArray(completed)) {
-              const valid = completed
-                .filter((v: unknown) => typeof v === 'number')
-                .filter((v: number) => v >= 0 && v < filteredSections.length);
-              this.completedSections.set(new Set(valid));
-            }
-          } catch {
-            this.completedSections.set(new Set());
-          }
-        }
-
         this.loading.set(false);
       },
       error: (err: unknown) => {
@@ -148,17 +91,8 @@ export class UploadComponent implements OnInit {
         throw new Error(payload.error || 'Upload failed');
       }
 
-      const completed = new Set(this.completedSections());
-      completed.add(this.currentSectionIndex());
-      this.completedSections.set(completed);
-      sessionStorage.setItem('completedSections', JSON.stringify(Array.from(completed)));
-      sessionStorage.setItem('uploadSectionIndex', this.currentSectionIndex().toString());
-
       this.successMessage.set(`File sent successfully. Trace ID: ${payload.traceId || traceId}`);
-
-      this.router.navigate([payload.redirect || '/form'], {
-        queryParams: { section: this.currentSectionIndex(), fromUpload: true }
-      });
+      this.router.navigate(['/form']);
     } catch (error) {
       console.error('Upload error:', error);
       this.errorMessage.set(
@@ -170,73 +104,41 @@ export class UploadComponent implements OnInit {
     }
   }
 
-  goToManualForm(): void {
-    sessionStorage.setItem('uploadSectionIndex', this.currentSectionIndex().toString());
-    this.router.navigate(['/form'], {
-      queryParams: { section: this.currentSectionIndex(), isManual: true }
-    });
-  }
-
-  goToSection(index: number): void {
-    if (index >= 0 && index < this.sections().length) {
-      this.currentSectionIndex.set(index);
-      this.resetUploadState();
-    }
-  }
-
-  next(): void {
-    if (!this.isLastSection()) {
-      this.currentSectionIndex.update((i: number) => i + 1);
-      this.resetUploadState();
-    }
-  }
-
-  previous(): void {
-    if (!this.isFirstSection()) {
-      this.currentSectionIndex.update((i: number) => i - 1);
-      this.resetUploadState();
-    }
-  }
-
-  private resetUploadState(): void {
-    this.fileName.set(null);
-    this.errorMessage.set(null);
-    this.successMessage.set(null);
-    this.uploading.set(false);
-  }
-
   triggerFileInput(): void {
     const input = document.getElementById('fileInput') as HTMLInputElement;
     input?.click();
   }
 
-  private getSelectedSections(): string[] {
-    try {
-      const raw = localStorage.getItem('selectedSections');
-      return raw ? JSON.parse(raw) : [];
-    } catch {
-      return [];
-    }
+  goToManualForm(): void {
+    this.router.navigate(['/form']);
   }
 
   async downloadTemplate(): Promise<void> {
-    const sections = this.sections();
     const questions = this.questions();
 
-    if (!sections.length || !questions.length) {
+    if (questions.length === 0) {
       this.errorMessage.set('No sections available to generate template.');
       return;
     }
 
     const workbook = new ExcelJS.Workbook();
     const usedSheetNames = new Set<string>();
+    const sectionLabels = this.questionService.getSections(questions).reduce(
+      (acc, section) => ({
+        ...acc,
+        [section]: section.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase())
+      }),
+      {} as Record<string, string>
+    );
+
+    const sections = this.questionService.getSections(questions);
 
     for (const sectionId of sections) {
       const sectionQuestions = this.questionService
         .getQuestionsBySection(questions, sectionId)
         .sort((a, b) => a.order - b.order);
 
-      const sectionLabel = this.sectionLabels[sectionId] ?? sectionId;
+      const sectionLabel = sectionLabels[sectionId] ?? sectionId;
       const baseName = this.sheetName(sectionLabel);
       const uniqueName = this.uniqueSheetName(baseName, usedSheetNames);
       const ws = workbook.addWorksheet(uniqueName, { views: [{ state: 'frozen', ySplit: 4 }] });
@@ -255,9 +157,9 @@ export class UploadComponent implements OnInit {
         const c = i + 1;
         const isBoolean = q.type === 'boolean';
 
-        ws.getCell(2, c).value = q.question;                 // Header
-        ws.getCell(3, c).value = q.description ?? '';        // Description
-        ws.getCell(4, c).value = isBoolean ? 'Answer with Yes or No' : ''; // Instructions only when useful
+        ws.getCell(2, c).value = q.question;
+        ws.getCell(3, c).value = q.description ?? '';
+        ws.getCell(4, c).value = isBoolean ? 'Answer with Yes or No' : '';
 
         ws.getColumn(c).width = Math.min(42, Math.max(20, Math.ceil((q.question?.length ?? 20) / 1.2)));
 
@@ -290,7 +192,7 @@ export class UploadComponent implements OnInit {
       });
 
       ws.getRow(2).font = { bold: true };
-      ws.getRow(2).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFBFE7E2' } }; // verde água
+      ws.getRow(2).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFBFE7E2' } };
       ws.getRow(3).font = { italic: true, color: { argb: 'FF1F2937' } };
       ws.getRow(4).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFF3F4F6' } };
 
@@ -334,12 +236,17 @@ export class UploadComponent implements OnInit {
     return name;
   }
 
-  private getExampleValue(type: string, question: string): string {
-    if (type === 'integer' || type === 'decimal') return '0';
-    if (type === 'boolean') return 'true/false';
-    if (type === 'date') return 'YYYY-MM-DD';
-    if (type === 'time') return 'HH:mm';
-    if (question.toLowerCase().includes('email')) return 'example@company.com';
-    return 'example';
+  private getSelectedSections(): string[] {
+    try {
+      const raw = localStorage.getItem('selectedSections');
+      return raw ? JSON.parse(raw) : [];
+    } catch {
+      return [];
+    }
+  }
+
+  onSubmit(): void {
+    // Navigate to form - file upload or manual form will have already directed here
+    this.router.navigate(['/form']);
   }
 }
