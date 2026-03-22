@@ -1,28 +1,31 @@
 import { Request, Response } from "express"
-import { UploadRowDto } from "../../../business/dto/upload-row-dto.ts"
-import { mapRowsToEntities } from "../../../business/services/upload-service.ts"
+import { PutObjectCommand } from "@aws-sdk/client-s3"
+import { s3Client } from "../../../config/aws-clients.ts"
+import { enqueueUploadJob } from "../../../business/queue/upload-queue.ts"
 
-function isUploadRowArray(payload: unknown): payload is UploadRowDto[] {
+function getContentType(fileName: string): string {
+  const extension = fileName.toLowerCase().split(".").pop() || ""
 
-  if (!Array.isArray(payload)) {
-    return false
+  if (extension === "csv") {
+    return "text/csv"
   }
 
-  return payload.every(
-    (row) => typeof row === "object" && row !== null && !Array.isArray(row)
-  )
+  if (extension === "xlsx") {
+    return "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+  }
 
+  if (extension === "xls") {
+    return "application/vnd.ms-excel"
+  }
+
+  return "application/octet-stream"
 }
-
-
-// Validates upload payload and returns normalized rows for the next onboarding step.
 
 export const handleUpload = async (
   req: Request,
   res: Response
 ): Promise<Response> => {
 
-  // Every request gets a trace id so logs from controller and service can be correlated.
   const traceId = String(req.headers["x-debug-trace-id"] || `server-${Date.now()}`)
   res.setHeader("x-debug-trace-id", traceId)
 
@@ -30,38 +33,47 @@ export const handleUpload = async (
 
   try {
 
-    // Expected contract: { rows: [...] }
-    const rows = req.body?.rows as unknown
+    const file = (req as any).file  // multer middleware
 
-    // Reject early when the request body does not satisfy the upload contract.
-    if (!isUploadRowArray(rows) || rows.length === 0) {
-      console.log(`[FLOW][${traceId}] controller:missing_rows`)
+    if (!file) {
       return res.status(400).json({
-        error: "Missing rows payload",
+        error: "Missing upload file",
         traceId
       })
     }
 
-    const entities = mapRowsToEntities(rows, traceId)
+    // Salvar arquivo original no S3 para processamento assíncrono.
+    const s3Key = `uploads/${traceId}/${file.originalname}`
+    
+    const putCommand = new PutObjectCommand({
+      Bucket: (globalThis as any).process?.env?.AWS_S3_BUCKET,
+      Key: s3Key,
+      Body: file.buffer,
+      ContentType: getContentType(file.originalname)
+    })
 
-    console.log(`[FLOW][${traceId}] controller:entities_processed count=${entities.length}`)
+    await s3Client.send(putCommand)
+    console.log(`[FLOW][${traceId}] controller:s3_upload s3Key=${s3Key}`)
 
-    // Only normalized field payload is returned to the UI for the next step.
+    // Enfileirar S3 key (não mais o JSON)
+    await enqueueUploadJob(
+      { s3Key, fileName: file.originalname },  // apenas metadados
+      traceId
+    )
+
     return res.json({
       redirect: "/form",
-      data: entities.map((entity) => entity.fields),
+      s3Key,
+      fileName: file.originalname,
       traceId
     })
 
   } catch (error) {
-
     console.error(`[FLOW][${traceId}] controller:error`, error)
-
     return res.status(500).json({
       error: "Error processing upload",
       traceId
     })
-
   }
 
 }

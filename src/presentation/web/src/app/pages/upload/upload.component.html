@@ -75,6 +75,10 @@
           <p class="error-message">{{ errorMessage() }}</p>
         }
 
+        @if (successMessage()) {
+          <p class="success-message">{{ successMessage() }}</p>
+        }
+
         <!-- Manual Option -->
         <div class="manual-option">
           <span class="or-text">or</span>
