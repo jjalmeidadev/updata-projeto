@@ -22,7 +22,7 @@ describe("upload-controller", () => {
   })
 
   describe("handleUpload", () => {
-    it("retorna 400 quando body.rows está ausente", async () => {
+    it("returns 400 when body.rows is missing", async () => {
       const req = { body: {}, headers: {} } as Request
       const res = mockRes()
 
@@ -35,7 +35,7 @@ describe("upload-controller", () => {
       expect(mapRowsToEntities).not.toHaveBeenCalled()
     })
 
-    it("retorna 400 quando rows não é array", async () => {
+    it("returns 400 when rows is not an array", async () => {
       const req = { body: { rows: "not-an-array" }, headers: {} } as Request
       const res = mockRes()
 
@@ -45,7 +45,7 @@ describe("upload-controller", () => {
       expect(mapRowsToEntities).not.toHaveBeenCalled()
     })
 
-    it("retorna 400 quando rows é array vazio", async () => {
+    it("returns 400 when rows is an empty array", async () => {
       const req = { body: { rows: [] }, headers: {} } as Request
       const res = mockRes()
 
@@ -55,7 +55,7 @@ describe("upload-controller", () => {
       expect(mapRowsToEntities).not.toHaveBeenCalled()
     })
 
-    it("retorna 200 com redirect, data e traceId quando payload é válido", async () => {
+    it("returns 200 with redirect, data, and traceId when payload is valid", async () => {
       const rows = [{ Name: "Tower A" }]
       const entities = [
         { fields: { name: "Tower A" } },
@@ -76,7 +76,7 @@ describe("upload-controller", () => {
       })
     })
 
-    it("retorna 500 quando mapRowsToEntities lança", async () => {
+    it("returns 500 when mapRowsToEntities throws", async () => {
       vi.mocked(mapRowsToEntities).mockImplementation(() => {
         throw new Error("No rows received")
       })

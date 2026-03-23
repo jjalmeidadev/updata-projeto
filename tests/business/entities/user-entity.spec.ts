@@ -3,22 +3,22 @@ import { UserEntity } from "../../../src/business/entities/user-entity.js"
 
 describe("UserEntity", () => {
   describe("getEmailDomain", () => {
-    it("retorna string vazia quando email está vazio", () => {
+    it("returns empty string when email is empty", () => {
       const entity = new UserEntity("auth0|1", "Name", "")
       expect(entity.getEmailDomain()).toBe("")
     })
 
-    it("retorna string vazia quando email não contém @", () => {
+    it("returns empty string when email does not contain @", () => {
       const entity = new UserEntity("auth0|1", "Name", "invalid-email")
       expect(entity.getEmailDomain()).toBe("")
     })
 
-    it("retorna domínio em minúsculas para email válido", () => {
+    it("returns lowercase domain for valid email", () => {
       const entity = new UserEntity("auth0|1", "Name", "user@COMPANY.COM")
       expect(entity.getEmailDomain()).toBe("company.com")
     })
 
-    it("retorna parte após o primeiro @ (parts[1]) para email com múltiplos @", () => {
+    it("returns segment after the first @ (parts[1]) for email with multiple @", () => {
       const entity = new UserEntity("auth0|1", "Name", "a@b@example.com")
       expect(entity.getEmailDomain()).toBe("b")
     })
