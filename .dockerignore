@@ -3,6 +3,9 @@ npm-debug.log
 .git
 .gitignore
 coverage
+dist
+.env
+config/.env
 src/presentation/web/node_modules
 src/presentation/web/dist
 src/presentation/web/.angular
