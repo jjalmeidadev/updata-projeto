@@ -3,9 +3,14 @@ import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { QuestionService, SECTION_LABELS } from '../../services/question.service';
 import { Question } from '../../models/question.model';
-import * as XLSX from 'xlsx';
 
-type SheetRow = Record<string, unknown>;
+interface UploadApiResponse {
+  redirect?: string;
+  s3Key?: string;
+  fileName?: string;
+  traceId?: string;
+  error?: string;
+}
 
 @Component({
   selector: 'app-upload',
@@ -25,6 +30,7 @@ export class UploadComponent implements OnInit {
   readonly uploading = signal(false);
   readonly fileName = signal<string | null>(null);
   readonly errorMessage = signal<string | null>(null);
+  readonly successMessage = signal<string | null>(null);
   readonly completedSections = signal<Set<number>>(new Set());
 
   readonly sectionLabels = SECTION_LABELS;
@@ -101,7 +107,7 @@ export class UploadComponent implements OnInit {
     });
   }
 
-  onFileSelect(event: Event): void {
+  async onFileSelect(event: Event): Promise<void> {
     const target = event.target as HTMLInputElement;
     const file = target.files?.[0];
 
@@ -118,58 +124,49 @@ export class UploadComponent implements OnInit {
     }
 
     this.errorMessage.set(null);
+    this.successMessage.set(null);
     this.fileName.set(file.name);
     this.uploading.set(true);
 
-    const reader = new FileReader();
+    try {
+      const traceId = `front-${Date.now()}`;
+      const formData = new FormData();
+      formData.append('file', file);
 
-    reader.onload = async (e: ProgressEvent<FileReader>) => {
-      const result = e.target?.result;
+      const response = await fetch('/api/upload', {
+        method: 'POST',
+        headers: {
+          'x-debug-trace-id': traceId,
+        },
+        body: formData,
+      });
 
-      if (!result) {
-        this.errorMessage.set('Failed to read file');
-        this.uploading.set(false);
-        return;
+      const payload = (await response.json()) as UploadApiResponse;
+
+      if (!response.ok) {
+        throw new Error(payload.error || 'Upload failed');
       }
 
-      try {
-        const data = new Uint8Array(result as ArrayBuffer);
-        const workbook = XLSX.read(data, { type: 'array' });
-        const sheet = workbook.Sheets[workbook.SheetNames[0]];
-        const rows = XLSX.utils.sheet_to_json(sheet) as SheetRow[];
+      const completed = new Set(this.completedSections());
+      completed.add(this.currentSectionIndex());
+      this.completedSections.set(completed);
+      sessionStorage.setItem('completedSections', JSON.stringify(Array.from(completed)));
+      sessionStorage.setItem('uploadSectionIndex', this.currentSectionIndex().toString());
 
-        if (rows.length === 0) {
-          this.errorMessage.set('The file appears to be empty');
-          this.uploading.set(false);
-          return;
-        }
+      this.successMessage.set(`File sent successfully. Trace ID: ${payload.traceId || traceId}`);
 
-        const completed = new Set(this.completedSections());
-        completed.add(this.currentSectionIndex());
-        this.completedSections.set(completed);
-        sessionStorage.setItem('completedSections', JSON.stringify(Array.from(completed)));
-
-        sessionStorage.setItem('uploadedData', JSON.stringify(rows));
-        sessionStorage.setItem('uploadedSection', this.currentSection());
-        sessionStorage.setItem('uploadSectionIndex', this.currentSectionIndex().toString());
-
-        this.router.navigate(['/form'], {
-          queryParams: { section: this.currentSectionIndex(), fromUpload: true }
-        });
-
-      } catch (error) {
-        console.error('Parse error:', error);
-        this.errorMessage.set('Failed to parse the file. Please check the format.');
-        this.uploading.set(false);
-      }
-    };
-
-    reader.onerror = () => {
-      this.errorMessage.set('Error reading file');
+      this.router.navigate([payload.redirect || '/form'], {
+        queryParams: { section: this.currentSectionIndex(), fromUpload: true }
+      });
+    } catch (error) {
+      console.error('Upload error:', error);
+      this.errorMessage.set(
+        error instanceof Error ? error.message : 'Failed to upload file. Please try again.'
+      );
+    } finally {
       this.uploading.set(false);
-    };
-
-    reader.readAsArrayBuffer(file);
+      target.value = '';
+    }
   }
 
   goToManualForm(): void {
@@ -203,6 +200,7 @@ export class UploadComponent implements OnInit {
   private resetUploadState(): void {
     this.fileName.set(null);
     this.errorMessage.set(null);
+    this.successMessage.set(null);
     this.uploading.set(false);
   }
 
