@@ -7,6 +7,7 @@ import { OnboardingFormComponent } from './onboarding-form/onboarding-form.compo
 import { UploadComponent } from './pages/upload/upload.component';
 import { ModuleSelectorComponent } from './pages/module-selector/module-selector.component';
 import { ReviewComponentsComponent } from './pages/review/review-components';
+import { InputMethodComponent } from './pages/input-method/input-method.component';
 
 export const routes: Routes = [
   { path: '', redirectTo: '/login', pathMatch: 'full' },
@@ -17,5 +18,6 @@ export const routes: Routes = [
   { path: 'upload', component: UploadComponent, canActivate: [authGuardFn] },
   { path: 'review', component: ReviewComponentsComponent, canActivate: [authGuardFn] },
   { path: 'module-selector', component: ModuleSelectorComponent, canActivate: [authGuardFn] },
+  { path: 'input-method', component: InputMethodComponent, canActivate: [authGuardFn] },
   { path: '**', redirectTo: '/login' }
 ];

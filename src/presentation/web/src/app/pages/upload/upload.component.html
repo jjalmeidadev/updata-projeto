@@ -1,42 +1,29 @@
 <div class="form-shell">
   <!-- Header -->
   <header class="form-header">
-    <h1>Upload Data</h1>
+    <h1>Upload your Onboarding Data</h1>
 
     @if (!loading()) {
       <div class="progress-bar-container">
-        <div class="progress-bar" [style.width.%]="progressPercent()">
-          {{ progressPercent() }}%
+        <div class="progress-bar" [style.width.%]="uploadProgress()">
+          {{ uploadProgress() }}%
         </div>
       </div>
-      <p class="progress-label">Section {{ currentSectionIndex() + 1 }} of {{ sections().length }}</p>
+      <p class="progress-label">{{ totalQuestionsLength() }} fields to fill</p>
     }
   </header>
 
   @if (loading()) {
     <p class="loading">Loading sections…</p>
   } @else {
-    <!-- Section nav tabs -->
-    <nav class="section-tabs" aria-label="Form sections">
-      @for (section of sections(); track section; let i = $index) {
-        <button
-          class="tab-btn"
-          [class.active]="i === currentSectionIndex()"
-          [class.visited]="i < currentSectionIndex()"
-          [class.completed]="completedSections().has(i)"
-          (click)="goToSection(i)"
-          type="button">
-          {{ sectionLabels[section] ?? section }}
-          @if (completedSections().has(i)) {
-            <span class="tab-check">✓</span>
-          }
-        </button>
-      }
-    </nav>
-
     <!-- Upload Section -->
     <section class="form-section">
-      <h2 class="section-title">{{ currentSectionLabel() }}</h2>
+      <div class="section-header">
+        <h2 class="section-title">Import Onboarding Data</h2>
+        <button class="template-btn btn btn-primary" type="button" (click)="downloadTemplate()">
+          Download template
+        </button>
+      </div>
 
       <!-- Upload Area -->
       <div class="upload-area">
@@ -62,8 +49,7 @@
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
               </svg>
             </div>
-            <p class="upload-text">Upload CSV or XLSX</p>
-            <p class="upload-subtext">{{ currentSectionQuestionsLength() }} fields to fill</p>
+            <p class="upload-text">Drop your file here or click to upload</p>
           }
         </div>
 
@@ -82,7 +68,7 @@
         <!-- Manual Option -->
         <div class="manual-option">
           <span class="or-text">or</span>
-          <button class="manual-link" (click)="goToManualForm()">
+          <button class="manual-link" type="button" (click)="goToManualForm()">
             Manually fill the required fields
           </button>
         </div>
@@ -90,17 +76,9 @@
 
       <!-- Navigation -->
       <div class="form-nav">
-        @if (!isFirstSection()) {
-          <button class="btn btn-secondary" type="button" (click)="previous()">← Previous</button>
-        } @else {
-          <span></span>
-        }
-
-        @if (!isLastSection()) {
-          <button class="btn btn-primary" type="button" (click)="next()">Next →</button>
-        } @else {
-          <button class="btn btn-secondary" type="button" (click)="next()" [disabled]="true">Done</button>
-        }
+        <button class="btn btn-primary" type="submit" (click)="onSubmit()">
+          Submit Data
+        </button>
       </div>
     </section>
   }
