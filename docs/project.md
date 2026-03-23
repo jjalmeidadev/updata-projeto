@@ -1261,3 +1261,6 @@ All external communications use HTTPS to ensure encrypted data transmission.
 - Authentication and identity management are handled through Auth0 using OAuth 2.0 and OpenID Connect protocols.
 - The backend validates JWT tokens to ensure that only authenticated users can access system functionality.
 - Using managed AWS infrastructure also provides additional security mechanisms, including network isolation, access policies, and infrastructure-level protections.
+
+## Appendix A: System Configuration and Optimization Report.
+
