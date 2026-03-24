@@ -206,3 +206,49 @@ CREATE TABLE processing_log (
   message TEXT,
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
+
+-- Optional: dedicated status type for chunk lifecycle
+DO $$
+BEGIN
+  IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'processing_chunk_status_enum') THEN
+    CREATE TYPE processing_chunk_status_enum AS ENUM ('queued', 'processing', 'completed', 'failed');
+  END IF;
+END$$;
+
+CREATE TABLE IF NOT EXISTS processing_chunk (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  batch_id UUID NOT NULL REFERENCES onboarding_batch(id) ON DELETE CASCADE,
+  chunk_index INT NOT NULL,
+  "offset" INT NOT NULL CHECK ("offset" >= 0),
+  "size" INT NOT NULL CHECK ("size" > 0),
+  status processing_chunk_status_enum NOT NULL DEFAULT 'queued',
+  retries INT NOT NULL DEFAULT 0 CHECK (retries >= 0),
+  started_at TIMESTAMPTZ,
+  finished_at TIMESTAMPTZ,
+  error TEXT,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+
+  -- idempotency key: same chunk cannot be created twice for same batch
+  CONSTRAINT uq_processing_chunk_batch_chunk UNIQUE (batch_id, chunk_index)
+);
+
+CREATE INDEX IF NOT EXISTS idx_processing_chunk_batch ON processing_chunk(batch_id);
+CREATE INDEX IF NOT EXISTS idx_processing_chunk_status ON processing_chunk(status);
+CREATE INDEX IF NOT EXISTS idx_processing_chunk_batch_status ON processing_chunk(batch_id, status);
+
+-- Optional outbox for one-time final external send
+CREATE TABLE IF NOT EXISTS processing_outbox (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  batch_id UUID NOT NULL REFERENCES onboarding_batch(id) ON DELETE CASCADE,
+  event_type VARCHAR(50) NOT NULL, -- e.g. 'equiem_send'
+  payload JSONB NOT NULL,
+  status VARCHAR(20) NOT NULL DEFAULT 'pending', -- pending|processing|sent|failed
+  retries INT NOT NULL DEFAULT 0,
+  last_error TEXT,
+  available_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  CONSTRAINT uq_processing_outbox_batch_event UNIQUE (batch_id, event_type)
+);
+

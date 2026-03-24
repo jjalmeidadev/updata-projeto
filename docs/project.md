@@ -1264,3 +1264,19 @@ All external communications use HTTPS to ensure encrypted data transmission.
 
 ## Appendix A: System Configuration and Optimization Report.
 
+### 1. Benchmark Data Log
+
+| Batch Size (B) | Worker Nodes (W) | Throughput (T) |
+|----------------|------------------|----------------|
+| 100            | 2                | ...            |
+| ...            | ...              | ...            |
+| ...            | ...              | ...            |
+| ...            | ...              | ...            |
+| ...            | ...              | ...            |
+| ...            | ...              | ...            |
+| ...            | ...              | ...            |
+| ...            | ...              | ...            |
+| ...            | ...              | ...            |
+| ...            | ...              | ...            |
+| ...            | ...              | ...            |
+| ...            | ...              | ...            |
