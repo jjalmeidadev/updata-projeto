@@ -24,6 +24,15 @@ const env = ((globalThis as { process?: { env?: Record<string, string | undefine
 
 const queueUrl = env.AWS_SQS_QUEUE_URL
 const bucketName = env.AWS_S3_BUCKET
+const parsedWorkerBatchSize = Number.parseInt(env.WORKER_BATCH_SIZE || "5", 10)
+const workerBatchSize = Number.isInteger(parsedWorkerBatchSize) && parsedWorkerBatchSize >= 1 && parsedWorkerBatchSize <= 10
+  ? parsedWorkerBatchSize
+  : 5
+const benchmarkSkipExternalSend = env.BENCHMARK_SKIP_EXTERNAL_SEND === "true"
+
+if (!Number.isInteger(parsedWorkerBatchSize) || parsedWorkerBatchSize < 1 || parsedWorkerBatchSize > 10) {
+  console.error("[WORKER] WORKER_BATCH_SIZE must be an integer between 1 and 10.")
+}
 
 if (!queueUrl) {
   console.error("[WORKER] AWS_SQS_QUEUE_URL is not set; worker cannot start.")
@@ -127,42 +136,48 @@ async function processMessage(message: UploadJobMessage): Promise<void> {
       return
     }
 
-    const equiemPayload = buildEquiemPayload(validRecords, {
-      traceId,
-      fileName: message.fileName,
-      batchId,
-    })
-
-    const equiemResult = await sendToEquiemApi(equiemPayload, traceId)
-
-    if (!equiemResult.sent) {
-      await updateProcessingJobStatus(jobId, "pending_external_send", {
-        errorMessage: equiemResult.reason || "Equiem endpoint not configured",
+    if (benchmarkSkipExternalSend) {
+      await updateProcessingJobStatus(jobId, "completed")
+      await updateOnboardingBatchStatus(batchId, "completed")
+      await createProcessingLog(jobId, "warn", "Benchmark mode: external send skipped")
+      console.log(`[FLOW][${traceId}] worker:benchmark_skip_external_send`)
+    } else {
+      const equiemPayload = buildEquiemPayload(validRecords, {
+        traceId,
+        fileName: message.fileName,
+        batchId,
       })
-      await updateOnboardingBatchStatus(batchId, "pending_external_send", equiemResult.reason)
-      await createProcessingLog(jobId, "warn", "Payload prepared but external send was skipped")
-      console.log(`[FLOW][${traceId}] worker:pending_external_send`)
-      return
+
+      const equiemResult = await sendToEquiemApi(equiemPayload, traceId)
+
+      if (!equiemResult.sent) {
+        await updateProcessingJobStatus(jobId, "pending_external_send", {
+          errorMessage: equiemResult.reason || "Equiem endpoint not configured",
+        })
+        await updateOnboardingBatchStatus(batchId, "pending_external_send", equiemResult.reason)
+        await createProcessingLog(jobId, "warn", "Payload prepared but external send was skipped")
+        console.log(`[FLOW][${traceId}] worker:pending_external_send`)
+        return
+      }
+
+      const mappingCandidates = (
+        (equiemResult.responseBody as { mappings?: EquiemResponseRecord[] } | undefined)?.mappings || []
+      ).filter((item) => Boolean(item.entityType && item.externalId && item.internalId))
+
+      await saveOnboardingMappings(
+        mappingCandidates.map((item) => ({
+          entityType: item.entityType,
+          externalId: item.externalId,
+          internalId: item.internalId,
+        }))
+      )
+
+      await updateProcessingJobStatus(jobId, "completed", {
+        externalReference: equiemResult.externalReference,
+      })
+      await updateOnboardingBatchStatus(batchId, "completed")
+      await createProcessingLog(jobId, "info", "Processing completed and payload sent to Equiem")
     }
-
-    const mappingCandidates = (
-      (equiemResult.responseBody as { mappings?: EquiemResponseRecord[] } | undefined)?.mappings || []
-    ).filter((item) => Boolean(item.entityType && item.externalId && item.internalId))
-
-    await saveOnboardingMappings(
-      mappingCandidates.map((item) => ({
-        entityType: item.entityType,
-        externalId: item.externalId,
-        internalId: item.internalId,
-      }))
-    )
-
-    await updateProcessingJobStatus(jobId, "completed", {
-      externalReference: equiemResult.externalReference,
-    })
-    await updateOnboardingBatchStatus(batchId, "completed")
-
-    await createProcessingLog(jobId, "info", "Processing completed and payload sent to Equiem")
 
     console.log(`[FLOW][${traceId}] worker:processing_complete`)
 
@@ -197,7 +212,7 @@ async function pollQueue(): Promise<void> {
     try {
       const command = new ReceiveMessageCommand({
         QueueUrl: queueUrl,
-        MaxNumberOfMessages: 5,
+        MaxNumberOfMessages: workerBatchSize,
         WaitTimeSeconds: 20
       })
 
