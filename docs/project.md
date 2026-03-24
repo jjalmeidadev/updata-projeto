@@ -1114,6 +1114,13 @@ Evaluate whether users can identify and use the **file upload feature** to autom
 #### Individual User Experiences
 
 ##### **Karol Barbosa**
+
+<div align="center">
+<sub>FIGURE 10 – Karol Usability Test</sub><br>
+  <img src="assets/karolusability.jpg" width="100%" alt="Karol Usability Test"><br>
+  <sup>Source: Material produced by the authors, 2026.</sup>
+</div>
+
 - Initially considered manual form filling before noticing the upload option  
 - Quickly adapted after identifying the upload button  
 - Successfully completed the flow with no further issues  
@@ -1123,6 +1130,13 @@ Evaluate whether users can identify and use the **file upload feature** to autom
 ---
 
 ##### **Mariana**
+
+<div align="center">
+<sub>FIGURE 11 – Mariana Usability Test</sub><br>
+  <img src="assets/marianausability.jpg" width="100%" alt="Mariana Usability Test"><br>
+  <sup>Source: Material produced by the authors, 2026.</sup>
+</div>
+
 - Experienced initial confusion regarding:
   - form structure  
   - navigation between sections  
@@ -1134,6 +1148,13 @@ Evaluate whether users can identify and use the **file upload feature** to autom
 ---
 
 ##### **Tobias**
+
+<div align="center">
+<sub>FIGURE 12 – Tobias Usability Test</sub><br>
+  <img src="assets/tobiasusability.jpg" width="100%" alt="Tobias Usability Test"><br>
+  <sup>Source: Material produced by the authors, 2026.</sup>
+</div>
+
 - Immediately identified the upload functionality  
 - Completed the task smoothly without hesitation  
 - Demonstrated clear understanding of system feedback  
@@ -1176,6 +1197,13 @@ Evaluate how users interact with the **manual form filling option** when complet
 #### Individual User Experiences
 
 ##### **Celso**
+
+<div align="center">
+<sub>FIGURE 13 – Celso Usability Test</sub><br>
+  <img src="assets/celsousability.jpg" width="100%" alt="Celso Usability Test"><br>
+  <sup>Source: Material produced by the authors, 2026.</sup>
+</div>
+
 - Initially attempted to **create an account instead of logging in**, indicating confusion in entry point  
 - Successfully logged in using Google afterward  
 - Selected onboarding sections, but not all of them  
@@ -1190,6 +1218,13 @@ User behavior shows **uncertainty in the overall workflow**, especially in disti
 ---
 
 ##### **Rui**
+
+<div align="center">
+<sub>FIGURE 14 – Rui Usability Test</sub><br>
+  <img src="assets/ruiusability.jpg" width="100%" alt="Rui Usability Test"><br>
+  <sup>Source: Material produced by the authors, 2026.</sup>
+</div>
+
 - Logged in via Google without issues  
 - Attempted to **create a new company**, indicating partial misunderstanding of flow sequence  
 - Also attempted to **upload a CSV before using manual input**  
@@ -1389,12 +1424,12 @@ The main components of the architecture include:
 
 The deployment architecture was designed to satisfy the project's non-functional requirements, particularly those related to performance, scalability, availability, and security.
 
-Figure 10 illustrates the deployment architecture of the onboarding automation platform.
+Figure 15 illustrates the deployment architecture of the onboarding automation platform.
 
 For better visualization, please access the following [link](https://drive.google.com/file/d/1jHnyVEm3KI1-ERu1pNhjq-7KT3i-hlVW/view?usp=sharing).
 
 <div align="center">
-<sub>FIGURE 10 – Deployment Architecture Diagram</sub><br>
+<sub>FIGURE 15 – Deployment Architecture Diagram</sub><br>
   <img src="assets/deployment_map.svg" width="100%" alt="Deployment Architecture Diagram"><br>
   <sup>Source: Material produced by the authors, 2026.</sup>
 </div>
