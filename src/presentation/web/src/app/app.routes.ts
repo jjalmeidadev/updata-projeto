@@ -6,6 +6,7 @@ import { HomeComponent } from './pages/home/home.component';
 import { OnboardingFormComponent } from './onboarding-form/onboarding-form.component';
 import { UploadComponent } from './pages/upload/upload.component';
 import { ModuleSelectorComponent } from './pages/module-selector/module-selector.component';
+import { ReviewComponentsComponent } from './pages/review/review-components';
 import { InputMethodComponent } from './pages/input-method/input-method.component';
 
 export const routes: Routes = [
@@ -15,6 +16,7 @@ export const routes: Routes = [
   { path: 'home', component: HomeComponent, canActivate: [authGuardFn] },
   { path: 'form', component: OnboardingFormComponent, canActivate: [authGuardFn] },
   { path: 'upload', component: UploadComponent, canActivate: [authGuardFn] },
+  { path: 'review', component: ReviewComponentsComponent, canActivate: [authGuardFn] },
   { path: 'module-selector', component: ModuleSelectorComponent, canActivate: [authGuardFn] },
   { path: 'input-method', component: InputMethodComponent, canActivate: [authGuardFn] },
   { path: '**', redirectTo: '/login' }
