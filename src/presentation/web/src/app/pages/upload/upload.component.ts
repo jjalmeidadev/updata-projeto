@@ -2,16 +2,25 @@ import { Component, OnInit, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { QuestionService } from '../../services/question.service';
-import { Question } from '../../models/question.model';
+import { Question, QuestionType } from '../../models/question.model';
 import ExcelJS from 'exceljs';
 
-interface UploadApiResponse {
-  redirect?: string;
-  s3Key?: string;
-  fileName?: string;
-  traceId?: string;
-  error?: string;
+type ReviewSource = 'manual' | 'template';
+
+interface ReviewIssue {
+  id: string;
+  label: string;
+  value: unknown;
+  type: QuestionType;
+  options?: string[];
+  error: string;
+  source: ReviewSource;
+  section?: string;
+  row?: number;
 }
+
+const REVIEW_STATE_KEY = 'reviewState';
+const UPLOADED_DATA_KEY = 'uploadedData';
 
 @Component({
   selector: 'app-upload',
@@ -41,13 +50,14 @@ export class UploadComponent implements OnInit {
         const filteredQuestions = selected.length
           ? allQuestions.filter((q: Question) => selected.includes(q.sectionId))
           : allQuestions;
+
         this.questions.set(filteredQuestions);
         this.loading.set(false);
       },
       error: (err: unknown) => {
         console.error('Failed to load questions:', err);
         this.loading.set(false);
-      }
+      },
     });
   }
 
@@ -59,11 +69,12 @@ export class UploadComponent implements OnInit {
       return;
     }
 
-    const validExtensions = ['.xlsx', '.xls', '.csv'];
+    const validExtensions = ['.xlsx', '.csv'];
     const fileExtension = file.name.toLowerCase().slice(file.name.lastIndexOf('.'));
 
     if (!validExtensions.includes(fileExtension)) {
-      this.errorMessage.set('Please upload a valid CSV or Excel file (.csv, .xlsx, .xls)');
+      this.errorMessage.set('Please upload a valid template file (.xlsx or .csv).');
+      target.value = '';
       return;
     }
 
@@ -73,30 +84,33 @@ export class UploadComponent implements OnInit {
     this.uploading.set(true);
 
     try {
-      const traceId = `front-${Date.now()}`;
-      const formData = new FormData();
-      formData.append('file', file);
+      const parsedValues =
+        fileExtension === '.csv'
+          ? await this.parseCsvFile(file)
+          : await this.parseExcelTemplate(file);
 
-      const response = await fetch('/api/upload', {
-        method: 'POST',
-        headers: {
-          'x-debug-trace-id': traceId,
+      const reviewItems = this.collectTemplateReviewItems(parsedValues);
+
+      sessionStorage.setItem(UPLOADED_DATA_KEY, JSON.stringify(parsedValues));
+      sessionStorage.setItem(
+        REVIEW_STATE_KEY,
+        JSON.stringify({
+          source: 'template',
+          issues: reviewItems,
+        })
+      );
+
+      this.router.navigate(['/review'], {
+        state: {
+          reviewSource: 'template',
+          reviewIssues: reviewItems,
         },
-        body: formData,
       });
-
-      const payload = (await response.json()) as UploadApiResponse;
-
-      if (!response.ok) {
-        throw new Error(payload.error || 'Upload failed');
-      }
-
-      this.successMessage.set(`File sent successfully. Trace ID: ${payload.traceId || traceId}`);
-      this.router.navigate(['/form']);
+      return;
     } catch (error) {
       console.error('Upload error:', error);
       this.errorMessage.set(
-        error instanceof Error ? error.message : 'Failed to upload file. Please try again.'
+        error instanceof Error ? error.message : 'Failed to process the uploaded file.'
       );
     } finally {
       this.uploading.set(false);
@@ -123,10 +137,11 @@ export class UploadComponent implements OnInit {
 
     const workbook = new ExcelJS.Workbook();
     const usedSheetNames = new Set<string>();
+
     const sectionLabels = this.questionService.getSections(questions).reduce(
       (acc, section) => ({
         ...acc,
-        [section]: section.replace(/-/g, ' ').replace(/\b\w/g, l => l.toUpperCase())
+        [section]: section.replace(/-/g, ' ').replace(/\b\w/g, (l: string) => l.toUpperCase()),
       }),
       {} as Record<string, string>
     );
@@ -136,16 +151,17 @@ export class UploadComponent implements OnInit {
     for (const sectionId of sections) {
       const sectionQuestions = this.questionService
         .getQuestionsBySection(questions, sectionId)
-        .sort((a, b) => a.order - b.order);
+        .sort((a: Question, b: Question) => a.order - b.order);
 
       const sectionLabel = sectionLabels[sectionId] ?? sectionId;
       const baseName = this.sheetName(sectionLabel);
       const uniqueName = this.uniqueSheetName(baseName, usedSheetNames);
-      const ws = workbook.addWorksheet(uniqueName, { views: [{ state: 'frozen', ySplit: 4 }] });
+      const ws = workbook.addWorksheet(uniqueName, { views: [{ state: 'frozen', ySplit: 3 }] });
 
       const colCount = Math.max(sectionQuestions.length, 1);
 
       ws.mergeCells(1, 1, 1, colCount);
+
       const title = ws.getCell(1, 1);
       title.value = sectionLabel.toUpperCase();
       title.font = { bold: true, color: { argb: 'FFFFFFFF' }, size: 14 };
@@ -153,35 +169,40 @@ export class UploadComponent implements OnInit {
       title.alignment = { horizontal: 'center', vertical: 'middle' };
       ws.getRow(1).height = 28;
 
-      sectionQuestions.forEach((q, i) => {
+      sectionQuestions.forEach((q: Question, i: number) => {
         const c = i + 1;
         const isBoolean = q.type === 'boolean';
 
         ws.getCell(2, c).value = q.question;
         ws.getCell(3, c).value = q.description ?? '';
-        ws.getCell(4, c).value = isBoolean ? 'Answer with Yes or No' : '';
 
         ws.getColumn(c).width = Math.min(42, Math.max(20, Math.ceil((q.question?.length ?? 20) / 1.2)));
 
         if (isBoolean) {
-          for (let row = 5; row <= 200; row++) {
-            const cell = ws.getCell(row, c);
-            cell.dataValidation = {
-              type: 'list',
-              allowBlank: true,
-              formulae: ['"Yes,No"'],
-              showErrorMessage: true,
-              errorTitle: 'Invalid value',
-              error: 'Please select Yes or No.'
-            };
-          }
+          const cell = ws.getCell(4, c);
+          cell.dataValidation = {
+            type: 'list',
+            allowBlank: true,
+            formulae: ['"Yes,No"'],
+            showErrorMessage: true,
+            errorTitle: 'Invalid value',
+            error: 'Please select Yes or No.',
+          };
         }
       });
 
-      [2, 3, 4].forEach((r) => {
-        ws.getRow(r).eachCell({ includeEmpty: true }, (cell, col) => {
-          if (col > colCount) return;
-          cell.alignment = { wrapText: true, vertical: 'top', horizontal: r === 2 ? 'center' : 'left' };
+      [2, 3, 4].forEach((r: number) => {
+        ws.getRow(r).eachCell({ includeEmpty: true }, (cell: ExcelJS.Cell, col: number) => {
+          if (col > colCount) {
+            return;
+          }
+
+          cell.alignment = {
+            wrapText: true,
+            vertical: 'top',
+            horizontal: r === 2 ? 'center' : 'left',
+          };
+
           cell.border = {
             top: { style: 'thin', color: { argb: 'FFBDBDBD' } },
             left: { style: 'thin', color: { argb: 'FFBDBDBD' } },
@@ -193,32 +214,270 @@ export class UploadComponent implements OnInit {
 
       ws.getRow(2).font = { bold: true };
       ws.getRow(2).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFBFE7E2' } };
-      ws.getRow(3).font = { italic: true, color: { argb: 'FF1F2937' } };
-      ws.getRow(4).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFF3F4F6' } };
 
-      for (let r = 5; r <= 12; r++) {
-        for (let c = 1; c <= colCount; c++) {
-          const cell = ws.getCell(r, c);
-          cell.border = {
-            top: { style: 'thin', color: { argb: 'FFE5E7EB' } },
-            left: { style: 'thin', color: { argb: 'FFE5E7EB' } },
-            bottom: { style: 'thin', color: { argb: 'FFE5E7EB' } },
-            right: { style: 'thin', color: { argb: 'FFE5E7EB' } },
-          };
-        }
-      }
+      ws.getRow(3).font = { italic: true, color: { argb: 'FF1F2937' } };
+      ws.getRow(3).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFF3F4F6' } };
+
+      ws.getRow(4).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFFFFFF' } };
 
       ws.autoFilter = { from: { row: 2, column: 1 }, to: { row: 2, column: colCount } };
     }
 
     const buffer = await workbook.xlsx.writeBuffer();
-    const blob = new Blob([buffer], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+    const blob = new Blob([buffer], {
+      type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    });
+
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
     a.download = `equiem-template-${new Date().toISOString().slice(0, 10)}.xlsx`;
     a.click();
     URL.revokeObjectURL(url);
+  }
+
+  onSubmit(): void {
+    this.router.navigate(['/form']);
+  }
+
+  private async parseExcelTemplate(file: File): Promise<Record<string, unknown>> {
+    const workbook = new ExcelJS.Workbook();
+    const arrayBuffer = await file.arrayBuffer();
+    await workbook.xlsx.load(arrayBuffer);
+
+    const values: Record<string, unknown> = {};
+
+    workbook.worksheets.forEach((worksheet: ExcelJS.Worksheet) => {
+      const sectionQuestions = this.getQuestionsForWorksheet(worksheet.name);
+
+      if (sectionQuestions.length === 0) {
+        return;
+      }
+
+      const headerRow = worksheet.getRow(2);
+      const dataRow = worksheet.getRow(4);
+
+      const maxColumns = Math.max(headerRow.cellCount, dataRow.cellCount);
+
+      for (let col = 1; col <= maxColumns; col++) {
+        const header = this.cellToString(headerRow.getCell(col).value).trim();
+        if (!header) {
+          continue;
+        }
+
+        const question = sectionQuestions.find((q: Question) => {
+          const byQuestion = this.normalizeText(q.question) === this.normalizeText(header);
+          const byId = this.normalizeText(q.id) === this.normalizeText(header);
+          return byQuestion || byId;
+        });
+
+        if (!question) {
+          continue;
+        }
+
+        const rawValue = this.cellToString(dataRow.getCell(col).value);
+        values[question.id] = this.normalizeParsedValue(question.type, rawValue);
+      }
+    });
+
+    return values;
+  }
+
+  private async parseCsvFile(file: File): Promise<Record<string, unknown>> {
+    const text = await file.text();
+    const lines = text
+      .split(/\r?\n/)
+      .map((line: string) => line.trim())
+      .filter(Boolean);
+
+    if (lines.length < 2) {
+      return {};
+    }
+
+    const headers = lines[0].split(',').map((item: string) => item.trim());
+    const firstDataRow = lines[1].split(',').map((item: string) => item.trim());
+
+    const values: Record<string, unknown> = {};
+
+    headers.forEach((header: string, index: number) => {
+      const question = this.findQuestionByHeader(header);
+      if (!question) {
+        return;
+      }
+
+      values[question.id] = this.normalizeParsedValue(question.type, firstDataRow[index] ?? '');
+    });
+
+    return values;
+  }
+
+  private collectTemplateReviewItems(values: Record<string, unknown>): ReviewIssue[] {
+    return this.questions().map((question: Question) => {
+      const value = values[question.id];
+      const error = this.validateQuestionValue(question.type, value);
+
+      return {
+        id: question.id,
+        label: question.question,
+        value,
+        type: question.type,
+        options: question.options ?? [],
+        error,
+        source: 'template',
+        section: question.sectionId,
+        row: 4,
+      };
+    });
+  }
+
+  private validateQuestionValue(type: QuestionType, value: unknown): string {
+    if (type === 'file') {
+      const textValue = value === null || value === undefined ? '' : String(value).trim();
+
+      if (!textValue) {
+        return 'Please provide at least one file reference.';
+      }
+
+      return '';
+    }
+
+    if (type === 'multi-select') {
+      if (!Array.isArray(value) || value.length === 0) {
+        return 'Please select at least one option.';
+      }
+      return '';
+    }
+
+    if (type === 'boolean') {
+      if (typeof value !== 'boolean') {
+        return 'Please choose Yes or No.';
+      }
+      return '';
+    }
+
+    const textValue = value === null || value === undefined ? '' : String(value).trim();
+
+    if (!textValue) {
+      return 'This field is required.';
+    }
+
+    if (type === 'integer' && !/^-?\d+$/.test(textValue)) {
+      return 'Please use whole numbers only.';
+    }
+
+    if (type === 'decimal' && !/^-?\d+([.,]\d+)?$/.test(textValue)) {
+      return 'Please enter a valid decimal number.';
+    }
+
+    if (type === 'time' && !/^([01]\d|2[0-3]):([0-5]\d)$/.test(textValue)) {
+      return 'Please enter the time in HH:MM format.';
+    }
+
+    if (type === 'date' && Number.isNaN(Date.parse(textValue))) {
+      return 'Please enter a valid date.';
+    }
+
+    return '';
+  }
+
+  private normalizeParsedValue(type: QuestionType, rawValue: string): unknown {
+    const value = rawValue.trim();
+
+    if (type === 'boolean') {
+      const normalized = value.toLowerCase();
+      if (['yes', 'true'].includes(normalized)) {
+        return true;
+      }
+      if (['no', 'false'].includes(normalized)) {
+        return false;
+      }
+      return value;
+    }
+
+    if (type === 'multi-select') {
+      if (!value) {
+        return [];
+      }
+
+      return value
+        .split(',')
+        .map((item: string) => item.trim())
+        .filter(Boolean);
+    }
+
+    if (type === 'file') {
+      return value;
+    }
+
+    return value;
+  }
+
+  private getQuestionsForWorksheet(sheetName: string): Question[] {
+    const normalizedSheetName = this.normalizeText(sheetName);
+
+    const questionsBySection = new Map<string, Question[]>();
+
+    for (const question of this.questions()) {
+      const current = questionsBySection.get(question.sectionId) ?? [];
+      current.push(question);
+      questionsBySection.set(question.sectionId, current);
+    }
+
+    for (const [sectionId, questions] of questionsBySection.entries()) {
+      const sectionLabel = sectionId
+        .replace(/-/g, ' ')
+        .replace(/\b\w/g, (letter: string) => letter.toUpperCase());
+
+      const possibleNames = [
+        this.normalizeText(sectionId),
+        this.normalizeText(sectionLabel),
+        this.normalizeText(this.sheetName(sectionLabel)),
+      ];
+
+      if (possibleNames.includes(normalizedSheetName)) {
+        return questions;
+      }
+    }
+
+    return [];
+  }
+
+  private findQuestionByHeader(header: string): Question | undefined {
+    const normalizedHeader = this.normalizeText(header);
+
+    return this.questions().find((q: Question) => {
+      const byQuestion = this.normalizeText(q.question) === normalizedHeader;
+      const byId = this.normalizeText(q.id) === normalizedHeader;
+      return byQuestion || byId;
+    });
+  }
+
+  private normalizeText(value: string): string {
+    return value.toLowerCase().replace(/\s+/g, ' ').trim();
+  }
+
+  private cellToString(value: ExcelJS.CellValue | undefined | null): string {
+    if (value === null || value === undefined) {
+      return '';
+    }
+
+    if (typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean') {
+      return String(value);
+    }
+
+    if (value instanceof Date) {
+      return value.toISOString().slice(0, 10);
+    }
+
+    if (typeof value === 'object' && 'text' in value) {
+      return String(value.text ?? '');
+    }
+
+    if (typeof value === 'object' && 'result' in value) {
+      return String(value.result ?? '');
+    }
+
+    return String(value);
   }
 
   private sheetName(label: string): string {
@@ -228,10 +487,12 @@ export class UploadComponent implements OnInit {
   private uniqueSheetName(base: string, used: Set<string>): string {
     let name = base || 'Sheet';
     let index = 1;
+
     while (used.has(name.toLowerCase())) {
       const suffix = `-${index++}`;
       name = `${base.slice(0, 31 - suffix.length)}${suffix}`;
     }
+
     used.add(name.toLowerCase());
     return name;
   }
@@ -243,10 +504,5 @@ export class UploadComponent implements OnInit {
     } catch {
       return [];
     }
-  }
-
-  onSubmit(): void {
-    // Navigate to form - file upload or manual form will have already directed here
-    this.router.navigate(['/form']);
   }
 }

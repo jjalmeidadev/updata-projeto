@@ -1,81 +1,150 @@
 <div class="form-shell">
-	<header class="form-header">
-		<h1>Review Invalid Data</h1>
-		<p class="subtitle">
-			Update the fields below. The warning next to each field explains what needs to be fixed.
-		</p>
+  <header class="form-header">
+    <h1>{{ pageTitle() }}</h1>
 
-		@if (hasIssues()) {
-			<div class="summary-alert" role="status" aria-live="polite">
-				<strong>{{ invalidCount() }}</strong>
-				{{ invalidCount() === 1 ? 'field needs correction' : 'fields need correction' }}
-			</div>
-		}
-	</header>
+    @if (!hasAnyItems()) {
+      <p class="progress-label">No sections to review</p>
+    } @else {
+      <div class="progress-bar-container">
+        <div class="progress-bar" [style.width.%]="progressPercent()">
+          {{ progressPercent() }}%
+        </div>
+      </div>
+      <p class="progress-label">Step {{ currentSectionIndex() + 1 }} of {{ sections().length }}</p>
+    }
 
-	@if (!hasIssues()) {
-		<div class="empty-state">
-			<h2>No errors found</h2>
-			<p>There are no items to review right now.</p>
-			<button type="button" class="btn btn-secondary" (click)="goBack()">Back to form</button>
-		</div>
-	} @else {
-		<section class="form-section">
-			<div class="review-list" role="list">
-			@for (issue of issues(); track issue.id) {
-				<article class="review-card" role="listitem">
-					<div class="field-content">
-						<label class="field-label" [for]="issue.id">{{ issue.label }}</label>
+    <p class="subtitle">
+      {{ pageSubtitle() }}
+    </p>
 
-						@if (issue.type === 'textarea') {
-							<textarea
-								[id]="issue.id"
-								class="field-input"
-								rows="4"
-								[ngModel]="issue.value"
-								(ngModelChange)="onValueChange(issue.id, $event)"
-								[ngModelOptions]="{ standalone: true }"></textarea>
-						} @else if (issue.type === 'dropdown' && issue.options.length > 0) {
-							<select
-								[id]="issue.id"
-								class="field-input"
-								[ngModel]="issue.value"
-								(ngModelChange)="onValueChange(issue.id, $event)"
-								[ngModelOptions]="{ standalone: true }">
-								<option value="">-- Select --</option>
-								@for (option of issue.options; track option) {
-									<option [value]="option">{{ option }}</option>
-								}
-							</select>
-						} @else {
-							<input
-								[id]="issue.id"
-								class="field-input"
-								[type]="inputType(issue.type)"
-								[ngModel]="issue.value"
-								(ngModelChange)="onValueChange(issue.id, $event)"
-								[ngModelOptions]="{ standalone: true }" />
-						}
-					</div>
+    @if (hasIssues()) {
+      <div class="summary-alert" role="status" aria-live="polite">
+        <strong>{{ invalidCount() }}</strong>
+        {{ invalidCount() === 1 ? 'field needs correction' : 'fields need correction' }}
+      </div>
+    }
+  </header>
 
-					<aside class="error-side" [class.ok]="!issue.error" aria-live="polite">
-						<span class="badge" [class.bad]="issue.error" [class.good]="!issue.error">
-							{{ issue.error ? 'Error' : 'OK' }}
-						</span>
-						<p>{{ issue.error || 'Field validated successfully.' }}</p>
-					</aside>
-				</article>
-			}
-			</div>
+  @if (!hasAnyItems()) {
+    <div class="empty-state">
+      <h2>No errors found</h2>
+      <p>There are no items to review right now.</p>
+      <button type="button" class="btn btn-secondary" (click)="goBack()">Back</button>
+    </div>
+  } @else {
+    <nav class="section-tabs" aria-label="Review sections">
+      @for (section of groupedSections(); track section.key; let i = $index) {
+        <button
+          class="tab-btn"
+          [class.active]="i === currentSectionIndex()"
+          [class.visited]="i < currentSectionIndex()"
+          [class.has-error]="section.invalidCount > 0"
+          (click)="goTo(i)"
+          type="button">
+          {{ section.label }}
+        </button>
+      }
+    </nav>
 
-			@if (pageMessage()) {
-				<p class="form-message">{{ pageMessage() }}</p>
-			}
+    <section class="form-section">
+      <div class="section-header">
+        <div>
+          <h2 class="section-title">{{ currentSectionGroup()?.label }}</h2>
+          <p class="section-subtitle">
+            {{ currentSectionGroup()?.invalidCount ?? 0 }}
+            {{ (currentSectionGroup()?.invalidCount ?? 0) === 1 ? 'issue' : 'issues' }}
+            in this section
+          </p>
+        </div>
+      </div>
 
-			<div class="form-nav">
-				<button type="button" class="btn btn-secondary" (click)="goBack()">Back without saving</button>
-				<button type="button" class="btn btn-primary" (click)="saveCorrections()">Save changes</button>
-			</div>
-		</section>
-	}
+      <div class="review-list" role="list">
+        @for (issue of currentItems(); track issue.id) {
+          <article class="review-card" role="listitem">
+            <div class="field-content">
+              <label class="field-label" [for]="issue.id">{{ issue.label }}</label>
+
+              @if (issue.section || issue.row) {
+                <p class="field-meta">
+                  @if (issue.section) {
+                    <span>Section: {{ formatSectionLabel(issue.section) }}</span>
+                  }
+                  @if (issue.row) {
+                    <span>Row: {{ issue.row }}</span>
+                  }
+                </p>
+              }
+
+              @if (issue.type === 'textarea') {
+                <textarea
+                  [id]="issue.id"
+                  class="field-input"
+                  rows="4"
+                  [ngModel]="issue.value"
+                  (ngModelChange)="onValueChange(issue.id, $event)"
+                  [ngModelOptions]="{ standalone: true }"></textarea>
+              } @else if (issue.type === 'dropdown' && issue.options.length > 0) {
+                <select
+                  [id]="issue.id"
+                  class="field-input"
+                  [ngModel]="issue.value"
+                  (ngModelChange)="onValueChange(issue.id, $event)"
+                  [ngModelOptions]="{ standalone: true }">
+                  <option value="">-- Select --</option>
+                  @for (option of issue.options; track option) {
+                    <option [value]="option">{{ option }}</option>
+                  }
+                </select>
+              } @else if (issue.type === 'boolean') {
+                <select
+                  [id]="issue.id"
+                  class="field-input"
+                  [ngModel]="issue.value"
+                  (ngModelChange)="onValueChange(issue.id, $event)"
+                  [ngModelOptions]="{ standalone: true }">
+                  <option value="">-- Select --</option>
+                  <option value="Yes">Yes</option>
+                  <option value="No">No</option>
+                </select>
+              } @else {
+                <input
+                  [id]="issue.id"
+                  class="field-input"
+                  [type]="inputType(issue.type)"
+                  [attr.inputmode]="issue.type === 'integer' || issue.type === 'number' || issue.type === 'decimal' ? 'numeric' : null"
+                  [ngModel]="issue.value"
+                  (ngModelChange)="onValueChange(issue.id, $event)"
+                  [ngModelOptions]="{ standalone: true }" />
+              }
+            </div>
+
+            <aside class="error-side" [class.ok]="!issue.error" aria-live="polite">
+              <span class="badge" [class.bad]="issue.error" [class.good]="!issue.error">
+                {{ issue.error ? 'Error' : 'OK' }}
+              </span>
+              <p>{{ issue.error || 'Field validated successfully.' }}</p>
+            </aside>
+          </article>
+        }
+      </div>
+
+      @if (pageMessage()) {
+        <p class="form-message">{{ pageMessage() }}</p>
+      }
+
+      <div class="form-nav">
+        @if (!isFirstSection()) {
+          <button class="btn btn-secondary" type="button" (click)="previous()">← Previous</button>
+        } @else {
+          <button class="btn btn-secondary" type="button" (click)="goBack()">Back</button>
+        }
+
+        @if (isLastSection()) {
+          <button class="btn btn-primary" type="button" (click)="saveCorrections()">Save changes</button>
+        } @else {
+          <button class="btn btn-primary" type="button" (click)="next()">Next →</button>
+        }
+      </div>
+    </section>
+  }
 </div>

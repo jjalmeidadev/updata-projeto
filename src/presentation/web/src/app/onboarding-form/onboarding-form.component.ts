@@ -5,6 +5,8 @@ import { QuestionService, SECTION_LABELS, SOURCE_OPTIONS } from '../services/que
 import { Question, QuestionType } from '../models/question.model';
 import { DynamicFieldComponent } from '../components/dynamic-field/dynamic-field.component';
 
+type ReviewSource = 'manual' | 'template';
+
 interface ReviewIssue {
   id: string;
   label: string;
@@ -12,12 +14,22 @@ interface ReviewIssue {
   type: QuestionType;
   options?: string[];
   error: string;
+  source: ReviewSource;
+  section?: string;
+  row?: number;
 }
 
-const REVIEW_ISSUES_KEY = 'reviewIssues';
+interface ReviewState {
+  source: ReviewSource;
+  issues: ReviewIssue[];
+}
+
+const REVIEW_STATE_KEY = 'reviewState';
 const REVIEW_CORRECTIONS_KEY = 'reviewCorrections';
 const REVIEW_FORM_DRAFT_KEY = 'reviewFormDraft';
 const REVIEW_SECTION_INDEX_KEY = 'reviewSectionIndex';
+const UPLOADED_DATA_KEY = 'uploadedData';
+const UPLOAD_SECTION_INDEX_KEY = 'uploadSectionIndex';
 
 @Component({
   selector: 'app-onboarding-form',
@@ -38,12 +50,13 @@ export class OnboardingFormComponent implements OnInit {
   readonly submitted = signal(false);
   readonly loading = signal(true);
   readonly fromUpload = signal(false);
+  readonly formVersion = signal(0);
 
   readonly sectionLabels = SECTION_LABELS;
 
-  readonly formValues = signal<Record<string, unknown>>({});
-
   ngOnInit(): void {
+    this.cleanupStaleUploadState();
+
     this.questionService.getQuestions().subscribe({
       next: (allQuestions: Question[]) => {
         const selected = this.getSelectedSections();
@@ -54,98 +67,116 @@ export class OnboardingFormComponent implements OnInit {
 
         this.questions.set(questions);
         this.sections.set(this.questionService.getSections(questions));
+
         const builtForm = this.buildForm(questions);
         this.form.set(builtForm);
-        builtForm.valueChanges.subscribe((values: Record<string, unknown>) => this.formValues.set(values));
+
+        builtForm.valueChanges.subscribe(() => {
+          this.formVersion.update((value: number) => value + 1);
+        });
+
         this.loading.set(false);
 
-        // Handle section navigation from query params
         this.route.queryParams.subscribe((params: Params) => {
+          this.fromUpload.set(params['fromUpload'] === 'true' || params['fromUpload'] === true);
+
           if (params['section']) {
             const sectionIndex = parseInt(params['section'], 10);
-            if (!isNaN(sectionIndex) && sectionIndex >= 0 && sectionIndex < this.sections().length) {
+            if (!Number.isNaN(sectionIndex) && sectionIndex >= 0 && sectionIndex < this.sections().length) {
               this.currentSectionIndex.set(sectionIndex);
             }
           } else {
             this.restoreReviewSectionIndex();
           }
-          if (params['fromUpload']) {
-            this.fromUpload.set(true);
-          }
-        });
 
-        // Handle uploaded data
-        this.handleUploadedData(builtForm);
-        this.applyReviewCorrections(builtForm);
+          const shouldAutoSubmit =
+            params['autoSubmit'] === 'true' ||
+            params['autoSubmit'] === true ||
+            history.state?.['autoSubmit'] === true;
+
+          this.handleUploadedData(builtForm);
+          this.applyReviewCorrections(builtForm);
+          this.formVersion.update((value: number) => value + 1);
+
+          if (shouldAutoSubmit) {
+            setTimeout(() => {
+              this.completeSubmission();
+            });
+          }
+
+          setTimeout(() => {
+            if (
+              this.route.snapshot.queryParamMap.has('fromUpload') ||
+              this.route.snapshot.queryParamMap.has('fromReview') ||
+              this.route.snapshot.queryParamMap.has('section') ||
+              this.route.snapshot.queryParamMap.has('autoSubmit')
+            ) {
+              this.router.navigate([], {
+                relativeTo: this.route,
+                queryParams: {},
+                replaceUrl: true,
+              });
+            }
+          });
+        });
       },
       error: (err: unknown) => {
         console.error('Failed to load questions:', err);
         this.loading.set(false);
-      }
+      },
     });
   }
 
-  private handleUploadedData(form: FormGroup): void {
-    const uploadedData = sessionStorage.getItem('uploadedData');
-    if (!uploadedData) return;
-
-    try {
-      const rows = JSON.parse(uploadedData) as Record<string, unknown>[];
-      if (rows.length === 0) return;
-
-      // Take the first row and map it to form fields
-      const firstRow = rows[0];
-      const questions = this.questions();
-
-      // Try to match uploaded columns to question IDs or question text
-      for (const [key, value] of Object.entries(firstRow)) {
-        const normalizedKey = key.toLowerCase().trim();
-        
-        // Find matching question by id or question text
-        const matchingQuestion = questions.find((q: Question) => 
-          q.id.toLowerCase() === normalizedKey ||
-          q.question.toLowerCase().includes(normalizedKey) ||
-          normalizedKey.includes(q.question.toLowerCase().split(' ')[0])
-        );
-
-        if (matchingQuestion && form.get(matchingQuestion.id)) {
-          form.get(matchingQuestion.id)?.setValue(value);
-        }
-      }
-
-      // Clear the uploaded data after processing
-      sessionStorage.removeItem('uploadedData');
-    } catch (error) {
-      console.error('Error processing uploaded data:', error);
-    }
-  }
-
-  private buildForm(questions: Question[]): FormGroup {
-    const controls: Record<string, FormControl> = {};
-    for (const q of questions) {
-      const defaultValue = q.type === 'boolean' ? null
-        : q.type === 'multi-select' ? []
-        : '';
-      controls[q.id] = new FormControl(defaultValue);
-    }
-    return new FormGroup(controls);
-  }
-
   readonly currentSection = computed(() => this.sections()[this.currentSectionIndex()]);
-  readonly currentSectionLabel = computed(() => this.sectionLabels[this.currentSection()] ?? this.currentSection());
-  readonly currentQuestions = computed(() => this.questionService.getQuestionsBySection(this.questions(), this.currentSection()));
+
+  readonly currentSectionLabel = computed(
+    () => this.sectionLabels[this.currentSection()] ?? this.currentSection()
+  );
+
+  readonly currentQuestions = computed(() =>
+    this.questionService.getQuestionsBySection(this.questions(), this.currentSection())
+  );
+
   readonly isFirstSection = computed(() => this.currentSectionIndex() === 0);
+
   readonly isLastSection = computed(() => this.currentSectionIndex() === this.sections().length - 1);
+
   readonly progressPercent = computed(() => {
+    this.formVersion();
+
     const questions = this.questions();
-    const values = this.formValues();
-    if (questions.length === 0) return 0;
+    const values = this.form().getRawValue() as Record<string, unknown>;
+
+    if (questions.length === 0) {
+      return 0;
+    }
+
     const filled = questions.filter((q: Question) => {
       const val = values[q.id];
-      if (q.type === 'boolean') return typeof val === 'boolean';
-      if (q.type === 'multi-select') return Array.isArray(val) && val.length > 0;
+
+      if (q.type === 'boolean') {
+        return typeof val === 'boolean';
+      }
+
+      if (q.type === 'multi-select') {
+        return Array.isArray(val) && val.length > 0;
+      }
+
+      if (q.type === 'file') {
+        if (this.fromUpload()) {
+          return true;
+        }
+
+        if (Array.isArray(val)) {
+          return val.length > 0;
+        }
+
+        return val !== '' && val !== null && val !== undefined;
+      }
+
       return val !== '' && val !== null && val !== undefined;
     }).length;
+
     return Math.round((filled / questions.length) * 100);
   });
 
@@ -153,42 +184,134 @@ export class OnboardingFormComponent implements OnInit {
     return this.form().get(questionId) as FormControl;
   }
 
-  next(): void { 
+  next(): void {
     if (!this.isLastSection()) {
       const nextSectionIndex = this.currentSectionIndex() + 1;
-      
-      // If coming from upload, go to upload screen of next section
+
       if (this.fromUpload()) {
-        sessionStorage.setItem('uploadSectionIndex', nextSectionIndex.toString());
-        this.router.navigate(['/upload']);
-      } else {
-        this.currentSectionIndex.update((i: number) => i + 1);
+        sessionStorage.setItem(UPLOAD_SECTION_INDEX_KEY, nextSectionIndex.toString());
       }
+
+      this.currentSectionIndex.set(nextSectionIndex);
     }
   }
-  previous(): void { if (!this.isFirstSection()) this.currentSectionIndex.update((i: number) => i - 1); }
-  goTo(index: number): void { this.currentSectionIndex.set(index); }
+
+  previous(): void {
+    if (!this.isFirstSection()) {
+      this.currentSectionIndex.update((i: number) => i - 1);
+    }
+  }
+
+  goTo(index: number): void {
+    this.currentSectionIndex.set(index);
+  }
 
   goToUpload(): void {
-    sessionStorage.setItem('uploadSectionIndex', this.currentSectionIndex().toString());
+    sessionStorage.setItem(UPLOAD_SECTION_INDEX_KEY, this.currentSectionIndex().toString());
     this.router.navigate(['/upload']);
   }
 
   submit(): void {
-    const reviewIssues = this.collectReviewIssues();
+    const reviewItems = this.collectReviewItems();
+    const hasErrors = reviewItems.some((item: ReviewIssue) => Boolean(item.error));
 
-    if (reviewIssues.length > 0) {
-      sessionStorage.setItem(REVIEW_ISSUES_KEY, JSON.stringify(reviewIssues));
+    if (hasErrors) {
+      const reviewSource: ReviewSource = this.fromUpload() ? 'template' : 'manual';
+
+      const reviewState: ReviewState = {
+        source: reviewSource,
+        issues: reviewItems,
+      };
+
+      sessionStorage.setItem(REVIEW_STATE_KEY, JSON.stringify(reviewState));
       sessionStorage.setItem(REVIEW_FORM_DRAFT_KEY, JSON.stringify(this.form().getRawValue()));
       sessionStorage.setItem(REVIEW_SECTION_INDEX_KEY, this.currentSectionIndex().toString());
-      this.router.navigate(['/review'], { state: { reviewIssues } });
+
+      this.router.navigate(['/review'], {
+        state: {
+          reviewSource,
+          reviewIssues: reviewItems,
+        },
+      });
       return;
     }
 
-    this.clearReviewStorage();
+    this.completeSubmission();
+  }
 
+  private completeSubmission(): void {
+    this.clearTransientFlowState();
+    this.fromUpload.set(false);
     this.submitted.set(true);
     console.log('Onboarding form submitted:', this.form().value);
+  }
+
+  private handleUploadedData(form: FormGroup): void {
+    const fromUploadQuery =
+      this.route.snapshot.queryParamMap.get('fromUpload') === 'true';
+
+    if (!fromUploadQuery) {
+      sessionStorage.removeItem(UPLOADED_DATA_KEY);
+      sessionStorage.removeItem(UPLOAD_SECTION_INDEX_KEY);
+      return;
+    }
+
+    const uploadedDataFromState = history.state?.['uploadedData'];
+    let values: Record<string, unknown> = {};
+
+    if (
+      uploadedDataFromState &&
+      typeof uploadedDataFromState === 'object' &&
+      !Array.isArray(uploadedDataFromState)
+    ) {
+      values = uploadedDataFromState as Record<string, unknown>;
+    } else {
+      const uploadedDataFromStorage = sessionStorage.getItem(UPLOADED_DATA_KEY);
+
+      if (uploadedDataFromStorage) {
+        try {
+          const parsed = JSON.parse(uploadedDataFromStorage) as
+            | Record<string, unknown>
+            | Record<string, unknown>[];
+
+          values = Array.isArray(parsed) ? (parsed[0] ?? {}) : parsed;
+        } catch (error) {
+          console.error('Error processing uploaded data:', error);
+        }
+      }
+    }
+
+    this.applyValuesToForm(form, values);
+
+    sessionStorage.removeItem(UPLOADED_DATA_KEY);
+
+    const uploadSectionIndex = sessionStorage.getItem(UPLOAD_SECTION_INDEX_KEY);
+    if (uploadSectionIndex) {
+      const sectionIndex = parseInt(uploadSectionIndex, 10);
+      if (!Number.isNaN(sectionIndex) && sectionIndex >= 0 && sectionIndex < this.sections().length) {
+        this.currentSectionIndex.set(sectionIndex);
+      }
+      sessionStorage.removeItem(UPLOAD_SECTION_INDEX_KEY);
+    }
+  }
+
+  private buildForm(questions: Question[]): FormGroup {
+    const controls: Record<string, FormControl> = {};
+
+    for (const q of questions) {
+      const defaultValue =
+        q.type === 'boolean'
+          ? null
+          : q.type === 'multi-select'
+            ? []
+            : q.type === 'file'
+              ? []
+              : '';
+
+      controls[q.id] = new FormControl(defaultValue);
+    }
+
+    return new FormGroup(controls);
   }
 
   private applyReviewCorrections(form: FormGroup): void {
@@ -204,13 +327,15 @@ export class OnboardingFormComponent implements OnInit {
 
     if (Object.keys(correctedValues).length > 0) {
       sessionStorage.removeItem(REVIEW_CORRECTIONS_KEY);
-      sessionStorage.removeItem(REVIEW_ISSUES_KEY);
+      sessionStorage.removeItem(REVIEW_STATE_KEY);
+      sessionStorage.removeItem(REVIEW_FORM_DRAFT_KEY);
     }
   }
 
   private parseObjectValues(source: unknown): Record<string, unknown> {
     try {
       const parsed = typeof source === 'string' ? JSON.parse(source) : source;
+
       if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) {
         return {};
       }
@@ -228,17 +353,72 @@ export class OnboardingFormComponent implements OnInit {
         continue;
       }
 
-      control.setValue(value);
+      const question = this.questions().find((q: Question) => q.id === fieldId);
+      const normalizedValue = this.normalizeValueForQuestion(question, value);
+      control.setValue(normalizedValue);
     }
+  }
+
+  private normalizeValueForQuestion(question: Question | undefined, value: unknown): unknown {
+    if (!question) {
+      return value;
+    }
+
+    if (question.type === 'boolean') {
+      if (typeof value === 'boolean') {
+        return value;
+      }
+
+      const normalized = String(value ?? '').trim().toLowerCase();
+
+      if (['yes', 'true'].includes(normalized)) {
+        return true;
+      }
+
+      if (['no', 'false'].includes(normalized)) {
+        return false;
+      }
+
+      return null;
+    }
+
+    if (question.type === 'multi-select') {
+      if (Array.isArray(value)) {
+        return value;
+      }
+
+      const text = String(value ?? '').trim();
+      if (!text) {
+        return [];
+      }
+
+      return text
+        .split(',')
+        .map((item: string) => item.trim())
+        .filter(Boolean);
+    }
+
+    if (question.type === 'file') {
+      if (Array.isArray(value)) {
+        return value;
+      }
+
+      const text = String(value ?? '').trim();
+      return text ? text : [];
+    }
+
+    return value ?? '';
   }
 
   private restoreReviewSectionIndex(): void {
     const rawIndex = sessionStorage.getItem(REVIEW_SECTION_INDEX_KEY);
+
     if (!rawIndex) {
       return;
     }
 
     const sectionIndex = parseInt(rawIndex, 10);
+
     if (!Number.isNaN(sectionIndex) && sectionIndex >= 0 && sectionIndex < this.sections().length) {
       this.currentSectionIndex.set(sectionIndex);
     }
@@ -246,42 +426,73 @@ export class OnboardingFormComponent implements OnInit {
     sessionStorage.removeItem(REVIEW_SECTION_INDEX_KEY);
   }
 
-  private clearReviewStorage(): void {
-    sessionStorage.removeItem(REVIEW_ISSUES_KEY);
+  private clearTransientFlowState(): void {
+    sessionStorage.removeItem(UPLOADED_DATA_KEY);
+    sessionStorage.removeItem(REVIEW_STATE_KEY);
     sessionStorage.removeItem(REVIEW_CORRECTIONS_KEY);
     sessionStorage.removeItem(REVIEW_FORM_DRAFT_KEY);
     sessionStorage.removeItem(REVIEW_SECTION_INDEX_KEY);
+    sessionStorage.removeItem(UPLOAD_SECTION_INDEX_KEY);
   }
 
-  private collectReviewIssues(): ReviewIssue[] {
-    const values = this.form().value as Record<string, unknown>;
+  private cleanupStaleUploadState(): void {
+    const hasUploadedDataInState = !!history.state?.['uploadedData'];
+    const hasCorrectedValuesInState = !!history.state?.['correctedValues'];
+    const hasStoredUploadedData = !!sessionStorage.getItem(UPLOADED_DATA_KEY);
+    const hasStoredReviewState = !!sessionStorage.getItem(REVIEW_STATE_KEY);
+    const hasStoredCorrections = !!sessionStorage.getItem(REVIEW_CORRECTIONS_KEY);
 
-    return this.questions().reduce((issues: ReviewIssue[], question: Question) => {
+    const shouldKeepFlowState =
+      hasUploadedDataInState ||
+      hasCorrectedValuesInState ||
+      hasStoredUploadedData ||
+      hasStoredReviewState ||
+      hasStoredCorrections;
+
+    if (!shouldKeepFlowState) {
+      this.clearTransientFlowState();
+    }
+  }
+
+  private collectReviewItems(): ReviewIssue[] {
+    const values = this.form().value as Record<string, unknown>;
+    const reviewSource: ReviewSource = this.fromUpload() ? 'template' : 'manual';
+
+    return this.questions().map((question: Question) => {
       const value = values[question.id];
       const error = this.validateQuestionValue(question.type, value);
 
-      if (!error) {
-        return issues;
-      }
-
-      issues.push({
+      return {
         id: question.id,
         label: question.question,
         value,
         type: question.type,
         options: this.resolveQuestionOptions(question),
         error,
-      });
-
-      return issues;
-    }, []);
+        source: reviewSource,
+        section: question.sectionId,
+      };
+    });
   }
 
   private validateQuestionValue(type: QuestionType, value: unknown): string {
     if (type === 'file') {
-      if (!Array.isArray(value) || value.length === 0) {
+      if (this.fromUpload()) {
+        return '';
+      }
+
+      if (Array.isArray(value)) {
+        if (value.length === 0) {
+          return 'Please upload at least one file.';
+        }
+        return '';
+      }
+
+      const textValue = value === null || value === undefined ? '' : String(value).trim();
+      if (!textValue) {
         return 'Please upload at least one file.';
       }
+
       return '';
     }
 
@@ -300,6 +511,7 @@ export class OnboardingFormComponent implements OnInit {
     }
 
     const textValue = value === null || value === undefined ? '' : String(value).trim();
+
     if (!textValue) {
       return 'This field is required.';
     }
