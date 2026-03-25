@@ -22,6 +22,41 @@ export class ModuleSelectorComponent implements OnInit {
 
   readonly canContinue = computed(() => this.selectedSections().size > 0);
 
+  readonly groupedSections = computed(() => {
+    const all = this.sections();
+
+    const buildingSetup = all.filter((s) => s === 'building-setup');
+    const companyResidential = all.filter(
+      (s) => s === 'company-details' || s === 'residential-details'
+    );
+    const amenities = all.filter((s) => s.startsWith('amenity-'));
+
+    const used = new Set<string>([
+      ...buildingSetup,
+      ...companyResidential,
+      ...amenities,
+    ]);
+
+    const permitsToRequestManagement = all.filter((s) => !used.has(s));
+
+    return {
+      buildingSetup,
+      companyResidential,
+      amenities,
+      permitsToRequestManagement,
+    };
+  });
+
+  getSectionLabel(sectionId: string): string {
+    const rawLabel = this.sectionLabels[sectionId] ?? sectionId;
+
+    if (sectionId.startsWith('amenity-')) {
+      return rawLabel.replace(/^amenit(?:y|ies)\s+/i, '');
+    }
+
+    return rawLabel;
+  }
+
   ngOnInit(): void {
     this.questionService.getQuestions().subscribe({
       next: (questions: Question[]) => {

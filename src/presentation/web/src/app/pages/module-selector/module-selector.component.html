@@ -46,17 +46,72 @@
             <button type="button" class="btn-secondary" (click)="clearAll()">Clear all</button>
           </div>
 
-          <div class="section-list">
-            @for (section of sections(); track section) {
-              <label class="section-item">
-                <input
-                  type="checkbox"
-                  [checked]="isSelected(section)"
-                  (change)="toggleSection(section)"
-                />
-                <span>{{ sectionLabels[section] ?? section }}</span>
-              </label>
-            }
+          <div class="section-columns">
+            <div class="section-column">
+              <div class="column-block">
+                <div class="column-title">Building setup</div>
+                <div class="section-list">
+                  @for (section of groupedSections().buildingSetup; track section) {
+                    <label class="section-item">
+                      <input
+                        type="checkbox"
+                        [checked]="isSelected(section)"
+                        (change)="toggleSection(section)"
+                      />
+                      <span>{{ getSectionLabel(section) }}</span>
+                    </label>
+                  }
+                </div>
+              </div>
+
+              <div class="column-block">
+                <div class="column-title">Company &amp; residential details</div>
+                <div class="section-list">
+                  @for (section of groupedSections().companyResidential; track section) {
+                    <label class="section-item">
+                      <input
+                        type="checkbox"
+                        [checked]="isSelected(section)"
+                        (change)="toggleSection(section)"
+                      />
+                      <span>{{ getSectionLabel(section) }}</span>
+                    </label>
+                  }
+                </div>
+              </div>
+            </div>
+
+            <div class="section-column">
+              <div class="column-title">Amenities</div>
+              <div class="section-list">
+                @for (section of groupedSections().amenities; track section) {
+                  <label class="section-item">
+                    <input
+                      type="checkbox"
+                      [checked]="isSelected(section)"
+                      (change)="toggleSection(section)"
+                    />
+                    <span>{{ getSectionLabel(section) }}</span>
+                  </label>
+                }
+              </div>
+            </div>
+
+            <div class="section-column">
+              <div class="column-title">Permits → request management</div>
+              <div class="section-list">
+                @for (section of groupedSections().permitsToRequestManagement; track section) {
+                  <label class="section-item">
+                    <input
+                      type="checkbox"
+                      [checked]="isSelected(section)"
+                      (change)="toggleSection(section)"
+                    />
+                    <span>{{ getSectionLabel(section) }}</span>
+                  </label>
+                }
+              </div>
+            </div>
           </div>
 
           <div class="footer">
