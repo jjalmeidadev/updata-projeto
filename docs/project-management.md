@@ -372,3 +372,20 @@ This section presents an analysis of Sprint 3 execution based on workflow, task 
   - Tasks can be **Closed** only when DoD is satisfied
 
 - **Configuration management documentation:** See [configuration-management.md](configuration-management.md) for branch naming, MR templates, and commit rules.
+
+## 5. Cost Analysis and Effort Estimation
+
+This section presents the financial assessment for the development of the Equiem Onboarding MVP. The calculation considers a 10-week development cycle and maps all costs related to human resources, cloud infrastructure, and third-party tools necessary to build and deploy the solution.
+
+### 5.1. Effort and Labor Scope
+
+The team is composed of entry-level professionals (Interns/Juniors). The effort estimation is based on a 10-week development cycle, with an average dedication of 16 hours per sprint per member. The "Technical Hourly Rate" is established at R$ 20,00/h, reflecting the current market average for tech interns/juniors in São Paulo.
+
+| Role | Headcount | Hours/Sprint per Person | Total Hours (10 weeks) | Hourly Rate | Total Cost |
+| :--- | :---: | :---: | :---: | :---: | :--- |
+| Front-end Developer | 2 | 16 | 160 | R$ 20,00 | R$ 3.200,00 |
+| Back-end Developer | 2 | 16 | 160 | R$ 20,00 | R$ 3.200,00 |
+| Cloud/DevOps Architect | 1 | 16 | 80 | R$ 20,00 | R$ 1.600,00 |
+| QA / Tester | 1 | 16 | 80 | R$ 20,00 | R$ 1.600,00 |
+| Designer | 1 | 16 | 80 | R$ 20,00 | R$ 1.600,00 |
+| **Total Labor** | **7** | **-** | **560** | **-** | **R$ 11.200,00** |
