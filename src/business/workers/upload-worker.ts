@@ -33,8 +33,15 @@ const env = ((globalThis as { process?: { env?: Record<string, string | undefine
 
 const queueUrl = env.AWS_SQS_QUEUE_URL
 const bucketName = env.AWS_S3_BUCKET
-const processingBatchSize = Math.max(1, Number(env.PROCESSING_BATCH_SIZE || "500"))
-const processingBatchSizeVersion = env.PROCESSING_BATCH_SIZE_VERSION || "pbs-v1"
+const parsedWorkerBatchSize = Number.parseInt(env.WORKER_BATCH_SIZE || "5", 10)
+const workerBatchSize = Number.isInteger(parsedWorkerBatchSize) && parsedWorkerBatchSize >= 1 && parsedWorkerBatchSize <= 10
+  ? parsedWorkerBatchSize
+  : 5
+const benchmarkSkipExternalSend = env.BENCHMARK_SKIP_EXTERNAL_SEND === "true"
+
+if (!Number.isInteger(parsedWorkerBatchSize) || parsedWorkerBatchSize < 1 || parsedWorkerBatchSize > 10) {
+  console.error("[WORKER] WORKER_BATCH_SIZE must be an integer between 1 and 10.")
+}
 
 if (!queueUrl) {
   console.error("[WORKER] AWS_SQS_QUEUE_URL is not set; worker cannot start.")
@@ -277,109 +284,51 @@ async function finalizeBatchIfTerminal(input: {
     return
   }
 
-  const equiemPayload = buildEquiemPayload(validRecords, {
-    traceId: input.traceId,
-    fileName: input.fileName,
-    batchId: input.batchId,
-  })
-
-  const equiemResult = await sendToEquiemApi(equiemPayload, `${input.traceId}-finalize`)
-
-  if (!equiemResult.sent) {
-    if (jobId) {
-      await updateProcessingJobStatus(jobId, "pending_external_send", {
-        errorMessage: equiemResult.reason || "Equiem endpoint not configured",
+    if (benchmarkSkipExternalSend) {
+      await updateProcessingJobStatus(jobId, "completed")
+      await updateOnboardingBatchStatus(batchId, "completed")
+      await createProcessingLog(jobId, "warn", "Benchmark mode: external send skipped")
+      console.log(`[FLOW][${traceId}] worker:benchmark_skip_external_send`)
+    } else {
+      const equiemPayload = buildEquiemPayload(validRecords, {
+        traceId,
+        fileName: message.fileName,
+        batchId,
       })
-      await createProcessingLog(jobId, "warn", "Final payload prepared but external send was skipped")
-    }
-    await updateOnboardingBatchStatus(input.batchId, "pending_external_send", equiemResult.reason)
-    return
-  }
 
-  const mappingCandidates = (
-    (equiemResult.responseBody as { mappings?: EquiemResponseRecord[] } | undefined)?.mappings || []
-  ).filter((item) => Boolean(item.entityType && item.externalId && item.internalId))
+      const equiemResult = await sendToEquiemApi(equiemPayload, traceId)
 
-  await saveOnboardingMappings(
-    mappingCandidates.map((item) => ({
-      entityType: item.entityType,
-      externalId: item.externalId,
-      internalId: item.internalId,
-    }))
-  )
+      if (!equiemResult.sent) {
+        await updateProcessingJobStatus(jobId, "pending_external_send", {
+          errorMessage: equiemResult.reason || "Equiem endpoint not configured",
+        })
+        await updateOnboardingBatchStatus(batchId, "pending_external_send", equiemResult.reason)
+        await createProcessingLog(jobId, "warn", "Payload prepared but external send was skipped")
+        console.log(`[FLOW][${traceId}] worker:pending_external_send`)
+        return
+      }
 
-  if (jobId) {
-    await updateProcessingJobStatus(jobId, "completed", { externalReference: equiemResult.externalReference })
-    await createProcessingLog(jobId, "info", "Finalization completed and payload sent once")
-  }
-  await updateOnboardingBatchStatus(input.batchId, "completed")
-}
+      const mappingCandidates = (
+        (equiemResult.responseBody as { mappings?: EquiemResponseRecord[] } | undefined)?.mappings || []
+      ).filter((item) => Boolean(item.entityType && item.externalId && item.internalId))
 
-async function processChunkMessage(message: Stage2ChunkPayload): Promise<void> {
-  const traceId = `${message.traceId}-chunk-${message.chunkIndex}`
-
-  if (!bucketName) {
-    console.warn(`[FLOW][${traceId}] worker:missing_bucket`)
-    return
-  }
-
-  const claimed = await claimProcessingChunk(message.batchId, message.chunkIndex)
-  if (!claimed) {
-    console.log(`[FLOW][${traceId}] worker:chunk_not_claimed batchId=${message.batchId} chunkIndex=${message.chunkIndex}`)
-    return
-  }
-
-  try {
-    const getCommand = new GetObjectCommand({
-      Bucket: bucketName,
-      Key: message.s3Key,
-    })
-
-    const response = await s3Client.send(getCommand)
-    const fileContent = await response.Body?.transformToByteArray()
-
-    if (!fileContent || fileContent.length === 0) {
-      throw new Error("Uploaded file content is empty")
-    }
-
-    const rows = parseUploadFile(fileContent, message.fileName, traceId)
-    const slicedRows = rows.slice(message.offset, message.offset + message.size)
-
-    if (slicedRows.length === 0) {
-      throw new Error(`Chunk slice empty offset=${message.offset} size=${message.size}`)
-    }
-
-    const records = mapRowsForProcessing(slicedRows, traceId)
-
-    await saveOnboardingPayloads(
-      message.batchId,
-      records.map((record) => ({
-        rowNumber: record.rowNumber + message.offset,
-        entityType: record.entityType,
-        rawData: record.rawData,
-        isValid: record.isValid,
-        validationErrors: record.validationErrors,
-      }))
-    )
-
-    await completeProcessingChunk(message.batchId, message.chunkIndex)
-
-    const jobId = await getLatestProcessingJobIdByBatch(message.batchId)
-    if (jobId) {
-      const validCount = records.filter((record) => record.isValid).length
-      const invalidCount = records.length - validCount
-      await createProcessingLog(
-        jobId,
-        "info",
-        `Chunk completed chunkIndex=${message.chunkIndex} offset=${message.offset} size=${message.size} valid=${validCount} invalid=${invalidCount}`
+      await saveOnboardingMappings(
+        mappingCandidates.map((item) => ({
+          entityType: item.entityType,
+          externalId: item.externalId,
+          internalId: item.internalId,
+        }))
       )
+
+      await updateProcessingJobStatus(jobId, "completed", {
+        externalReference: equiemResult.externalReference,
+      })
+      await updateOnboardingBatchStatus(batchId, "completed")
+      await createProcessingLog(jobId, "info", "Processing completed and payload sent to Equiem")
     }
 
-    await finalizeBatchIfTerminal({
-      batchId: message.batchId,
-      traceId: message.traceId,
-      fileName: message.fileName,
-    })
+    console.log(`[FLOW][${traceId}] worker:processing_complete`)
+
   } catch (error) {
     const errorMessage = error instanceof Error ? error.message : "Unknown chunk error"
     await failProcessingChunk(message.batchId, message.chunkIndex, errorMessage)
@@ -411,8 +360,8 @@ async function pollQueue(): Promise<void> {
     try {
       const command = new ReceiveMessageCommand({
         QueueUrl: queueUrl,
-        MaxNumberOfMessages: 5,
-        WaitTimeSeconds: 20,
+        MaxNumberOfMessages: workerBatchSize,
+        WaitTimeSeconds: 20
       })
 
       const response = await sqsClient.send(command)

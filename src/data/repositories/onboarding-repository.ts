@@ -143,20 +143,35 @@ async function saveOnboardingPayloads(batchId: string, payloads: OnboardingPaylo
     return
   }
 
-  for (const payload of payloads) {
+  const chunkSize = 1000
+
+  for (let i = 0; i < payloads.length; i += chunkSize) {
+    const chunk = payloads.slice(i, i + chunkSize)
+    const rowNumbers = chunk.map((payload) => payload.rowNumber)
+    const entityTypes = chunk.map((payload) => payload.entityType)
+    const rawDataList = chunk.map((payload) => JSON.stringify(payload.rawData))
+    const isValidList = chunk.map((payload) => payload.isValid)
+    const validationErrorsList = chunk.map((payload) => JSON.stringify(payload.validationErrors))
+
     const query = `
       INSERT INTO equiem.onboarding_payload (batch_id, row_number, entity_type, raw_data, is_valid, validation_errors)
-      VALUES ($1, $2, $3, $4::jsonb, $5, $6::jsonb)
+      SELECT
+        $1::uuid,
+        row_number,
+        entity_type,
+        raw_data::jsonb,
+        is_valid,
+        validation_errors::jsonb
+      FROM unnest(
+        $2::int[],
+        $3::text[],
+        $4::text[],
+        $5::boolean[],
+        $6::text[]
+      ) AS rows(row_number, entity_type, raw_data, is_valid, validation_errors)
     `
 
-    await pool.query(query, [
-      batchId,
-      payload.rowNumber,
-      payload.entityType,
-      JSON.stringify(payload.rawData),
-      payload.isValid,
-      JSON.stringify(payload.validationErrors),
-    ])
+    await pool.query(query, [batchId, rowNumbers, entityTypes, rawDataList, isValidList, validationErrorsList])
   }
 }
 
