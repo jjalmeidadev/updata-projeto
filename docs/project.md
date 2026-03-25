@@ -86,7 +86,7 @@
     - [Automated Test Frameworks](#automated-test-frameworks)
   - [21. Test Coverage Discussion](#21-test-coverage-discussion)
     - [21.1 Unit Tests (Backend): Strategy, Implementation, and Coverage](#211-unit-tests-backend-strategy-implementation-and-coverage)
-    - [21.2 Usability Tests: Methodology, Results, and Analysis](#212-usability-tests-methodology-results-and-analysis)
+    - [21.2 Usability Tests](#212-usability-tests)
   - [22. FR–NFR Correlation Matrix](#22-frnfr-correlation-matrix)
   - [23. User Stories and Traceability](#23-user-stories-and-traceability)
     - [User Stories](#user-stories)
