@@ -1016,10 +1016,10 @@ The purpose of usability testing is to evaluate how effectively external users c
 2. **Manual Form Filling Flow**
 
 These tests validate whether users can:
-- understand the available interaction paths,
-- identify the most efficient workflow,
-- complete tasks without assistance,
-- and correctly interpret system feedback.
+- Understand the available interaction paths,
+- Identify the most efficient workflow,
+- Complete tasks without assistance,
+- And correctly interpret system feedback.
 
 ---
 
@@ -1082,10 +1082,10 @@ The evaluation was based on the persona:
 
 Each participant performed tasks independently while evaluators recorded:
 
-- decision-making process,
-- interaction patterns,
-- misunderstandings,
-- and completion success.
+- Decision-making process,
+- Interaction patterns,
+- Misunderstandings,
+- And completion success.
 
 ---
 
@@ -1217,10 +1217,10 @@ User behavior shows **uncertainty in the overall workflow**, especially in disti
 
 ---
 
-##### **Rui**
+##### **Henrique**
 
 <div align="center">
-<sub>FIGURE 14 – Rui Usability Test</sub><br>
+<sub>FIGURE 14 – Henrique Usability Test</sub><br>
   <img src="assets/ruiusability.jpg" width="100%" alt="Rui Usability Test"><br>
   <sup>Source: Material produced by the authors, 2026.</sup>
 </div>
@@ -1240,19 +1240,19 @@ Even with smoother progression, the user still demonstrated **ambiguity between 
 #### Key Findings – Manual Flow
 
 - Users frequently **deviate from the intended path** before completing the task:
-  - attempting account creation,
-  - attempting CSV upload,
-  - attempting unrelated actions (creating a company)
+  - Attempting account creation
+  - Attempting CSV upload
+  - Attempting unrelated actions (creating a company)
 
 - There is **no clear distinction between interaction paths (upload vs manual)**
 
 - The field **“Build they are located in”** caused consistent confusion:
-  - unclear wording
-  - unclear expected input
+  - Unclear wording
+  - Unclear expected input
 
 - Despite confusion, users are able to **recover and complete the task**, indicating:
-  - good system resilience
-  - but suboptimal clarity
+  - Good system resilience
+  - Suboptimal clarity
 
 ---  
 
@@ -1264,8 +1264,7 @@ Even with smoother progression, the user still demonstrated **ambiguity between 
 - Initial friction occurs in **understanding how to start**
 - Upload flow becomes **highly efficient after discovery**
 - Manual flow is:
-  - usable,
-  - but less efficient and less intuitive
+  - Usable, but less efficient and less intuitive
 
 ---
 
@@ -1309,18 +1308,18 @@ The usability tests covered the main user interaction flows related to:
 - **FR11 – Onboarding Status and Feedback**
 
 Additionally, the tests indirectly evaluated:
-- user decision-making between alternative interaction paths,
-- clarity of system affordances,
-- and effectiveness of UI feedback mechanisms.
+- User decision-making between alternative interaction paths.
+- Clarity of system affordances.
+- Effectiveness of UI feedback mechanisms.
 
 #### Identified Gaps
 
 The following areas were not covered and should be tested in future iterations:
 
-- collaborative workflows (FR10)  
-- error correction and re-submission (FR05)  
-- dependency enforcement (FR09)  
-- large-scale usability under high data volume (NFR02)  
+- Collaborative workflows (FR10)  
+- Error correction and re-submission (FR05)  
+- Dependency enforcement (FR09)  
+- Large-scale usability under high data volume (NFR02)  
 
 ---
 
@@ -1334,16 +1333,16 @@ The usability evaluation demonstrates that the system is:
 
 However, the system currently presents **moderate friction in first-time use**, primarily due to:
 
-- unclear prioritization of the upload feature,  
-- lack of initial guidance,  
-- and form structure complexity.  
+- Unclear prioritization of the upload feature,  
+- Lack of initial guidance,  
+- Structure complexity.  
 
 These issues are **non-critical and highly addressable**, requiring primarily UX and interface adjustments rather than structural changes.
 
 Improving the initial interaction experience will significantly enhance:
-- user efficiency,
-- onboarding speed,
-- and overall product perception.
+- User efficiency,
+- Onboarding speed,
+- Overall product perception.
 
 ## 22. FR–NFR Correlation Matrix
 
