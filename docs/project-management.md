@@ -404,3 +404,15 @@ The infrastructure costs reflect the required environments to support the propos
 | **Auth0** | Authentication Service (B2C Essentials) | R$ 180,00 | R$ 450,00 |
 | **GitHub / GitLab** | CI/CD and Version Control | R$ 0,00 (Free) | R$ 0,00 |
 | **Total Infrastructure** | - | **R$ 605,00** | **R$ 1.512.50** |
+
+### 5.3. Financial Summary
+
+The table below consolidates the total estimated production cost for the development of the Equiem onboarding MVP, including a symbolic tax rate of 6% to simulate the basic tax burden.
+
+| Cost Category | Total Estimated Value |
+| :--- | :--- |
+| Total Labor Cost | R$ 11.200,00 |
+| Total Infrastructure & Tools Cost | R$ 1.512,50 |
+| **Subtotal (Production Cost)** | **R$ 12.712,50** |
+| Tax Burden (6%) | R$ 762,75 |
+| **Total Project Cost (MVP)** | **R$ 13.475,25** |
