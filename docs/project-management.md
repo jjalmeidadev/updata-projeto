@@ -389,3 +389,18 @@ The team is composed of entry-level professionals (Interns/Juniors). The effort 
 | QA / Tester | 1 | 16 | 80 | R$ 20,00 | R$ 1.600,00 |
 | Designer | 1 | 16 | 80 | R$ 20,00 | R$ 1.600,00 |
 | **Total Labor** | **7** | **-** | **560** | **-** | **R$ 11.200,00** |
+
+### 5.2. Infrastructure and Tools
+
+The infrastructure costs reflect the required environments to support the proposed deployment architecture, which utilizes AWS services and Auth0. Costs are projected for the duration of the MVP development and testing phase (approx. 2.5 months).
+
+| Resource / Tool | Component Responsibility | Estimated Monthly Cost | Total Cost (2.5 months) |
+| :--- | :--- | :---: | :---: |
+| **AWS EC2 (t3.small)** | Frontend hosting | R$ 90,00 | R$ 225,00 |
+| **AWS EC2 (t3.small)** | Backend API hosting | R$ 90,00 | R$ 225,00 |
+| **AWS EC2 (t3.small)** | Worker Processing Layer | R$ 90,00 | R$ 225,00 |
+| **Amazon RDS (PostgreSQL)** | Managed Database | R$ 150,00 | R$ 375,00 |
+| **Amazon SQS** | Messaging & Job Queues | R$ 5,00 | R$ 12,50 |
+| **Auth0** | Authentication Service (B2C Essentials) | R$ 180,00 | R$ 450,00 |
+| **GitHub / GitLab** | CI/CD and Version Control | R$ 0,00 (Free) | R$ 0,00 |
+| **Total Infrastructure** | - | **R$ 605,00** | **R$ 1.512.50** |
