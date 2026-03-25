@@ -35,6 +35,11 @@
    - [Daily Meetings Policy](#41-daily-meetings-policy)
    - [Development and Collaboration Policies](#42-development-and-collaboration-policies)
 
+5. [Cost Analysis and Effort Estimation](#5-cost-analysis-and-effort-estimation)
+   - [Effort and Labor Scope](#51-effort-and-labor-scope)
+   - [Infrastructure and Tools](#52-infrastructure-and-tools)
+   - [Financial Summary](#53-financial-summary)
+
 ---
 
 ## 1. Sprint 1 Analysis
