@@ -1,81 +1,114 @@
-<div class="form-shell">
-	<header class="form-header">
-		<h1>Review Invalid Data</h1>
-		<p class="subtitle">
-			Update the fields below. The warning next to each field explains what needs to be fixed.
-		</p>
+<div class="page-container">
+	<svg
+		class="background-svg"
+		xmlns="http://www.w3.org/2000/svg"
+		width="588"
+		height="822"
+		viewBox="0 0 588 822"
+		fill="none"
+		aria-hidden="true"
+	>
+		<g clip-path="url(#clip0_review_bg)">
+			<path
+				d="M587.5 655.697V821.5C344.053 821.233 146.773 626.402 146.5 386H314.405C314.678 534.803 436.775 655.431 587.5 655.697Z"
+				stroke="#d6c5fb"
+			></path>
+			<path
+				d="M-127.596 385.5C-127.596 534.533 -5.3938 655.43 145.5 655.697V821.5C-98.116 821.233 -295.5 626.132 -295.5 385.5C-295.5 144.704 -97.8459 -50.5 146 -50.5C389.677 -50.5 587.226 144.433 587.5 385H419.595C419.322 236.032 296.893 115.303 146 115.303C-5.06229 115.303 -127.596 236.302 -127.596 385.5Z"
+				stroke="#d6c5fb"
+			></path>
+		</g>
+		<defs>
+			<clipPath id="clip0_review_bg">
+				<rect width="884" height="873" fill="white" transform="translate(-296 -51)"></rect>
+			</clipPath>
+		</defs>
+	</svg>
 
-		@if (hasIssues()) {
-			<div class="summary-alert" role="status" aria-live="polite">
-				<strong>{{ invalidCount() }}</strong>
-				{{ invalidCount() === 1 ? 'field needs correction' : 'fields need correction' }}
-			</div>
-		}
-	</header>
+	<section class="content">
+		<div class="page-panel">
+			<header class="form-header">
+				<h1>Review Invalid Data</h1>
+				<p class="subtitle">
+					Update the fields below. The warning next to each field explains what needs to be fixed.
+				</p>
 
-	@if (!hasIssues()) {
-		<div class="empty-state">
-			<h2>No errors found</h2>
-			<p>There are no items to review right now.</p>
-			<button type="button" class="btn btn-secondary" (click)="goBack()">Back to form</button>
-		</div>
-	} @else {
-		<section class="form-section">
-			<div class="review-list" role="list">
-			@for (issue of issues(); track issue.id) {
-				<article class="review-card" role="listitem">
-					<div class="field-content">
-						<label class="field-label" [for]="issue.id">{{ issue.label }}</label>
+				@if (hasIssues()) {
+					<div class="summary-alert" role="status" aria-live="polite">
+						<strong>{{ invalidCount() }}</strong>
+						{{ invalidCount() === 1 ? 'field needs correction' : 'fields need correction' }}
+					</div>
+				}
+			</header>
 
-						@if (issue.type === 'textarea') {
-							<textarea
-								[id]="issue.id"
-								class="field-input"
-								rows="4"
-								[ngModel]="issue.value"
-								(ngModelChange)="onValueChange(issue.id, $event)"
-								[ngModelOptions]="{ standalone: true }"></textarea>
-						} @else if (issue.type === 'dropdown' && issue.options.length > 0) {
-							<select
-								[id]="issue.id"
-								class="field-input"
-								[ngModel]="issue.value"
-								(ngModelChange)="onValueChange(issue.id, $event)"
-								[ngModelOptions]="{ standalone: true }">
-								<option value="">-- Select --</option>
-								@for (option of issue.options; track option) {
-									<option [value]="option">{{ option }}</option>
-								}
-							</select>
-						} @else {
-							<input
-								[id]="issue.id"
-								class="field-input"
-								[type]="inputType(issue.type)"
-								[ngModel]="issue.value"
-								(ngModelChange)="onValueChange(issue.id, $event)"
-								[ngModelOptions]="{ standalone: true }" />
+			@if (!hasIssues()) {
+				<div class="empty-state">
+					<h2>No errors found</h2>
+					<p>There are no items to review right now.</p>
+					<button type="button" class="btn btn-secondary" (click)="goBack()">Back to form</button>
+				</div>
+			} @else {
+				<section class="form-section">
+					<div class="review-list" role="list">
+						@for (issue of issues(); track issue.id) {
+							<article class="review-card" role="listitem">
+								<div class="field-content">
+									<label class="field-label" [for]="issue.id">{{ issue.label }}</label>
+
+									@if (issue.type === 'textarea') {
+										<textarea
+											[id]="issue.id"
+											class="field-input"
+											rows="4"
+											[ngModel]="issue.value"
+											(ngModelChange)="onValueChange(issue.id, $event)"
+											[ngModelOptions]="{ standalone: true }"
+										></textarea>
+									} @else if (issue.type === 'dropdown' && issue.options.length > 0) {
+										<select
+											[id]="issue.id"
+											class="field-input"
+											[ngModel]="issue.value"
+											(ngModelChange)="onValueChange(issue.id, $event)"
+											[ngModelOptions]="{ standalone: true }"
+										>
+											<option value="">-- Select --</option>
+											@for (option of issue.options; track option) {
+												<option [value]="option">{{ option }}</option>
+											}
+										</select>
+									} @else {
+										<input
+											[id]="issue.id"
+											class="field-input"
+											[type]="inputType(issue.type)"
+											[ngModel]="issue.value"
+											(ngModelChange)="onValueChange(issue.id, $event)"
+											[ngModelOptions]="{ standalone: true }"
+										/>
+									}
+								</div>
+
+								<aside class="error-side" [class.ok]="!issue.error" aria-live="polite">
+									<span class="badge" [class.bad]="issue.error" [class.good]="!issue.error">
+										{{ issue.error ? 'Error' : 'OK' }}
+									</span>
+									<p>{{ issue.error || 'Field validated successfully.' }}</p>
+								</aside>
+							</article>
 						}
 					</div>
 
-					<aside class="error-side" [class.ok]="!issue.error" aria-live="polite">
-						<span class="badge" [class.bad]="issue.error" [class.good]="!issue.error">
-							{{ issue.error ? 'Error' : 'OK' }}
-						</span>
-						<p>{{ issue.error || 'Field validated successfully.' }}</p>
-					</aside>
-				</article>
-			}
-			</div>
+					@if (pageMessage()) {
+						<p class="form-message">{{ pageMessage() }}</p>
+					}
 
-			@if (pageMessage()) {
-				<p class="form-message">{{ pageMessage() }}</p>
+					<div class="form-nav">
+						<button type="button" class="btn btn-secondary" (click)="goBack()">Back without saving</button>
+						<button type="button" class="btn btn-primary" (click)="saveCorrections()">Save changes</button>
+					</div>
+				</section>
 			}
-
-			<div class="form-nav">
-				<button type="button" class="btn btn-secondary" (click)="goBack()">Back without saving</button>
-				<button type="button" class="btn btn-primary" (click)="saveCorrections()">Save changes</button>
-			</div>
-		</section>
-	}
+		</div>
+	</section>
 </div>
