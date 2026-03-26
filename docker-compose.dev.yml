@@ -1,0 +1,94 @@
+services:
+  # Development PostgreSQL with lightweight memory tuning.
+  database:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_DB: appdb
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    command:
+      [
+        "postgres",
+        "-c",
+        "shared_buffers=16MB",
+        "-c",
+        "work_mem=1MB",
+        "-c",
+        "maintenance_work_mem=16MB",
+        "-c",
+        "max_connections=20"
+      ]
+    # Wait until DB is ready before dependent services start.
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d appdb"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+      start_period: 5s
+    ports:
+      - "5432:5432"
+    # Keep local DB state between restarts.
+    volumes:
+      - postgres_data_dev:/var/lib/postgresql/data
+    networks:
+      - app_net_dev
+    # Dev-only resource profile (hot reload needs more memory).
+    mem_limit: 128m
+    cpus: 0.20
+
+  # Backend API in watch mode.
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    environment:
+      NODE_ENV: development
+      NODE_OPTIONS: --max-old-space-size=192
+      DATABASE_URL: postgresql://postgres:postgres@database:5432/appdb
+      PORT: 3000
+    # Start backend only after database passes healthcheck.
+    depends_on:
+      database:
+        condition: service_healthy
+    ports:
+      - "3000:3000"
+    # Bind source code for fast local iteration.
+    volumes:
+      - ./:/app
+      - /app/node_modules
+    networks:
+      - app_net_dev
+    mem_limit: 256m
+    cpus: 0.30
+
+  # Frontend dev server with live reload.
+  frontend:
+    build:
+      context: ./src/presentation/web
+      dockerfile: Dockerfile.dev
+    environment:
+      NODE_ENV: development
+      NODE_OPTIONS: --max-old-space-size=512
+      API_BASE_URL: http://backend:3000
+    # Backend should be available before frontend starts.
+    depends_on:
+      backend:
+        condition: service_started
+    ports:
+      - "4200:4200"
+    volumes:
+      - ./src/presentation/web:/app
+      - /app/node_modules
+    networks:
+      - app_net_dev
+    mem_limit: 768m
+    cpus: 0.50
+
+volumes:
+  # Named volume for development database persistence.
+  postgres_data_dev:
+
+networks:
+  # Isolated bridge network for development stack.
+  app_net_dev:
+    driver: bridge

@@ -35,6 +35,11 @@
    - [Daily Meetings Policy](#41-daily-meetings-policy)
    - [Development and Collaboration Policies](#42-development-and-collaboration-policies)
 
+5. [Cost Analysis and Effort Estimation](#5-cost-analysis-and-effort-estimation)
+   - [Effort and Labor Scope](#51-effort-and-labor-scope)
+   - [Infrastructure and Tools](#52-infrastructure-and-tools)
+   - [Financial Summary](#53-financial-summary)
+
 ---
 
 ## 1. Sprint 1 Analysis
@@ -372,3 +377,47 @@ This section presents an analysis of Sprint 3 execution based on workflow, task 
   - Tasks can be **Closed** only when DoD is satisfied
 
 - **Configuration management documentation:** See [configuration-management.md](configuration-management.md) for branch naming, MR templates, and commit rules.
+
+## 5. Cost Analysis and Effort Estimation
+
+This section presents the financial assessment for the development of the Equiem Onboarding MVP. The calculation considers a 10-week development cycle and maps all costs related to human resources, cloud infrastructure, and third-party tools necessary to build and deploy the solution.
+
+### 5.1. Effort and Labor Scope
+
+The team is composed of entry-level professionals (Interns/Juniors). The effort estimation is based on a 10-week development cycle, with an average dedication of 16 hours per sprint per member. The "Technical Hourly Rate" is established at R$ 20,00/h, reflecting the current market average for tech interns/juniors in São Paulo.
+
+| Role | Headcount | Hours/Sprint per Person | Total Hours (10 weeks) | Hourly Rate | Total Cost |
+| :--- | :---: | :---: | :---: | :---: | :--- |
+| Front-end Developer | 2 | 16 | 160 | R$ 20,00 | R$ 3.200,00 |
+| Back-end Developer | 2 | 16 | 160 | R$ 20,00 | R$ 3.200,00 |
+| Cloud/DevOps Architect | 1 | 16 | 80 | R$ 20,00 | R$ 1.600,00 |
+| QA / Tester | 1 | 16 | 80 | R$ 20,00 | R$ 1.600,00 |
+| Designer | 1 | 16 | 80 | R$ 20,00 | R$ 1.600,00 |
+| **Total Labor** | **7** | **-** | **560** | **-** | **R$ 11.200,00** |
+
+### 5.2. Infrastructure and Tools
+
+The infrastructure costs reflect the required environments to support the proposed deployment architecture, which utilizes AWS services and Auth0. Costs are projected for the duration of the MVP development and testing phase (approx. 2.5 months).
+
+| Resource / Tool | Component Responsibility | Estimated Monthly Cost | Total Cost (2.5 months) |
+| :--- | :--- | :---: | :---: |
+| **AWS EC2 (t3.small)** | Frontend hosting | R$ 90,00 | R$ 225,00 |
+| **AWS EC2 (t3.small)** | Backend API hosting | R$ 90,00 | R$ 225,00 |
+| **AWS EC2 (t3.small)** | Worker Processing Layer | R$ 90,00 | R$ 225,00 |
+| **Amazon RDS (PostgreSQL)** | Managed Database | R$ 150,00 | R$ 375,00 |
+| **Amazon SQS** | Messaging & Job Queues | R$ 5,00 | R$ 12,50 |
+| **Auth0** | Authentication Service (B2C Essentials) | R$ 180,00 | R$ 450,00 |
+| **GitHub / GitLab** | CI/CD and Version Control | R$ 0,00 (Free) | R$ 0,00 |
+| **Total Infrastructure** | - | **R$ 605,00** | **R$ 1.512.50** |
+
+### 5.3. Financial Summary
+
+The table below consolidates the total estimated production cost for the development of the Equiem onboarding MVP, including a symbolic tax rate of 6% to simulate the basic tax burden.
+
+| Cost Category | Total Estimated Value |
+| :--- | :--- |
+| Total Labor Cost | R$ 11.200,00 |
+| Total Infrastructure & Tools Cost | R$ 1.512,50 |
+| **Subtotal (Production Cost)** | **R$ 12.712,50** |
+| Tax Burden (6%) | R$ 762,75 |
+| **Total Project Cost (MVP)** | **R$ 13.475,25** |

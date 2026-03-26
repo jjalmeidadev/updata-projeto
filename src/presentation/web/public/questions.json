@@ -14,7 +14,7 @@
     "sectionId": "building-setup",
     "question": "How many levels are there in each building?",
     "description": "Insert the levels for each building, including non-occupier floors.",
-    "type": "text",
+    "type": "integer",
     "order": 2
   },
   {
@@ -209,7 +209,7 @@
   "sectionId": "amenity-details",
   "question": "Level",
   "description": "Which level is the amenity located on?",
-  "type": "text",
+  "type": "integer",
   "order": 18
 },
 {

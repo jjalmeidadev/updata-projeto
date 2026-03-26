@@ -79,17 +79,17 @@
 }
 
 .review-card {
-	display: grid;
-	grid-template-columns: 1fr 230px;
-	gap: 12px;
-	padding: 12px;
-	border: 1px solid #e5e7eb;
-	border-radius: 10px;
-	background: #fafafa;
+  display: grid;
+  grid-template-columns: 1fr 250px;
+  gap: 16px;
+  padding: 16px;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  background: #fafafa;
 }
 
 .field-content {
-	min-width: 0;
+  min-width: 0;
 }
 
 .field-label {
@@ -119,51 +119,51 @@
 }
 
 .error-side {
-	border: 1px solid #fecaca;
-	border-radius: 8px;
-	padding: 10px;
-	background: #fff1f2;
-	display: grid;
-	align-content: start;
-	gap: 6px;
+  border: 1px solid #fecaca;
+  border-radius: 10px;
+  padding: 14px;
+  background: #fff1f2;
+  display: grid;
+  align-content: start;
+  gap: 8px;
 }
 
 .error-side.ok {
-	border-color: #bbf7d0;
-	background: #f0fdf4;
+  border-color: #bbf7d0;
+  background: #f0fdf4;
 }
 
 .badge {
-	width: fit-content;
-	font-size: 0.72rem;
-	font-weight: 700;
-	border-radius: 999px;
-	padding: 0.2rem 0.5rem;
-	text-transform: uppercase;
-	letter-spacing: 0.04em;
+  width: fit-content;
+  font-size: 0.72rem;
+  font-weight: 700;
+  border-radius: 999px;
+  padding: 0.2rem 0.6rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
 }
 
 .badge.bad {
-	background: #fee2e2;
-	color: #b91c1c;
+  background: #fee2e2;
+  color: #b91c1c;
 }
 
 .badge.good {
-	background: #dcfce7;
-	color: #15803d;
+  background: #dcfce7;
+  color: #15803d;
 }
 
 .error-side p {
-	margin: 0;
-	font-size: 0.85rem;
-	color: #4b5563;
+  margin: 0;
+  font-size: 0.9rem;
+  color: #4b5563;
 }
 
 .form-message {
-	margin: 14px 0 0;
-	color: #b91c1c;
-	font-size: 0.9rem;
-	font-weight: 600;
+  margin: 18px 0 0;
+  color: #b91c1c;
+  font-size: 0.95rem;
+  font-weight: 600;
 }
 
 .form-nav {
@@ -236,16 +236,16 @@
 }
 
 @media (max-width: 720px) {
-	.review-card {
-		grid-template-columns: 1fr;
-	}
+  .review-card {
+    grid-template-columns: 1fr;
+  }
 
-	.form-nav {
-		flex-direction: column;
-		gap: 10px;
-	}
+  .form-nav {
+    flex-direction: column;
+    gap: 10px;
+  }
 
-	.form-nav .btn {
-		width: 100%;
-	}
+  .form-nav .btn {
+    width: 100%;
+  }
 }
