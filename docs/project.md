@@ -1284,9 +1284,7 @@ To identify an optimal configuration, a series of **controlled benchmarks** was 
 
 ### 1. Benchmark Data Log
 
-To generate the benchmark dataset, a script called [generate-data.py](../appendix-math/scripts/generate-data.py) was implemented. This script produces a CSV file containing **50,000 rows of synthetic data** using the Python Faker library.
-
-The generated dataset is stored in: ../appendix-math/csv/onboarding_50000.csv
+To generate the benchmark dataset, a script called [generate-data.py](../appendix-math/scripts/generate-data.py) was implemented. This script produces a CSV file containing **50,000 rows of synthetic data** using the Python Faker library. The generated dataset is stored in [onboarding_50000.csv](../appendix-math/csv/onboarding_50000.csv).
 
 A second script, [benchmark-throughput.ts](../appendix-math/scripts/benchmark-throughput.ts), was developed to process the dataset and evaluate system throughput across multiple configurations.
 
@@ -1302,11 +1300,9 @@ $env:BENCHMARK_SKIP_EXTERNAL_SEND="true";
 $env:BENCHMARK_RESUME_CSV="appendix-math/csv/throughput-2026-03-25T23-03-58-989Z.csv";
 npm run benchmark:throughput
 ```
-This command generated the following output file: ../appendix-math/csv/throughput-2026-03-25T23-03-58-989Z.csv
+This command generated the following output file: [throughput-2026-03-25T23-03-58-989Z.csv](../appendix-math/csv/throughput-2026-03-25T23-03-58-989Z.csv). The file records the results of three benchmark runs for each configuration.
 
-The file records the results of three benchmark runs for each configuration.
-
-To compute the Average Throughput (T) in records per second, an additional script called [optimize-throughput.ts](../appendix-math/scripts/optimize-throughput.ts).This script calculates the mean throughput values and performs a regression analysis on the collected data. The regression results are presented in Section 2.
+To compute the average throughput (T) in records per second, an additional script called [optimize-throughput.ts](../appendix-math/scripts/optimize-throughput.ts) was executed. This script processes the raw benchmark results and generates a new file called: [throughput-2026-03-25T23-03-58-989Z-combination-means.csv](../appendix-math/csv/throughput-2026-03-25T23-03-58-989Z-combination-means.csv) This file contains the mean throughput for each of the 12 (B, W) combinations, calculated from the three benchmark runs performed for every configuration. The averaged results are then used as the dataset for the regression model described in Section 2.
 
 The table below summarizes the evaluated configurations and their corresponding average throughput values.
 
@@ -1396,7 +1392,7 @@ The relatively low value suggests that additional factors, such as I/O variabili
 
 #### 2.2. Model Estimation Method
 
-The coefficients of the performance model were estimated using the script `optimize-throughput.ts`, which performs a **quadratic regression analysis** on the benchmark results.
+The coefficients of the performance model were estimated using the script [optimize-throughput.ts](../appendix-math/scripts/optimize-throughput.ts), which performs a **quadratic regression analysis** on the benchmark results.
 
 The script reads the benchmark dataset generated in Section 1. Each record in the dataset contains:
 
@@ -1542,7 +1538,7 @@ Rearranging:
 
 1.159864B - 24.117486W = -75.334222
 
-Solving this linear system yields the critical point:
+Solving this linear system yields the critical point is:
 
 B* ≈ 6.49  
 W* ≈ 3.43
@@ -1556,9 +1552,7 @@ W ≈ 3
 
 #### 3.3. Hessian Matrix and Point Classification
 
-To determine whether the critical point corresponds to a maximum, minimum, or saddle point, the **Hessian matrix** is evaluated.
-
-The Hessian matrix is composed of the second-order partial derivatives:
+To determine whether the critical point corresponds to a maximum, minimum, or saddle point, the **Hessian matrix** is evaluated. The Hessian matrix is composed of the second-order partial derivatives:
 
 H(T) =
 
@@ -1587,16 +1581,20 @@ det(H) = (10.483782)(-24.117486) - (1.159864)²
 
 det(H) ≈ -254.5
 
-Because the determinant of the Hessian is **negative**, the critical point corresponds to a **saddle point**, indicating that the function does not present a strict global maximum within the continuous domain.
+Because the determinant of the Hessian is negative, the critical point corresponds to a saddle point rather than a strict local maximum in the continuous domain. 
 
-However, within the **discrete configuration space of the system**, the region around the critical point still represents the area where the highest throughput values are expected.
+This result indicates that the regression surface does not contain a single continuous maximum. Instead, the critical point represents the center of a ridge-like region where throughput values are relatively high.
 
-Therefore, the analytical solution suggests that configurations close to:
+In practice, the system parameters Batch Size (B) and Worker Count (W) must take integer values, meaning the optimization problem is discrete rather than continuous.
 
-- B ≈ 6  
-- W ≈ 3
+Therefore, the analytical solution identifies the region of highest predicted performance, and the optimal configuration is obtained by selecting the nearest feasible integer values.
 
-should provide near-optimal throughput performance.
+The closest operational configuration to the critical point is:
+
+- Batch Size (B) = 6
+- Worker Count (W) = 3
+
+This configuration lies within the high-throughput region suggested by the regression surface and therefore represents the recommended operational configuration.
 
 --- 
 
@@ -1606,8 +1604,8 @@ The analytical model developed in the previous sections provides a mathematical 
 
 By solving the optimization problem in Section 3, the critical point of the throughput function was obtained at:
 
-B* ≈ 6.49  
-W* ≈ 3.43  
+- B ≈ 6.49  
+- W ≈ 3.43  
 
 Since the system configuration parameters must be integers, the recommended operational configuration is obtained by rounding to the nearest practical values.
 
