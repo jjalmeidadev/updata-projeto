@@ -1,6 +1,8 @@
-import { Component, inject } from '@angular/core';
+import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
+import { OnboardingInstance } from '../../models/onboarding-instance.model';
+import { OnboardingInstanceService } from '../../services/onboarding-instance.service';
 
 @Component({
   selector: 'app-input-method',
@@ -9,11 +11,35 @@ import { Router } from '@angular/router';
   templateUrl: './input-method.component.html',
   styleUrl: './input-method.component.css',
 })
-export class InputMethodComponent {
+export class InputMethodComponent implements OnInit {
+  private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
+  private readonly onboardingService = inject(OnboardingInstanceService);
+
+  readonly instance = signal<OnboardingInstance | null>(null);
+  readonly errorMessage = signal('');
+
+  ngOnInit(): void {
+    const linkToken = this.route.snapshot.paramMap.get('linkToken');
+    if (!linkToken) {
+      this.errorMessage.set('Missing onboarding link.');
+      return;
+    }
+
+    this.onboardingService.getPublicInstance(linkToken).subscribe({
+      next: (instance: OnboardingInstance) => this.instance.set(instance),
+      error: () => this.errorMessage.set('Failed to load onboarding link.'),
+    });
+  }
 
   choose(method: 'upload' | 'manual'): void {
-    localStorage.setItem('onboardingInputMethod', method);
-    this.router.navigate([method === 'upload' ? '/upload' : '/form']);
+    const linkToken = this.route.snapshot.paramMap.get('linkToken');
+    if (!linkToken) return;
+
+    this.router.navigate([
+      '/onboarding',
+      linkToken,
+      method === 'upload' ? 'upload' : 'form',
+    ]);
   }
 }

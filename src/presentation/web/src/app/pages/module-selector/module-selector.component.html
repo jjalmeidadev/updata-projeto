@@ -1,13 +1,30 @@
 <div class="selector-shell">
   <header class="selector-header">
     <h1>Select sections for this onboarding</h1>
-    <p>Only the selected sections will appear in the form.</p>
+    <p>Choose the company, select the sections, and generate the onboarding link.</p>
   </header>
 
   @if (loading()) {
-    <p class="loading">Loading sections…</p>
+    <p class="loading">Loading sections...</p>
   } @else {
     <section class="selector-card">
+      <label class="company-field">
+        <span>Company</span>
+        <input
+          type="text"
+          [ngModel]="companyName()"
+          (ngModelChange)="companyName.set($event)"
+          list="company-options"
+          placeholder="Select or type a company"
+        />
+      </label>
+
+      <datalist id="company-options">
+        @for (company of companies(); track company.id) {
+          <option [value]="company.name"></option>
+        }
+      </datalist>
+
       <div class="actions">
         <button type="button" class="btn btn-secondary" (click)="selectAll()">Select all</button>
         <button type="button" class="btn btn-secondary" (click)="clearAll()">Clear all</button>
@@ -26,16 +43,35 @@
         }
       </div>
 
-      <div class="footer">
-        <button
-          type="button"
-          class="btn btn-primary"
-          [disabled]="!canContinue()"
-          (click)="continueToForm()"
-        >
-          Continue
-        </button>
-      </div>
+      @if (successMessage()) {
+        <p class="feedback success-text">{{ successMessage() }}</p>
+      }
+
+      @if (errorMessage()) {
+        <p class="feedback error-text">{{ errorMessage() }}</p>
+      }
+
+      @if (createdLink()) {
+        <div class="link-preview">
+          <p>Generated link</p>
+          <code>{{ createdLink() }}</code>
+          <div class="footer">
+            <button type="button" class="btn btn-secondary" (click)="copyLink()">Copy link</button>
+            <button type="button" class="btn btn-primary" (click)="openLink()">Open onboarding</button>
+          </div>
+        </div>
+      } @else {
+        <div class="footer">
+          <button
+            type="button"
+            class="btn btn-primary"
+            [disabled]="!canCreate()"
+            (click)="createLink()"
+          >
+            Create Link
+          </button>
+        </div>
+      }
     </section>
   }
 </div>

@@ -122,3 +122,57 @@ SELECT gen_random_uuid(),
 (SELECT id FROM processing_job ORDER BY random() LIMIT 1),
 'started'
 FROM generate_series(1,4);
+
+INSERT INTO onboarding_instance (
+  id,
+  company_id,
+  company_name,
+  selected_sections,
+  status,
+  progress_percent,
+  link_token,
+  form_data,
+  email_status,
+  submitted_at,
+  reviewed_at,
+  completed_at,
+  created_at,
+  updated_at
+)
+SELECT
+  gen_random_uuid(),
+  c.id,
+  c.name,
+  ARRAY['building-setup', 'company-details', 'amenity-settings'],
+  status_data.status,
+  status_data.progress_percent,
+  CONCAT('seed-', LOWER(REPLACE(c.name, ' ', '-')), '-', status_data.seed_suffix),
+  '{}'::jsonb,
+  'pending_manual_send',
+  status_data.submitted_at,
+  status_data.reviewed_at,
+  status_data.completed_at,
+  NOW() - status_data.created_offset,
+  NOW() - status_data.updated_offset
+FROM (
+  SELECT id, name, ROW_NUMBER() OVER (ORDER BY name) AS row_num
+  FROM company
+  ORDER BY name
+  LIMIT 3
+) c
+JOIN (
+  VALUES
+    (1, 'in_progress', 45, 'in-progress', NULL::timestamptz, NULL::timestamptz, NULL::timestamptz, interval '2 days', interval '30 minutes'),
+    (2, 'equiem_review', 100, 'review', NOW() - interval '1 day', NULL::timestamptz, NULL::timestamptz, interval '4 days', interval '2 hours'),
+    (3, 'completed', 100, 'completed', NOW() - interval '6 days', NOW() - interval '5 days', NOW() - interval '5 days', interval '10 days', interval '5 days')
+) AS status_data(
+  row_num,
+  status,
+  progress_percent,
+  seed_suffix,
+  submitted_at,
+  reviewed_at,
+  completed_at,
+  created_offset,
+  updated_offset
+) ON status_data.row_num = c.row_num;

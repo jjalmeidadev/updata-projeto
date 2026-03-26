@@ -27,6 +27,23 @@
   padding: 24px;
 }
 
+.company-field {
+  display: grid;
+  gap: 8px;
+  margin-bottom: 18px;
+}
+
+.company-field span {
+  font-weight: 600;
+}
+
+.company-field input {
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  padding: 12px 14px;
+  font-size: 0.95rem;
+}
+
 .actions {
   display: flex;
   gap: 8px;
@@ -56,7 +73,36 @@
 .footer {
   display: flex;
   justify-content: flex-end;
+  gap: 10px;
   margin-top: 20px;
+}
+
+.feedback {
+  margin: 16px 0 0;
+  font-size: 0.9rem;
+}
+
+.success-text {
+  color: #166534;
+}
+
+.error-text {
+  color: #b91c1c;
+}
+
+.link-preview {
+  margin-top: 20px;
+  padding: 16px;
+  border-radius: 10px;
+  background: #f8fafc;
+  border: 1px solid #e5e7eb;
+}
+
+.link-preview code {
+  display: block;
+  margin-top: 8px;
+  white-space: normal;
+  word-break: break-all;
 }
 
 .btn {

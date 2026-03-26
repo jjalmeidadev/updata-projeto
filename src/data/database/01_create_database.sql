@@ -206,3 +206,21 @@ CREATE TABLE processing_log (
   message TEXT,
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
+
+CREATE TABLE onboarding_instance (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  company_id UUID REFERENCES company(id) ON DELETE SET NULL,
+  company_name VARCHAR(255) NOT NULL,
+  selected_sections TEXT[] NOT NULL DEFAULT '{}',
+  status VARCHAR(50) NOT NULL DEFAULT 'draft',
+  progress_percent INT NOT NULL DEFAULT 0,
+  link_token VARCHAR(120) NOT NULL UNIQUE,
+  form_data JSONB NOT NULL DEFAULT '{}'::jsonb,
+  email_status VARCHAR(50) NOT NULL DEFAULT 'pending_manual_send',
+  email_payload JSONB,
+  submitted_at TIMESTAMPTZ,
+  reviewed_at TIMESTAMPTZ,
+  completed_at TIMESTAMPTZ,
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+ );

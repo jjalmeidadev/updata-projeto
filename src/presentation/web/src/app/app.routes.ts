@@ -14,10 +14,10 @@ export const routes: Routes = [
   { path: 'login', component: LoginComponent },
   { path: 'signup', component: SignupComponent },
   { path: 'home', component: HomeComponent, canActivate: [authGuardFn] },
-  { path: 'form', component: OnboardingFormComponent, canActivate: [authGuardFn] },
-  { path: 'upload', component: UploadComponent, canActivate: [authGuardFn] },
-  { path: 'review', component: ReviewComponentsComponent, canActivate: [authGuardFn] },
   { path: 'module-selector', component: ModuleSelectorComponent, canActivate: [authGuardFn] },
-  { path: 'input-method', component: InputMethodComponent, canActivate: [authGuardFn] },
+  { path: 'onboarding/:linkToken', component: InputMethodComponent },
+  { path: 'onboarding/:linkToken/form', component: OnboardingFormComponent },
+  { path: 'onboarding/:linkToken/upload', component: UploadComponent },
+  { path: 'onboarding/:linkToken/review', component: ReviewComponentsComponent },
   { path: '**', redirectTo: '/login' }
 ];

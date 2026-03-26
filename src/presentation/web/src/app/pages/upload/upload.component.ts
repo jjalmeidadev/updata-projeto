@@ -1,9 +1,11 @@
 import { Component, OnInit, inject, signal, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { QuestionService } from '../../services/question.service';
 import { Question, QuestionType } from '../../models/question.model';
 import ExcelJS from 'exceljs';
+import { OnboardingInstance } from '../../models/onboarding-instance.model';
+import { OnboardingInstanceService } from '../../services/onboarding-instance.service';
 
 type ReviewSource = 'manual' | 'template';
 
@@ -31,9 +33,12 @@ const UPLOADED_DATA_KEY = 'uploadedData';
 })
 export class UploadComponent implements OnInit {
   private readonly router = inject(Router);
+  private readonly route = inject(ActivatedRoute);
   private readonly questionService = inject(QuestionService);
+  private readonly onboardingService = inject(OnboardingInstanceService);
 
   readonly questions = signal<Question[]>([]);
+  readonly instance = signal<OnboardingInstance | null>(null);
   readonly loading = signal(true);
   readonly uploading = signal(false);
   readonly fileName = signal<string | null>(null);
@@ -44,18 +49,36 @@ export class UploadComponent implements OnInit {
   readonly uploadProgress = computed(() => (this.uploading() ? 50 : 0));
 
   ngOnInit(): void {
-    this.questionService.getQuestions().subscribe({
-      next: (allQuestions: Question[]) => {
-        const selected = this.getSelectedSections();
-        const filteredQuestions = selected.length
-          ? allQuestions.filter((q: Question) => selected.includes(q.sectionId))
-          : allQuestions;
+    const linkToken = this.route.snapshot.paramMap.get('linkToken');
 
-        this.questions.set(filteredQuestions);
-        this.loading.set(false);
+    if (!linkToken) {
+      this.errorMessage.set('Missing onboarding link.');
+      this.loading.set(false);
+      return;
+    }
+
+    this.onboardingService.getPublicInstance(linkToken).subscribe({
+      next: (instance: OnboardingInstance) => {
+        this.instance.set(instance);
+
+        this.questionService.getQuestions().subscribe({
+          next: (allQuestions: Question[]) => {
+            const selected = instance.selectedSections;
+            const filteredQuestions = selected.length
+              ? allQuestions.filter((q: Question) => selected.includes(q.sectionId))
+              : allQuestions;
+
+            this.questions.set(filteredQuestions);
+            this.loading.set(false);
+          },
+          error: (err: unknown) => {
+            console.error('Failed to load questions:', err);
+            this.loading.set(false);
+          },
+        });
       },
-      error: (err: unknown) => {
-        console.error('Failed to load questions:', err);
+      error: () => {
+        this.errorMessage.set('Failed to load onboarding instance.');
         this.loading.set(false);
       },
     });
@@ -64,8 +87,9 @@ export class UploadComponent implements OnInit {
   async onFileSelect(event: Event): Promise<void> {
     const target = event.target as HTMLInputElement;
     const file = target.files?.[0];
+    const linkToken = this.route.snapshot.paramMap.get('linkToken');
 
-    if (!file) {
+    if (!file || !linkToken) {
       return;
     }
 
@@ -100,7 +124,7 @@ export class UploadComponent implements OnInit {
         })
       );
 
-      this.router.navigate(['/review'], {
+      this.router.navigate(['/onboarding', linkToken, 'review'], {
         state: {
           reviewSource: 'template',
           reviewIssues: reviewItems,
@@ -124,7 +148,9 @@ export class UploadComponent implements OnInit {
   }
 
   goToManualForm(): void {
-    this.router.navigate(['/form']);
+    const linkToken = this.route.snapshot.paramMap.get('linkToken');
+    if (!linkToken) return;
+    this.router.navigate(['/onboarding', linkToken, 'form']);
   }
 
   async downloadTemplate(): Promise<void> {
@@ -192,7 +218,7 @@ export class UploadComponent implements OnInit {
       });
 
       [2, 3, 4].forEach((r: number) => {
-        ws.getRow(r).eachCell({ includeEmpty: true }, (cell: ExcelJS.Cell, col: number) => {
+        ws.getRow(r).eachCell({ includeEmpty: true }, (cell: any, col: number) => {
           if (col > colCount) {
             return;
           }
@@ -237,7 +263,7 @@ export class UploadComponent implements OnInit {
   }
 
   onSubmit(): void {
-    this.router.navigate(['/form']);
+    this.goToManualForm();
   }
 
   private async parseExcelTemplate(file: File): Promise<Record<string, unknown>> {
@@ -247,7 +273,7 @@ export class UploadComponent implements OnInit {
 
     const values: Record<string, unknown> = {};
 
-    workbook.worksheets.forEach((worksheet: ExcelJS.Worksheet) => {
+    workbook.worksheets.forEach((worksheet: any) => {
       const sectionQuestions = this.getQuestionsForWorksheet(worksheet.name);
 
       if (sectionQuestions.length === 0) {
@@ -456,7 +482,7 @@ export class UploadComponent implements OnInit {
     return value.toLowerCase().replace(/\s+/g, ' ').trim();
   }
 
-  private cellToString(value: ExcelJS.CellValue | undefined | null): string {
+  private cellToString(value: any): string {
     if (value === null || value === undefined) {
       return '';
     }
@@ -495,14 +521,5 @@ export class UploadComponent implements OnInit {
 
     used.add(name.toLowerCase());
     return name;
-  }
-
-  private getSelectedSections(): string[] {
-    try {
-      const raw = localStorage.getItem('selectedSections');
-      return raw ? JSON.parse(raw) : [];
-    } catch {
-      return [];
-    }
   }
 }

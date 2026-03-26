@@ -148,6 +148,10 @@
 }
 
 .home-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem;
   margin-bottom: 1rem;
 }
 
@@ -284,6 +288,22 @@
   white-space: nowrap;
 }
 
+.icon-btn {
+  border-radius: 6px;
+  padding: 0.55rem 0.8rem;
+  font-size: 0.9rem;
+  cursor: pointer;
+  border: 1px solid #d6c5fb;
+  background: #ffffff;
+  color: #363640;
+}
+
+.actions-cell {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
 .details-btn {
   background: #ffffff;
   color: #363640;
@@ -336,6 +356,10 @@
 
   .home-panel {
     padding: 2rem 1.5rem;
+  }
+
+  .home-header {
+    flex-direction: column;
   }
 }
 

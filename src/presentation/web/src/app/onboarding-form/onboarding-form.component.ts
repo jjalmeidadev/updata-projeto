@@ -4,6 +4,9 @@ import { ActivatedRoute, Params, Router } from '@angular/router';
 import { QuestionService, SECTION_LABELS, SOURCE_OPTIONS } from '../services/question.service';
 import { Question, QuestionType } from '../models/question.model';
 import { DynamicFieldComponent } from '../components/dynamic-field/dynamic-field.component';
+import { debounceTime } from 'rxjs';
+import { OnboardingInstance } from '../models/onboarding-instance.model';
+import { OnboardingInstanceService } from '../services/onboarding-instance.service';
 
 type ReviewSource = 'manual' | 'template';
 
@@ -42,6 +45,7 @@ export class OnboardingFormComponent implements OnInit {
   private readonly questionService = inject(QuestionService);
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
+  private readonly onboardingService = inject(OnboardingInstanceService);
 
   readonly questions = signal<Question[]>([]);
   readonly sections = signal<string[]>([]);
@@ -51,77 +55,105 @@ export class OnboardingFormComponent implements OnInit {
   readonly loading = signal(true);
   readonly fromUpload = signal(false);
   readonly formVersion = signal(0);
+  readonly instance = signal<OnboardingInstance | null>(null);
+  readonly pageMessage = signal('');
+  private autoSaveReady = false;
 
   readonly sectionLabels = SECTION_LABELS;
 
   ngOnInit(): void {
     this.cleanupStaleUploadState();
+    const linkToken = this.route.snapshot.paramMap.get('linkToken');
 
-    this.questionService.getQuestions().subscribe({
-      next: (allQuestions: Question[]) => {
-        const selected = this.getSelectedSections();
+    if (!linkToken) {
+      this.pageMessage.set('Missing onboarding link.');
+      this.loading.set(false);
+      return;
+    }
 
-        const questions = selected.length
-          ? allQuestions.filter((q: Question) => selected.includes(q.sectionId))
-          : allQuestions;
+    this.onboardingService.getPublicInstance(linkToken).subscribe({
+      next: (instance: OnboardingInstance) => {
+        this.instance.set(instance);
 
-        this.questions.set(questions);
-        this.sections.set(this.questionService.getSections(questions));
+        this.questionService.getQuestions().subscribe({
+          next: (allQuestions: Question[]) => {
+            const selected = instance.selectedSections;
 
-        const builtForm = this.buildForm(questions);
-        this.form.set(builtForm);
+            const questions = selected.length
+              ? allQuestions.filter((q: Question) => selected.includes(q.sectionId))
+              : allQuestions;
 
-        builtForm.valueChanges.subscribe(() => {
-          this.formVersion.update((value: number) => value + 1);
-        });
+            this.questions.set(questions);
+            this.sections.set(this.questionService.getSections(questions));
 
-        this.loading.set(false);
+            const builtForm = this.buildForm(questions);
+            this.form.set(builtForm);
+            this.applyValuesToForm(builtForm, instance.formData ?? {});
 
-        this.route.queryParams.subscribe((params: Params) => {
-          this.fromUpload.set(params['fromUpload'] === 'true' || params['fromUpload'] === true);
-
-          if (params['section']) {
-            const sectionIndex = parseInt(params['section'], 10);
-            if (!Number.isNaN(sectionIndex) && sectionIndex >= 0 && sectionIndex < this.sections().length) {
-              this.currentSectionIndex.set(sectionIndex);
-            }
-          } else {
-            this.restoreReviewSectionIndex();
-          }
-
-          const shouldAutoSubmit =
-            params['autoSubmit'] === 'true' ||
-            params['autoSubmit'] === true ||
-            history.state?.['autoSubmit'] === true;
-
-          this.handleUploadedData(builtForm);
-          this.applyReviewCorrections(builtForm);
-          this.formVersion.update((value: number) => value + 1);
-
-          if (shouldAutoSubmit) {
-            setTimeout(() => {
-              this.completeSubmission();
+            builtForm.valueChanges.subscribe(() => {
+              this.formVersion.update((value: number) => value + 1);
             });
-          }
 
-          setTimeout(() => {
-            if (
-              this.route.snapshot.queryParamMap.has('fromUpload') ||
-              this.route.snapshot.queryParamMap.has('fromReview') ||
-              this.route.snapshot.queryParamMap.has('section') ||
-              this.route.snapshot.queryParamMap.has('autoSubmit')
-            ) {
-              this.router.navigate([], {
-                relativeTo: this.route,
-                queryParams: {},
-                replaceUrl: true,
+            builtForm.valueChanges.pipe(debounceTime(500)).subscribe(() => {
+              if (this.autoSaveReady && !this.submitted()) {
+                this.persistDraft();
+              }
+            });
+
+            this.loading.set(false);
+
+            this.route.queryParams.subscribe((params: Params) => {
+              this.fromUpload.set(params['fromUpload'] === 'true' || params['fromUpload'] === true);
+
+              if (params['section']) {
+                const sectionIndex = parseInt(params['section'], 10);
+                if (!Number.isNaN(sectionIndex) && sectionIndex >= 0 && sectionIndex < this.sections().length) {
+                  this.currentSectionIndex.set(sectionIndex);
+                }
+              } else {
+                this.restoreReviewSectionIndex();
+              }
+
+              const shouldAutoSubmit =
+                params['autoSubmit'] === 'true' ||
+                params['autoSubmit'] === true ||
+                history.state?.['autoSubmit'] === true;
+
+              this.handleUploadedData(builtForm);
+              this.applyReviewCorrections(builtForm);
+              this.formVersion.update((value: number) => value + 1);
+              this.autoSaveReady = true;
+
+              if (shouldAutoSubmit) {
+                setTimeout(() => {
+                  this.completeSubmission();
+                });
+              }
+
+              setTimeout(() => {
+                if (
+                  this.route.snapshot.queryParamMap.has('fromUpload') ||
+                  this.route.snapshot.queryParamMap.has('fromReview') ||
+                  this.route.snapshot.queryParamMap.has('section') ||
+                  this.route.snapshot.queryParamMap.has('autoSubmit')
+                ) {
+                  this.router.navigate([], {
+                    relativeTo: this.route,
+                    queryParams: {},
+                    replaceUrl: true,
+                  });
+                }
               });
-            }
-          });
+            });
+          },
+          error: (err: unknown) => {
+            console.error('Failed to load questions:', err);
+            this.loading.set(false);
+          },
         });
       },
-      error: (err: unknown) => {
-        console.error('Failed to load questions:', err);
+      error: () => {
+        this.pageMessage.set('Failed to load onboarding link.');
         this.loading.set(false);
       },
     });
@@ -194,21 +226,29 @@ export class OnboardingFormComponent implements OnInit {
 
       this.currentSectionIndex.set(nextSectionIndex);
     }
+
+    this.persistDraft();
   }
 
   previous(): void {
     if (!this.isFirstSection()) {
       this.currentSectionIndex.update((i: number) => i - 1);
     }
+
+    this.persistDraft();
   }
 
   goTo(index: number): void {
     this.currentSectionIndex.set(index);
+    this.persistDraft();
   }
 
   goToUpload(): void {
+    const linkToken = this.route.snapshot.paramMap.get('linkToken');
+    if (!linkToken) return;
+
     sessionStorage.setItem(UPLOAD_SECTION_INDEX_KEY, this.currentSectionIndex().toString());
-    this.router.navigate(['/upload']);
+    this.router.navigate(['/onboarding', linkToken, 'upload']);
   }
 
   submit(): void {
@@ -227,7 +267,12 @@ export class OnboardingFormComponent implements OnInit {
       sessionStorage.setItem(REVIEW_FORM_DRAFT_KEY, JSON.stringify(this.form().getRawValue()));
       sessionStorage.setItem(REVIEW_SECTION_INDEX_KEY, this.currentSectionIndex().toString());
 
-      this.router.navigate(['/review'], {
+      const linkToken = this.route.snapshot.paramMap.get('linkToken');
+      if (!linkToken) {
+        return;
+      }
+
+      this.router.navigate(['/onboarding', linkToken, 'review'], {
         state: {
           reviewSource,
           reviewIssues: reviewItems,
@@ -240,10 +285,24 @@ export class OnboardingFormComponent implements OnInit {
   }
 
   private completeSubmission(): void {
-    this.clearTransientFlowState();
-    this.fromUpload.set(false);
-    this.submitted.set(true);
-    console.log('Onboarding form submitted:', this.form().value);
+    const linkToken = this.route.snapshot.paramMap.get('linkToken');
+    if (!linkToken) {
+      return;
+    }
+
+    this.onboardingService.submit(linkToken, {
+      formData: this.form().getRawValue() as Record<string, unknown>,
+    }).subscribe({
+      next: (instance: OnboardingInstance) => {
+        this.instance.set(instance);
+        this.clearTransientFlowState();
+        this.fromUpload.set(false);
+        this.submitted.set(true);
+      },
+      error: () => {
+        this.pageMessage.set('Failed to submit onboarding.');
+      },
+    });
   }
 
   private handleUploadedData(form: FormGroup): void {
@@ -547,12 +606,19 @@ export class OnboardingFormComponent implements OnInit {
     return [];
   }
 
-  private getSelectedSections(): string[] {
-    try {
-      const raw = localStorage.getItem('selectedSections');
-      return raw ? JSON.parse(raw) : [];
-    } catch {
-      return [];
+  private persistDraft(): void {
+    const linkToken = this.route.snapshot.paramMap.get('linkToken');
+    if (!linkToken || !this.autoSaveReady) {
+      return;
     }
+
+    this.onboardingService.saveProgress(linkToken, {
+      formData: this.form().getRawValue() as Record<string, unknown>,
+      progressPercent: this.progressPercent(),
+    }).subscribe({
+      next: (instance: OnboardingInstance) => {
+        this.instance.set(instance);
+      },
+    });
   }
 }

@@ -1,6 +1,14 @@
 <div class="form-shell">
   <header class="form-header">
     <h1>Choose how you want to complete your onboarding</h1>
+    @if (instance()) {
+      <p class="subtitle">
+        Company: <strong>{{ instance()?.companyName }}</strong>
+      </p>
+    }
+    @if (errorMessage()) {
+      <p class="subtitle">{{ errorMessage() }}</p>
+    }
     <div class="subtitle"> <p>You have two options to provide your onboarding information:</p> <p> <strong>Option 1: Fill in a Template (Recommended for bulk input)</strong><br /> You can download a pre-formatted Excel template (.xlsx) and fill in all the required onboarding information for each section. Once completed, simply upload the file to the platform. This option is ideal if you prefer to organize everything at once or work offline. </p> <p> <strong>Option 2: Fill in Manually</strong><br /> Alternatively, you can enter the information directly on our platform by completing each section step by step. This option is better if you prefer a guided, in-app experience. </p> </div>
   </header>
 

@@ -2,6 +2,16 @@
   <header class="form-header">
     <h1>Onboarding Form</h1>
 
+    @if (instance()) {
+      <p class="progress-label">
+        {{ instance()?.companyName }} • Status: {{ instance()?.status }}
+      </p>
+    }
+
+    @if (pageMessage()) {
+      <p class="progress-label">{{ pageMessage() }}</p>
+    }
+
     @if (!loading() && !submitted()) {
       <div class="progress-bar-container">
         <div class="progress-bar" [style.width.%]="progressPercent()">
@@ -13,14 +23,13 @@
   </header>
 
   @if (loading()) {
-    <p class="loading">Loading questions…</p>
+    <p class="loading">Loading questions...</p>
   } @else if (submitted()) {
     <div class="success">
       <h2>✓ Submission received</h2>
-      <p>Your onboarding data has been submitted successfully.</p>
+      <p>Your onboarding has been submitted and is now waiting for Equiem review.</p>
     </div>
   } @else {
-    <!-- Section nav tabs -->
     <nav class="section-tabs" aria-label="Form sections">
       @for (section of sections(); track section; let i = $index) {
         <button
@@ -34,7 +43,6 @@
       }
     </nav>
 
-    <!-- Current section -->
     <section class="form-section">
       <div class="section-header">
         <h2 class="section-title">{{ currentSectionLabel() }}</h2>
