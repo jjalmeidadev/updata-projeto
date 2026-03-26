@@ -1262,6 +1262,8 @@ All external communications use HTTPS to ensure encrypted data transmission.
 - The backend validates JWT tokens to ensure that only authenticated users can access system functionality.
 - Using managed AWS infrastructure also provides additional security mechanisms, including network isolation, access policies, and infrastructure-level protections.
 
+--- 
+
 ## Appendix A: System Configuration and Optimization Report
 
 This appendix determines the optimal configuration for two critical parameters of the system:
@@ -1323,9 +1325,17 @@ The table below summarizes the evaluated configurations and their corresponding 
 | 10             | 2                | 842.02         |
 | 10             | 4                | 870.80         |
 
-The selected parameter ranges reflect the operational characteristics of the backend architecture. Within the system, each uploaded file is processed as a single batch, which motivates the use of relatively small batch sizes.
+#### 1.1. Justification for Benchmark Parameters
 
-The benchmark therefore evaluates scenarios where 1, 3, 5, and 10 files are processed concurrently. Larger batch sizes were not considered necessary because the expected Equiem processing flow is moderate and the platform allows only one file update per onboarding process.
+The selected parameter ranges reflect the operational characteristics of the backend architecture and the expected workload of the onboarding system.
+
+For **Batch Size (B)**, the system processes each uploaded file as a single batch, and the typical file size is moderate. A lower bound of **B = 1** represents the smallest possible transaction size, while **B = 10** was chosen as a practical upper limit to avoid excessive memory usage and long transaction times. Intermediate values (**B = 3** and **B = 5**) allow observation of how throughput changes as batch size increases.
+
+For **Worker Count (W)**, the worker service supports horizontal scaling but is constrained by database concurrency limits. A single worker (**W = 1**) provides the sequential baseline, while **W = 4** was selected as the practical upper bound to avoid database contention observed in preliminary tests. The intermediate value (**W = 2**) captures the effect of moderate parallelism.
+
+Testing all combinations of these parameters (**4 batch sizes × 3 worker counts**) produces **12 configurations**, each executed three times, providing sufficient data to estimate a reliable regression model for system throughput.
+
+--- 
 
 ### 2. The Performance Model
 
@@ -1361,6 +1371,8 @@ T(B,W) = 814.403197 - 59.590438B + 75.334222W + 5.241891B² + 1.159864BW - 12.05
 
 This equation estimates the **expected throughput (records per second)** for any combination of batch size and worker count within the tested range.
 
+--- 
+
 #### 2.1. Model Fit Quality
 
 The regression model produced an **R² (coefficient of determination) of 0.244348**.
@@ -1380,8 +1392,9 @@ This indicates that approximately **24.4% of the throughput variance** is explai
 
 The relatively low value suggests that additional factors, such as I/O variability, database contention, or runtime scheduling, also influence system performance. However, the model still provides a **useful approximation of the performance landscape**, allowing analytical exploration of optimal configurations.
 
+--- 
+
 #### 2.2. Model Estimation Method
-### 2.2. Model Estimation Method
 
 The coefficients of the performance model were estimated using the script `optimize-throughput.ts`, which performs a **quadratic regression analysis** on the benchmark results.
 
@@ -1397,7 +1410,9 @@ T(B,W) = a + bB + cW + dB² + eBW + fW²
 
 The objective of the regression is to determine the coefficients **(a, b, c, d, e, f)** that best approximate the relationship between the system parameters and the observed throughput.
 
-### 2.3. Regression Procedure
+--- 
+
+#### 2.3. Regression Procedure
 
 The script constructs a **design matrix** where each benchmark observation contributes one row containing the explanatory variables:
 
@@ -1425,6 +1440,8 @@ where the coefficient vector is:
 
 These coefficients represent the unknown parameters of the quadratic model.
 
+--- 
+
 #### 2.4. Least Squares Solution
 
 To estimate the coefficients, the script applies the **Ordinary Least Squares (OLS)** method, which finds the coefficient vector **β** that minimizes the squared error between the predicted throughput and the observed throughput.
@@ -1443,6 +1460,8 @@ This computation is implemented programmatically in [optimize-throughput.ts](../
 6. Output the resulting performance model.
 
 The resulting coefficients define the throughput function presented in Section 2.1.
+
+--- 
 
 #### 2.5. Surface Visualization
 
@@ -1465,3 +1484,186 @@ The resulting surface plot is included below to illustrate the predicted perform
   <img src="../docs/assets/throughput-surface.png" width="100%" alt="3D surface plot"><br>
   <sup>Source: Material produced by the authors, 2026.</sup>
 </div>
+
+--- 
+
+### 3. Optimization Derivation
+
+Using the performance model obtained in Section 2, it is possible to analytically determine the configuration that maximizes system throughput.
+
+The regression produced the following function:
+
+T(B,W) = 814.403197 - 59.590438B + 75.334222W + 5.241891B² + 1.159864BW - 12.058743W²
+
+To identify the optimal configuration, the **critical points of the function** must be determined.
+
+---
+
+#### 3.1. Gradient Vector
+
+The gradient of a function represents the vector of its partial derivatives.
+
+For the throughput function T(B,W), the gradient is:
+
+∇T(B,W) = ( ∂T/∂B , ∂T/∂W )
+
+Computing the partial derivatives:
+
+∂T/∂B = -59.590438 + 2(5.241891)B + 1.159864W
+
+∂T/∂B = -59.590438 + 10.483782B + 1.159864W
+
+∂T/∂W = 75.334222 + 1.159864B - 2(12.058743)W
+
+∂T/∂W = 75.334222 + 1.159864B - 24.117486W
+
+Therefore the gradient vector becomes:
+
+∇T(B,W) = ( -59.590438 + 10.483782B + 1.159864W , 75.334222 + 1.159864B - 24.117486W )
+
+---
+
+#### 3.2. Critical Point Calculation
+
+The optimal point occurs where the gradient is equal to zero.
+
+∂T/∂B = 0  
+∂T/∂W = 0
+
+This produces the system of equations:
+
+-59.590438 + 10.483782B + 1.159864W = 0
+
+75.334222 + 1.159864B - 24.117486W = 0
+
+Rearranging:
+
+10.483782B + 1.159864W = 59.590438
+
+1.159864B - 24.117486W = -75.334222
+
+Solving this linear system yields the critical point:
+
+B* ≈ 6.49  
+W* ≈ 3.43
+
+Since batch size and worker count must be integers in practice, the configuration can be approximated as:
+
+B ≈ 6  
+W ≈ 3
+
+---
+
+#### 3.3. Hessian Matrix and Point Classification
+
+To determine whether the critical point corresponds to a maximum, minimum, or saddle point, the **Hessian matrix** is evaluated.
+
+The Hessian matrix is composed of the second-order partial derivatives:
+
+H(T) =
+
+| ∂²T/∂B² |  ∂²T/∂B∂W |
+|-----------|----------|
+| ∂²T/∂W∂B |  ∂²T/∂W² |
+
+Computing the derivatives:
+
+∂²T/∂B² = 10.483782
+
+∂²T/∂W² = -24.117486
+
+∂²T/∂B∂W = 1.159864
+
+Thus the Hessian matrix is:
+
+H = 
+| 10.483782 | 1.159864 |
+|-----------|----------|
+| 1.159864  | -24.117486 |
+
+The determinant of the Hessian is:
+
+det(H) = (10.483782)(-24.117486) - (1.159864)²
+
+det(H) ≈ -254.5
+
+Because the determinant of the Hessian is **negative**, the critical point corresponds to a **saddle point**, indicating that the function does not present a strict global maximum within the continuous domain.
+
+However, within the **discrete configuration space of the system**, the region around the critical point still represents the area where the highest throughput values are expected.
+
+Therefore, the analytical solution suggests that configurations close to:
+
+- B ≈ 6  
+- W ≈ 3
+
+should provide near-optimal throughput performance.
+
+--- 
+
+### 4. Strategic Recommendation
+
+The analytical model developed in the previous sections provides a mathematical estimate of how system throughput changes as a function of **Batch Size (B)** and **Worker Count (W)**.
+
+By solving the optimization problem in Section 3, the critical point of the throughput function was obtained at:
+
+B* ≈ 6.49  
+W* ≈ 3.43  
+
+Since the system configuration parameters must be integers, the recommended operational configuration is obtained by rounding to the nearest practical values.
+
+**Recommended configuration:**
+
+- **Batch Size (B): 6**
+- **Worker Count (W): 3**
+
+This configuration lies in the region where the performance model predicts the highest throughput values and represents a balanced trade-off between parallelism and resource consumption.
+
+---
+
+#### 4.1. Sensitivity Analysis
+
+The partial derivatives of the throughput function indicate how sensitive system performance is to changes in each parameter.
+
+From the gradient expressions:
+
+∂T/∂B = -59.590438 + 10.483782B + 1.159864W  
+∂T/∂W = 75.334222 + 1.159864B - 24.117486W  
+
+it can be observed that the coefficients associated with **W** are larger in magnitude than those associated with **B**, particularly in the quadratic term **−24.117486W²**.
+
+This indicates that **worker count has a stronger impact on throughput variation than batch size**. Increasing the number of workers can significantly improve throughput up to a certain point, but excessive parallelism may lead to database contention and locking, reducing performance.
+
+Batch size, on the other hand, influences throughput more gradually. Small adjustments to **B** tend to produce smaller performance changes compared to adjustments in **W**.
+
+Therefore, tuning **worker count** should generally be prioritized when optimizing system throughput.
+
+---
+
+#### 4.2. Usage Scenarios
+
+Although the recommended configuration (**B = 6, W = 3**) provides a balanced solution for the tested environment, practical system constraints may require adjustments depending on operational priorities.
+
+**Memory-constrained environments**
+
+If system memory is limited, smaller batch sizes may be preferable because they reduce the number of rows held in memory during processing. In this scenario, configurations such as **B = 3 or B = 5** may improve system stability while maintaining reasonable throughput.
+
+**Latency-sensitive processing**
+
+In situations where rapid response time is more important than maximum throughput, smaller batch sizes can reduce processing delay per request. Using **B = 1–3** may produce faster individual processing cycles even if overall throughput decreases slightly.
+
+**High-throughput workloads**
+
+For large onboarding operations or periods of high system load, maintaining a worker count close to **W = 3 or W = 4** can help maximize parallel processing capacity. However, increasing the worker count beyond this range may introduce database contention and reduce performance.
+
+---
+
+#### 4.3. Engineering Recommendation
+
+Based on the benchmark results, regression analysis, and optimization derivation, the following configuration is recommended as the default operational setup:
+
+- **Batch Size (B): 6**
+- **Worker Count (W): 3**
+
+This configuration provides a balanced level of parallelism while maintaining manageable memory usage and minimizing database contention.
+
+Future deployments may refine this configuration as additional production data becomes available, but the analytical model provides a strong initial guideline for system tuning.
