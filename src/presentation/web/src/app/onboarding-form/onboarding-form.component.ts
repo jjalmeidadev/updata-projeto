@@ -1,9 +1,34 @@
-import { Component, OnInit, inject, signal, computed } from '@angular/core';
+import { Component, OnInit, effect, inject, signal, computed } from '@angular/core';
+import { animate, query, sequence, stagger, style, transition, trigger } from '@angular/animations';
 import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { ActivatedRoute, Params, Router } from '@angular/router';
 import { QuestionService, SECTION_LABELS, SOURCE_OPTIONS } from '../services/question.service';
 import { Question, QuestionType } from '../models/question.model';
 import { DynamicFieldComponent } from '../components/dynamic-field/dynamic-field.component';
+
+/** Same ordering as module-selector: company → building/residential → amenity-* → remaining */
+function reorderSectionsLikeModuleSelector(sectionIds: string[]): string[] {
+  const building = sectionIds.filter(
+    (s) => s === 'building-setup' || s === 'residential-details'
+  );
+  const company = sectionIds.filter((s) => s === 'company-details');
+  const amenities = sectionIds.filter((s) => s.startsWith('amenity-'));
+  const used = new Set<string>([...building, ...company, ...amenities]);
+  const permitsToRequestManagement = sectionIds.filter((s) => !used.has(s));
+  return [...company, ...building, ...amenities, ...permitsToRequestManagement];
+}
+
+interface NavSectionItem {
+  sectionId: string;
+  index: number;
+  label: string;
+}
+
+interface NavAreaGroup {
+  id: string;
+  title: string;
+  items: NavSectionItem[];
+}
 
 interface ReviewIssue {
   id: string;
@@ -25,6 +50,44 @@ const REVIEW_SECTION_INDEX_KEY = 'reviewSectionIndex';
   imports: [ReactiveFormsModule, DynamicFieldComponent],
   templateUrl: './onboarding-form.component.html',
   styleUrl: './onboarding-form.component.css',
+  animations: [
+    trigger('navAccordionBody', [
+      transition(':enter', [
+        style({ height: 0, overflow: 'hidden' }),
+        query('ul', [style({ opacity: 0 })], { optional: true }),
+        query(
+          'li',
+          [style({ opacity: 0, transform: 'translateY(6px)' })],
+          { optional: true },
+        ),
+        sequence([
+          animate('250ms ease-out', style({ height: '*', overflow: 'hidden' })),
+          query('ul', [style({ opacity: 1 })], { optional: true }),
+          query(
+            'li',
+            [
+              stagger(35, [
+                animate('200ms ease-out', style({ opacity: 1, transform: 'translateY(0)' })),
+              ]),
+            ],
+            { optional: true },
+          ),
+        ]),
+      ]),
+      transition(':leave', [
+        sequence([
+          query(
+            'li',
+            [
+              animate('150ms ease-out', style({ opacity: 0, transform: 'translateY(4px)' })),
+            ],
+            { optional: true },
+          ),
+          animate('180ms ease-out', style({ height: 0, overflow: 'hidden' })),
+        ]),
+      ]),
+    ]),
+  ],
 })
 export class OnboardingFormComponent implements OnInit {
   private readonly questionService = inject(QuestionService);
@@ -43,6 +106,9 @@ export class OnboardingFormComponent implements OnInit {
 
   readonly formValues = signal<Record<string, unknown>>({});
 
+  /** Accordion open state per area id (same 4 groups as module-selector). */
+  readonly expandedAreas = signal<Record<string, boolean>>({});
+
   ngOnInit(): void {
     this.questionService.getQuestions().subscribe({
       next: (allQuestions: Question[]) => {
@@ -53,7 +119,8 @@ export class OnboardingFormComponent implements OnInit {
           : allQuestions;
 
         this.questions.set(questions);
-        this.sections.set(this.questionService.getSections(questions));
+        const rawSections = this.questionService.getSections(questions);
+        this.sections.set(reorderSectionsLikeModuleSelector(rawSections));
         const builtForm = this.buildForm(questions);
         this.form.set(builtForm);
         builtForm.valueChanges.subscribe((values: Record<string, unknown>) => this.formValues.set(values));
@@ -132,22 +199,91 @@ export class OnboardingFormComponent implements OnInit {
   }
 
   readonly currentSection = computed(() => this.sections()[this.currentSectionIndex()]);
-  readonly currentSectionLabel = computed(() => this.sectionLabels[this.currentSection()] ?? this.currentSection());
+  readonly currentSectionLabel = computed(() => this.getSectionLabel(this.currentSection()));
   readonly currentQuestions = computed(() => this.questionService.getQuestionsBySection(this.questions(), this.currentSection()));
   readonly isFirstSection = computed(() => this.currentSectionIndex() === 0);
   readonly isLastSection = computed(() => this.currentSectionIndex() === this.sections().length - 1);
+  /** Progress by valid required fields completion across current onboarding flow. */
   readonly progressPercent = computed(() => {
     const questions = this.questions();
     const values = this.formValues();
     if (questions.length === 0) return 0;
-    const filled = questions.filter((q: Question) => {
-      const val = values[q.id];
-      if (q.type === 'boolean') return typeof val === 'boolean';
-      if (q.type === 'multi-select') return Array.isArray(val) && val.length > 0;
-      return val !== '' && val !== null && val !== undefined;
+
+    const completed = questions.filter((q: Question) => {
+      const value = values[q.id];
+      return this.validateQuestionValue(q.type, value) === '';
     }).length;
-    return Math.round((filled / questions.length) * 100);
+
+    return Math.round((completed / questions.length) * 100);
   });
+
+  readonly navAreas = computed((): NavAreaGroup[] => {
+    const secs = this.sections();
+    const withIndex: NavSectionItem[] = secs.map((sectionId: string, index: number) => ({
+      sectionId,
+      index,
+      label: this.getSectionLabel(sectionId),
+    }));
+
+    const building = withIndex.filter(
+      (x) => x.sectionId === 'building-setup' || x.sectionId === 'residential-details'
+    );
+    const company = withIndex.filter((x) => x.sectionId === 'company-details');
+    const amenities = withIndex.filter((x) => x.sectionId.startsWith('amenity-'));
+    const used = new Set<string>(
+      [...building, ...company, ...amenities].map((x) => x.sectionId)
+    );
+    const permits = withIndex.filter((x) => !used.has(x.sectionId));
+
+    const areas: NavAreaGroup[] = [
+      { id: 'area-company', title: 'Your company', items: company },
+      { id: 'area-building', title: 'Building', items: building },
+      { id: 'area-amenities', title: 'Amenities', items: amenities },
+      { id: 'area-permits', title: 'Permits', items: permits },
+    ];
+    return areas.filter((a) => a.items.length > 0);
+  });
+
+  /**
+   * Per navigation area: each sidebar section (sectionId) counts as one module.
+   * A module is complete when every question in that section has a valid value.
+   */
+  readonly areaModuleProgress = computed((): Record<string, { completed: number; total: number }> => {
+    const values = this.formValues();
+    const questions = this.questions();
+    const map: Record<string, { completed: number; total: number }> = {};
+
+    for (const area of this.navAreas()) {
+      let completed = 0;
+      const total = area.items.length;
+      for (const item of area.items) {
+        if (this.isSectionModuleComplete(item.sectionId, questions, values)) {
+          completed++;
+        }
+      }
+      map[area.id] = { completed, total };
+    }
+    return map;
+  });
+
+  /** Tracks prior full-completion state per area (for transition → auto-collapse once). */
+  private navAreaCompletionPrev: Record<string, boolean> = {};
+
+  constructor() {
+    effect(() => {
+      const areas = this.navAreas();
+      const progress = this.areaModuleProgress();
+      for (const area of areas) {
+        const { completed, total } = progress[area.id] ?? { completed: 0, total: 0 };
+        const nowComplete = total > 0 && completed === total;
+        const wasComplete = this.navAreaCompletionPrev[area.id] ?? false;
+        if (nowComplete && !wasComplete) {
+          this.expandedAreas.update((m) => ({ ...m, [area.id]: false }));
+        }
+        this.navAreaCompletionPrev[area.id] = nowComplete;
+      }
+    });
+  }
 
   control(questionId: string): FormControl {
     return this.form().get(questionId) as FormControl;
@@ -163,11 +299,62 @@ export class OnboardingFormComponent implements OnInit {
         this.router.navigate(['/upload']);
       } else {
         this.currentSectionIndex.update((i: number) => i + 1);
+        this.expandAreaContainingIndex(nextSectionIndex);
       }
     }
   }
-  previous(): void { if (!this.isFirstSection()) this.currentSectionIndex.update((i: number) => i - 1); }
-  goTo(index: number): void { this.currentSectionIndex.set(index); }
+  previous(): void {
+    if (!this.isFirstSection()) {
+      this.currentSectionIndex.update((i: number) => i - 1);
+      this.expandAreaContainingIndex(this.currentSectionIndex());
+    }
+  }
+
+  goTo(index: number): void {
+    this.currentSectionIndex.set(index);
+    this.expandAreaContainingIndex(index);
+  }
+
+  toggleArea(areaId: string): void {
+    this.expandedAreas.update((m: Record<string, boolean>) => ({
+      ...m,
+      [areaId]: !m[areaId],
+    }));
+  }
+
+  isAreaExpanded(areaId: string): boolean {
+    return !!this.expandedAreas()[areaId];
+  }
+
+  getAreaModuleProgress(areaId: string): { completed: number; total: number } {
+    return this.areaModuleProgress()[areaId] ?? { completed: 0, total: 0 };
+  }
+
+  /** True when every module (section) in the area has all fields valid. */
+  isAreaFullyComplete(areaId: string): boolean {
+    const { completed, total } = this.getAreaModuleProgress(areaId);
+    return total > 0 && completed === total;
+  }
+
+  getSectionLabel(sectionId: string): string {
+    const rawLabel = SECTION_LABELS[sectionId] ?? sectionId;
+    if (sectionId.startsWith('amenity-')) {
+      return rawLabel.replace(/^amenit(?:y|ies)\s+/i, '');
+    }
+    return rawLabel;
+  }
+
+  private expandAreaContainingIndex(sectionIndex: number): void {
+    const area = this.navAreas().find((a: NavAreaGroup) =>
+      a.items.some((item: NavSectionItem) => item.index === sectionIndex)
+    );
+    if (area) {
+      this.expandedAreas.update((m: Record<string, boolean>) => ({
+        ...m,
+        [area.id]: true,
+      }));
+    }
+  }
 
   goToUpload(): void {
     sessionStorage.setItem('uploadSectionIndex', this.currentSectionIndex().toString());
@@ -251,6 +438,18 @@ export class OnboardingFormComponent implements OnInit {
     sessionStorage.removeItem(REVIEW_CORRECTIONS_KEY);
     sessionStorage.removeItem(REVIEW_FORM_DRAFT_KEY);
     sessionStorage.removeItem(REVIEW_SECTION_INDEX_KEY);
+  }
+
+  private isSectionModuleComplete(
+    sectionId: string,
+    questions: Question[],
+    values: Record<string, unknown>
+  ): boolean {
+    const qs = questions.filter((q: Question) => q.sectionId === sectionId);
+    if (qs.length === 0) {
+      return true;
+    }
+    return qs.every((q: Question) => this.validateQuestionValue(q.type, values[q.id]) === '');
   }
 
   private collectReviewIssues(): ReviewIssue[] {
