@@ -49,9 +49,9 @@
           <div class="section-columns">
             <div class="section-column">
               <div class="column-block">
-                <div class="column-title">Building setup</div>
+                <div class="column-title">Your company</div>
                 <div class="section-list">
-                  @for (section of groupedSections().buildingSetup; track section) {
+                  @for (section of groupedSections().company; track section) {
                     <label class="section-item">
                       <input
                         type="checkbox"
@@ -65,9 +65,9 @@
               </div>
 
               <div class="column-block">
-                <div class="column-title">Company &amp; residential details</div>
+                <div class="column-title">Building</div>
                 <div class="section-list">
-                  @for (section of groupedSections().companyResidential; track section) {
+                  @for (section of groupedSections().building; track section) {
                     <label class="section-item">
                       <input
                         type="checkbox"

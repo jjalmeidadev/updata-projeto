@@ -25,23 +25,23 @@ export class ModuleSelectorComponent implements OnInit {
   readonly groupedSections = computed(() => {
     const all = this.sections();
 
-    const buildingSetup = all.filter((s) => s === 'building-setup');
-    const companyResidential = all.filter(
-      (s) => s === 'company-details' || s === 'residential-details'
+    const building = all.filter(
+      (s) => s === 'building-setup' || s === 'residential-details'
     );
+    const company = all.filter((s) => s === 'company-details');
     const amenities = all.filter((s) => s.startsWith('amenity-'));
 
     const used = new Set<string>([
-      ...buildingSetup,
-      ...companyResidential,
+      ...building,
+      ...company,
       ...amenities,
     ]);
 
     const permitsToRequestManagement = all.filter((s) => !used.has(s));
 
     return {
-      buildingSetup,
-      companyResidential,
+      building,
+      company,
       amenities,
       permitsToRequestManagement,
     };
