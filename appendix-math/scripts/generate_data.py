@@ -2,23 +2,23 @@ import csv
 import random
 from faker import Faker
 
-# Inicializa o gerador de dados falsos
+# Initialize the fake data generator
 fake = Faker()
 
-# Define as colunas exatamente como na sua planilha
+# Define the columns exactly as in your spreadsheet
 headers = ['id', 'first_name', 'last_name', 'email', 'gender', 'ip_address', 'company', 'department', 'job_title']
 
 genders = ['Male', 'Female', 'Non-binary', 'Prefer not to say']
 departments = ['Engineering', 'Sales', 'HR', 'Marketing', 'Finance', 'Operations']
 
-print("Gerando 50.000 linhas de dados. Por favor, aguarde...")
+print("Generating 50,000 rows of data. Please wait...")
 
-# Cria e escreve no arquivo CSV
+# Create and write to the CSV file
 with open('dataset_50k.csv', 'w', newline='', encoding='utf-8') as file:
     writer = csv.writer(file)
-    writer.writerow(headers) # Escreve o cabeçalho
+    writer.writerow(headers)  # Write the header
     
-    # Gera as 50.000 linhas
+    # Generate the 50,000 rows
     for i in range(1, 50001):
         writer.writerow([
             i,
@@ -32,4 +32,4 @@ with open('dataset_50k.csv', 'w', newline='', encoding='utf-8') as file:
             fake.job()
         ])
 
-print("Arquivo 'dataset_50k.csv' gerado com sucesso!")
+print("File 'dataset_50k.csv' generated successfully!")

@@ -7,6 +7,19 @@ type DataPoint = {
   throughput: number
 }
 
+type AggregatedPoint = DataPoint & {
+  observedRuns: number
+  usedRuns: number
+  imputedRuns: number
+}
+
+type RawRun = {
+  batchSize: number
+  workerCount: number
+  runIndex: number
+  throughput: number
+}
+
 type Coefficients = {
   a: number
   b: number
@@ -16,7 +29,7 @@ type Coefficients = {
   f: number
 }
 
-function parseCsv(content: string): DataPoint[] {
+function parseCsvRuns(content: string): RawRun[] {
   const lines = content
     .split(/\r?\n/)
     .map((line) => line.trim())
@@ -29,28 +42,96 @@ function parseCsv(content: string): DataPoint[] {
   const header = lines[0].split(",")
   const batchIndex = header.indexOf("batch_size")
   const workerIndex = header.indexOf("worker_count")
+  const runIndex = header.indexOf("run_index")
   const throughputIndex = header.indexOf("throughput_rows_per_sec")
 
-  if (batchIndex < 0 || workerIndex < 0 || throughputIndex < 0) {
-    throw new Error("CSV must contain batch_size, worker_count, throughput_rows_per_sec columns.")
+  if (batchIndex < 0 || workerIndex < 0 || runIndex < 0 || throughputIndex < 0) {
+    throw new Error("CSV must contain batch_size, worker_count, run_index, throughput_rows_per_sec columns.")
   }
 
-  const points: DataPoint[] = []
+  const runs: RawRun[] = []
 
   for (let i = 1; i < lines.length; i += 1) {
     const cols = lines[i].split(",")
     const batchSize = Number.parseFloat(cols[batchIndex] || "")
     const workerCount = Number.parseFloat(cols[workerIndex] || "")
+    const runIdx = Number.parseInt(cols[runIndex] || "", 10)
     const throughput = Number.parseFloat(cols[throughputIndex] || "")
 
-    if (!Number.isFinite(batchSize) || !Number.isFinite(workerCount) || !Number.isFinite(throughput)) {
+    if (!Number.isFinite(batchSize) || !Number.isFinite(workerCount) || !Number.isFinite(runIdx) || !Number.isFinite(throughput)) {
       continue
     }
 
-    points.push({ batchSize, workerCount, throughput })
+    runs.push({ batchSize, workerCount, runIndex: runIdx, throughput })
   }
 
-  return points
+  return runs
+}
+
+function mean(values: number[]): number {
+  return values.reduce((sum, value) => sum + value, 0) / values.length
+}
+
+function aggregateByCombination(runs: RawRun[], expectedRunsPerCombo: number, imputeMissingWithMean: boolean): AggregatedPoint[] {
+  const grouped = new Map<string, RawRun[]>()
+
+  for (const run of runs) {
+    const key = `${run.batchSize},${run.workerCount}`
+    const arr = grouped.get(key) ?? []
+    arr.push(run)
+    grouped.set(key, arr)
+  }
+
+  const points: AggregatedPoint[] = []
+
+  for (const [key, comboRuns] of grouped.entries()) {
+    const [batchSize, workerCount] = key.split(",").map(Number)
+    const throughputs = comboRuns
+      .sort((a, b) => a.runIndex - b.runIndex)
+      .map((run) => run.throughput)
+    const observedRuns = throughputs.length
+
+    if (throughputs.length === 0) {
+      continue
+    }
+
+    if (imputeMissingWithMean && throughputs.length < expectedRunsPerCombo) {
+      const comboMean = mean(throughputs)
+      while (throughputs.length < expectedRunsPerCombo) {
+        throughputs.push(comboMean)
+      }
+    }
+
+    points.push({
+      batchSize,
+      workerCount,
+      throughput: mean(throughputs),
+      observedRuns,
+      usedRuns: throughputs.length,
+      imputedRuns: Math.max(0, throughputs.length - observedRuns),
+    })
+  }
+
+  return points.sort((a, b) => a.batchSize - b.batchSize || a.workerCount - b.workerCount)
+}
+
+async function writeCombinationMeansCsv(inputCsvPath: string, points: AggregatedPoint[]): Promise<string> {
+  const outputPath = inputCsvPath.replace(/\.csv$/i, "-combination-means.csv")
+  const lines = [
+    "batch_size,worker_count,observed_runs,used_runs,imputed_runs,mean_throughput_rows_per_sec",
+    ...points.map((point) =>
+      [
+        point.batchSize,
+        point.workerCount,
+        point.observedRuns,
+        point.usedRuns,
+        point.imputedRuns,
+        point.throughput.toFixed(6),
+      ].join(",")
+    ),
+  ]
+  await fs.writeFile(outputPath, lines.join("\n") + "\n", "utf8")
+  return outputPath
 }
 
 function makeFeatures(point: DataPoint): number[] {
@@ -189,7 +270,9 @@ function buildReport(
   points: DataPoint[],
   coefficients: Coefficients,
   r2: number,
-  criticalPoint: { batchSize: number; workerCount: number; determinant: number }
+  criticalPoint: { batchSize: number; workerCount: number; determinant: number },
+  expectedRunsPerCombo: number,
+  imputeMissingWithMean: boolean
 ): string {
   const classification = classifyCriticalPoint(coefficients)
 
@@ -207,6 +290,8 @@ function buildReport(
     "",
     `Input CSV: ${csvPath}`,
     `Data points: ${points.length}`,
+    `Expected runs/combo: ${expectedRunsPerCombo}`,
+    `Missing runs imputed with combo mean: ${imputeMissingWithMean ? "yes" : "no"}`,
     `R2: ${r2.toFixed(6)}`,
     "",
     "Model:",
@@ -232,22 +317,76 @@ function buildReport(
   ].join("\n")
 }
 
-async function findLatestCsv(): Promise<string> {
-  const dir = path.resolve("benchmark-results")
-  const files = await fs.readdir(dir)
-  const csvFiles = files.filter((file) => file.endsWith(".csv")).sort()
+const DEFAULT_ARTIFACT_DIR = path.resolve(process.env.BENCHMARK_OUTPUT_DIR || "appendix-math")
 
-  if (csvFiles.length === 0) {
-    throw new Error("No CSV files found in benchmark-results.")
+function isThroughputDetailCsv(fileName: string): boolean {
+  if (!fileName.endsWith(".csv")) {
+    return false
+  }
+  if (!fileName.startsWith("throughput-")) {
+    return false
+  }
+  return !fileName.includes("-summary") && !fileName.includes("-combination-means")
+}
+
+async function findLatestThroughputCsv(): Promise<string> {
+  const legacyDir = path.resolve("benchmark-results")
+  const dirs = [DEFAULT_ARTIFACT_DIR, legacyDir]
+
+  let bestPath: string | null = null
+  let bestMtime = 0
+
+  for (const dir of dirs) {
+    let files: string[]
+    try {
+      files = await fs.readdir(dir)
+    } catch {
+      continue
+    }
+
+    for (const file of files) {
+      if (!isThroughputDetailCsv(file)) {
+        continue
+      }
+      const full = path.join(dir, file)
+      try {
+        const stat = await fs.stat(full)
+        if (stat.mtimeMs >= bestMtime) {
+          bestMtime = stat.mtimeMs
+          bestPath = full
+        }
+      } catch {
+        continue
+      }
+    }
   }
 
-  return path.join(dir, csvFiles[csvFiles.length - 1])
+  if (!bestPath) {
+    throw new Error(`No throughput-*.csv detail file found in ${DEFAULT_ARTIFACT_DIR} or ${legacyDir}.`)
+  }
+
+  return bestPath
 }
 
 async function main(): Promise<void> {
-  const inputCsvPath = process.argv[2] ? path.resolve(process.argv[2]) : await findLatestCsv()
+  const args = process.argv.slice(2)
+  const positionalCsvArg = args.find((arg) => !arg.startsWith("--"))
+  const expectedRunsPerComboArg = args.find((arg) => arg.startsWith("--expected-runs="))
+  const imputeMissingWithMean = args.includes("--impute-missing-with-mean")
+  const writeReportFile = args.includes("--write-report")
+
+  const expectedRunsPerCombo = expectedRunsPerComboArg
+    ? Number.parseInt(expectedRunsPerComboArg.split("=")[1] || "", 10)
+    : 3
+
+  if (!Number.isFinite(expectedRunsPerCombo) || expectedRunsPerCombo < 1) {
+    throw new Error("Invalid --expected-runs value. Use integer >= 1.")
+  }
+
+  const inputCsvPath = positionalCsvArg ? path.resolve(positionalCsvArg) : await findLatestThroughputCsv()
   const csvContent = await fs.readFile(inputCsvPath, "utf8")
-  const points = parseCsv(csvContent)
+  const runs = parseCsvRuns(csvContent)
+  const points = aggregateByCombination(runs, expectedRunsPerCombo, imputeMissingWithMean)
 
   if (points.length < 12) {
     throw new Error("At least 12 benchmark points are required for this artifact.")
@@ -256,13 +395,27 @@ async function main(): Promise<void> {
   const coefficients = fitQuadraticModel(points)
   const r2 = calculateR2(points, coefficients)
   const criticalPoint = computeCriticalPoint(coefficients)
-  const report = buildReport(inputCsvPath, points, coefficients, r2, criticalPoint)
+  const report = buildReport(
+    inputCsvPath,
+    points,
+    coefficients,
+    r2,
+    criticalPoint,
+    expectedRunsPerCombo,
+    imputeMissingWithMean
+  )
 
-  const reportPath = inputCsvPath.replace(/\.csv$/i, "-optimization-report.md")
-  await fs.writeFile(reportPath, report, "utf8")
+  const meansCsvPath = await writeCombinationMeansCsv(inputCsvPath, points)
 
   console.log(report)
-  console.log(`\nReport saved at: ${reportPath}`)
+  if (writeReportFile) {
+    const reportPath = inputCsvPath.replace(/\.csv$/i, "-optimization-report.md")
+    await fs.writeFile(reportPath, report, "utf8")
+    console.log(`\nReport saved at: ${reportPath}`)
+  } else {
+    console.log("\n(No .md file written; use --write-report if you want a markdown file next to the input CSV.)")
+  }
+  console.log(`Combination means CSV: ${meansCsvPath}`)
 }
 
 main().catch((error) => {
