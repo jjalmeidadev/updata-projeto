@@ -29,6 +29,20 @@
   z-index: 2;
 }
 
+/* Submission success: center card in the viewport */
+.content:has(> .page-panel--centered) {
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+}
+
+.content:has(> .page-panel--centered) > .page-panel--centered {
+  width: min(100%, 520px);
+  max-width: 520px;
+  margin: 0;
+  flex: 0 0 auto;
+}
+
 .page-panel {
   width: 100%;
   max-width: 1100px;
