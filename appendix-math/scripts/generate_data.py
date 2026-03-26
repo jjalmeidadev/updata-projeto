@@ -11,10 +11,19 @@ headers = ['id', 'first_name', 'last_name', 'email', 'gender', 'ip_address', 'co
 genders = ['Male', 'Female', 'Non-binary', 'Prefer not to say']
 departments = ['Engineering', 'Sales', 'HR', 'Marketing', 'Finance', 'Operations']
 
+import os
+
 print("Generating 50,000 rows of data. Please wait...")
 
-# Create and write to the CSV file
-with open('dataset_50k.csv', 'w', newline='', encoding='utf-8') as file:
+
+# Define the output directory as appendix-math/csv relative to the script location
+base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+csv_dir = os.path.join(base_dir, 'csv')
+os.makedirs(csv_dir, exist_ok=True)
+output_path = os.path.join(csv_dir, 'onboarding_50001.csv')
+
+# Create and write to the CSV file in the script's directory
+with open(output_path, 'w', newline='', encoding='utf-8') as file:
     writer = csv.writer(file)
     writer.writerow(headers)  # Write the header
     
@@ -32,4 +41,4 @@ with open('dataset_50k.csv', 'w', newline='', encoding='utf-8') as file:
             fake.job()
         ])
 
-print("File 'dataset_50k.csv' generated successfully!")
+print(f"File '{output_path}' generated successfully!")

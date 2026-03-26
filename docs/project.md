@@ -1262,3 +1262,69 @@ All external communications use HTTPS to ensure encrypted data transmission.
 - The backend validates JWT tokens to ensure that only authenticated users can access system functionality.
 - Using managed AWS infrastructure also provides additional security mechanisms, including network isolation, access policies, and infrastructure-level protections.
 
+## Appendix A: System Configuration and Optimization Report
+
+This appendix determines the optimal configuration for two critical parameters of the system:
+
+- **Batch Size (B):** the number of rows processed in a single transaction (chunk).
+- **Worker Count (W):** the number of parallel consumers running simultaneously.
+
+Selecting appropriate values for these parameters requires balancing multiple performance trade-offs:
+
+- If **B is too small**, network and transaction overhead dominate processing time.
+- If **B is too large**, memory consumption increases and may degrade system stability.
+- If **W is too low**, the processing queue drains slowly.
+- If **W is too high**, database contention and locking may reduce throughput.
+
+To identify an optimal configuration, a series of **controlled benchmarks** was executed and the results were analyzed using a regression-based performance model.
+
+---
+
+## 1. Benchmark Data Log
+
+To generate the benchmark dataset, a script called [generate_data.py](../appendix-math/scripts/generate_data.py) was implemented. This script produces a CSV file containing **50,000 rows of synthetic data** using the Python Faker library.
+
+The generated dataset is stored in: ../appendix-math/csv/onboarding_50000.csv
+
+A second script, [benchmark-throughput.ts](../appendix-math/scripts/benchmark-throughput.ts), was developed to process the dataset and evaluate system throughput across multiple configurations.
+
+The benchmark evaluates **12 combinations** of batch sizes and worker counts.  Each configuration is executed **three times** to reduce noise and allow the calculation of mean throughput values.
+
+The benchmark was executed using the following command on the terminal:
+
+```bash
+$env:BENCHMARK_BATCH_SIZES="1,3,5,10";
+$env:BENCHMARK_WORKER_COUNTS="1,2,4";
+$env:BENCHMARK_RUNS_PER_COMBINATION="3";
+$env:BENCHMARK_SKIP_EXTERNAL_SEND="true";
+$env:BENCHMARK_RESUME_CSV="appendix-math/csv/throughput-2026-03-25T23-03-58-989Z.csv";
+npm run benchmark:throughput
+```
+This command generated the following output file: ../appendix-math/csv/throughput-2026-03-25T23-03-58-989Z.csv
+
+The file records the results of three benchmark runs for each configuration.
+
+To compute the Average Throughput (T) in records per second, an additional script called [optimize-throughput.ts](../appendix-math/scripts/optimize-throughput.ts).This script calculates the mean throughput values and performs a regression analysis on the collected data. The regression results are presented in Section 2.
+
+The table below summarizes the evaluated configurations and their corresponding average throughput values.
+
+| Batch Size (B) | Worker Nodes (W) | Throughput (T) |
+|:--------------:|:----------------:|:--------------:|
+| 1              | 1                | 799.48         |
+| 1              | 2                | 829.46         |
+| 1              | 4                | 871.46         |
+| 3              | 1                | 900.91         |
+| 3              | 2                | 896.98         |
+| 3              | 4                | 708.42         |
+| 5              | 1                | 523.10         |
+| 5              | 2                | 718.40         |
+| 5              | 4                | 904.10         |
+| 10             | 1                | 884.70         |
+| 10             | 2                | 842.02         |
+| 10             | 4                | 870.80         |
+
+The selected parameter ranges reflect the operational characteristics of the backend architecture. Within the system, each uploaded file is processed as a single batch, which motivates the use of relatively small batch sizes.
+
+The benchmark therefore evaluates scenarios where 1, 3, 5, and 10 files are processed concurrently. Larger batch sizes were not considered necessary because the expected Equiem processing flow is moderate and the platform allows only one file update per onboarding process.
+
+## 2. The Performance Model

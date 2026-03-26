@@ -10,4 +10,4 @@ batch_size,worker_count,observed_runs,used_runs,imputed_runs,mean_throughput_row
 5,4,3,3,0,904.101511
 10,1,3,3,0,884.704577
 10,2,3,3,0,842.024131
-10,4,2,3,1,870.745554
+10,4,3,3,0,870.802180

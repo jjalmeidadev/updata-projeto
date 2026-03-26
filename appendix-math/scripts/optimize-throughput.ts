@@ -1,5 +1,8 @@
 import { promises as fs } from "node:fs"
 import path from "node:path"
+import { fileURLToPath } from "url";
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 type DataPoint = {
   batchSize: number
@@ -317,7 +320,8 @@ function buildReport(
   ].join("\n")
 }
 
-const DEFAULT_ARTIFACT_DIR = path.resolve(process.env.BENCHMARK_OUTPUT_DIR || "appendix-math")
+// Use the directory of this script as the default artifact directory
+const DEFAULT_ARTIFACT_DIR = path.resolve(__dirname)
 
 function isThroughputDetailCsv(fileName: string): boolean {
   if (!fileName.endsWith(".csv")) {
@@ -330,7 +334,7 @@ function isThroughputDetailCsv(fileName: string): boolean {
 }
 
 async function findLatestThroughputCsv(): Promise<string> {
-  const legacyDir = path.resolve("benchmark-results")
+  const legacyDir = path.resolve("appendix-math/csv")
   const dirs = [DEFAULT_ARTIFACT_DIR, legacyDir]
 
   let bestPath: string | null = null
@@ -373,7 +377,6 @@ async function main(): Promise<void> {
   const positionalCsvArg = args.find((arg) => !arg.startsWith("--"))
   const expectedRunsPerComboArg = args.find((arg) => arg.startsWith("--expected-runs="))
   const imputeMissingWithMean = args.includes("--impute-missing-with-mean")
-  const writeReportFile = args.includes("--write-report")
 
   const expectedRunsPerCombo = expectedRunsPerComboArg
     ? Number.parseInt(expectedRunsPerComboArg.split("=")[1] || "", 10)
@@ -408,13 +411,6 @@ async function main(): Promise<void> {
   const meansCsvPath = await writeCombinationMeansCsv(inputCsvPath, points)
 
   console.log(report)
-  if (writeReportFile) {
-    const reportPath = inputCsvPath.replace(/\.csv$/i, "-optimization-report.md")
-    await fs.writeFile(reportPath, report, "utf8")
-    console.log(`\nReport saved at: ${reportPath}`)
-  } else {
-    console.log("\n(No .md file written; use --write-report if you want a markdown file next to the input CSV.)")
-  }
   console.log(`Combination means CSV: ${meansCsvPath}`)
 }
 
