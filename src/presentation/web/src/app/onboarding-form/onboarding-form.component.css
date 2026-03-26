@@ -374,6 +374,35 @@
   flex-shrink: 0;
 }
 
+.upload-alternative {
+  margin-top: 0;
+  padding: 1.05rem 0.75rem 1.05rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.upload-alternative-title {
+  margin: 0;
+  padding: 0;
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: #111827;
+  letter-spacing: -0.01em;
+}
+
+.upload-alternative-subtitle {
+  margin: 0;
+  font-size: 0.72rem;
+  font-weight: 500;
+  color: #6b7280;
+  line-height: 1.55;
+}
+
+.nav-upload-card {
+  margin-top: 1.25rem;
+}
+
 .form-nav {
   display: flex;
   justify-content: space-between;
