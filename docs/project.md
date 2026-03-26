@@ -1280,9 +1280,9 @@ To identify an optimal configuration, a series of **controlled benchmarks** was 
 
 ---
 
-## 1. Benchmark Data Log
+### 1. Benchmark Data Log
 
-To generate the benchmark dataset, a script called [generate_data.py](../appendix-math/scripts/generate_data.py) was implemented. This script produces a CSV file containing **50,000 rows of synthetic data** using the Python Faker library.
+To generate the benchmark dataset, a script called [generate-data.py](../appendix-math/scripts/generate-data.py) was implemented. This script produces a CSV file containing **50,000 rows of synthetic data** using the Python Faker library.
 
 The generated dataset is stored in: ../appendix-math/csv/onboarding_50000.csv
 
@@ -1327,4 +1327,141 @@ The selected parameter ranges reflect the operational characteristics of the bac
 
 The benchmark therefore evaluates scenarios where 1, 3, 5, and 10 files are processed concurrently. Larger batch sizes were not considered necessary because the expected Equiem processing flow is moderate and the platform allows only one file update per onboarding process.
 
-## 2. The Performance Model
+### 2. The Performance Model
+
+To model the relationship between system configuration and throughput, a **quadratic surface regression** was fitted to the benchmark data.
+
+The objective of this model is to approximate the system throughput **T(B, W)** as a function of:
+
+- **B:** Batch Size
+- **W:** Worker Count
+
+A quadratic model was chosen because it allows the representation of **non-linear performance effects**, such as diminishing returns or performance degradation caused by excessive parallelism or batch sizes.
+
+The regression produced the following function:
+
+\[
+T(B, W) = a + bB + cW + dB² + eBW + fW²
+\]
+
+Where the coefficients were estimated from the benchmark data as:
+
+| Coefficient | Value |
+|-------------|------|
+| a | 814.403197 |
+| b | -59.590438 |
+| c | 75.334222 |
+| d | 5.241891 |
+| e | 1.159864 |
+| f | -12.058743 |
+
+Substituting these coefficients into the model results in the following performance function:
+
+T(B,W) = 814.403197 - 59.590438B + 75.334222W + 5.241891B² + 1.159864BW - 12.058743W²
+
+This equation estimates the **expected throughput (records per second)** for any combination of batch size and worker count within the tested range.
+
+#### 2.1. Model Fit Quality
+
+The regression model produced an **R² (coefficient of determination) of 0.244348**.
+
+The R² value measures how well the regression explains the variance observed in the benchmark data.
+
+- **R² = 1** indicates a perfect fit.
+- **R² = 0** indicates that the model explains none of the variation.
+
+In this case:
+
+\[
+R² = 0.244348
+\]
+
+This indicates that approximately **24.4% of the throughput variance** is explained by the quadratic model.
+
+The relatively low value suggests that additional factors, such as I/O variability, database contention, or runtime scheduling, also influence system performance. However, the model still provides a **useful approximation of the performance landscape**, allowing analytical exploration of optimal configurations.
+
+#### 2.2. Model Estimation Method
+### 2.2. Model Estimation Method
+
+The coefficients of the performance model were estimated using the script `optimize-throughput.ts`, which performs a **quadratic regression analysis** on the benchmark results.
+
+The script reads the benchmark dataset generated in Section 1. Each record in the dataset contains:
+
+- **Batch Size (B)**
+- **Worker Count (W)**
+- **Measured Throughput (T)**
+
+Using this data, the script fits the following quadratic model:
+
+T(B,W) = a + bB + cW + dB² + eBW + fW²
+
+The objective of the regression is to determine the coefficients **(a, b, c, d, e, f)** that best approximate the relationship between the system parameters and the observed throughput.
+
+### 2.3. Regression Procedure
+
+The script constructs a **design matrix** where each benchmark observation contributes one row containing the explanatory variables:
+
+[1, B, W, B², BW, W²]
+
+For a dataset containing **n benchmark observations**, this produces the matrix **X**:
+
+| 1 | B₁ | W₁ | B₁² | B₁W₁ | W₁² |
+|---|----|----|-----|------|-----|
+| 1 | B₂ | W₂ | B₂² | B₂W₂ | W₂² |
+| ... | ... | ... | ... | ... | ... |
+| 1 | Bₙ | Wₙ | Bₙ² | BₙWₙ | Wₙ² |
+
+The measured throughput values form the vector **Y**:
+
+Y = [T₁, T₂, ..., Tₙ]
+
+The regression problem can therefore be expressed as:
+
+Y = Xβ
+
+where the coefficient vector is:
+
+β = [a, b, c, d, e, f]
+
+These coefficients represent the unknown parameters of the quadratic model.
+
+#### 2.4. Least Squares Solution
+
+To estimate the coefficients, the script applies the **Ordinary Least Squares (OLS)** method, which finds the coefficient vector **β** that minimizes the squared error between the predicted throughput and the observed throughput.
+
+The optimal coefficients are computed using the matrix equation:
+
+β = (XᵀX)⁻¹ XᵀY
+
+This computation is implemented programmatically in [optimize-throughput.ts](../appendix-math/scripts/optimize-throughput.ts). The script performs the following steps:
+
+1. Load the benchmark CSV file.
+2. Extract the values of **B**, **W**, and **T**.
+3. Construct the regression features **B²**, **BW**, and **W²**.
+4. Build the design matrix **X**.
+5. Apply the least squares formula to compute the coefficient vector **β**.
+6. Output the resulting performance model.
+
+The resulting coefficients define the throughput function presented in Section 2.1.
+
+#### 2.5. Surface Visualization
+
+To visually analyze the relationship between the system parameters and the predicted throughput, a **3-dimensional performance surface** can be generated using the regression model obtained in Section 2.
+
+In this visualization:
+
+- The **X-axis** represents **Batch Size (B)**  
+- The **Y-axis** represents **Worker Count (W)**  
+- The **Z-axis** represents the predicted **Throughput (T)** in records per second  
+
+The surface illustrates how throughput varies as both parameters change simultaneously and provides an intuitive interpretation of the **performance landscape** used in the optimization analysis.
+
+To generate this visualization, a script called [plot-surface.py]() is used. The script evaluates the regression function **T(B,W)** across a grid of values for **B** and **W**, computes the predicted throughput for each point, and renders a 3D surface plot.
+
+The resulting surface plot is included below to illustrate the predicted performance behavior of the system.
+
+<div align="center">
+<sub>FIGURE 1 – 3D surface plot of the T(B, W) function.</sub><br>
+  <img src="../docs/assets/throughput-surface.png" width="100%" alt="3D surface plot"><br>
+  <sup>Source: Material produced by the authors, 2026.</sup>
+</div>
