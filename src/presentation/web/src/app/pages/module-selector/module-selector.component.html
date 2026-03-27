@@ -64,6 +64,14 @@
         <div class="footer">
           <button
             type="button"
+            class="btn btn-secondary"
+            [disabled]="!canContinueLegacy()"
+            (click)="continueLegacyFlow()"
+          >
+            Continue Legacy Flow
+          </button>
+          <button
+            type="button"
             class="btn btn-primary"
             [disabled]="!canCreate()"
             (click)="createLink()"

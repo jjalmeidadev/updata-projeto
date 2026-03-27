@@ -275,6 +275,18 @@ export class ReviewComponentsComponent implements OnInit {
 
     const linkToken = this.route.snapshot.paramMap.get('linkToken');
     if (!linkToken) {
+      this.router.navigate(['/form'], {
+        queryParams: {
+          fromReview: true,
+          fromUpload: this.source() === 'template',
+          autoSubmit: this.source() === 'template',
+        },
+        state: {
+          correctedValues,
+          reviewSource: this.source(),
+          autoSubmit: this.source() === 'template',
+        },
+      });
       return;
     }
 
@@ -295,6 +307,7 @@ export class ReviewComponentsComponent implements OnInit {
   goBack(): void {
     const linkToken = this.route.snapshot.paramMap.get('linkToken');
     if (!linkToken) {
+      this.router.navigate([this.source() === 'template' ? '/upload' : '/form']);
       return;
     }
 

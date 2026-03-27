@@ -33,6 +33,7 @@ export class ModuleSelectorComponent implements OnInit {
   readonly canCreate = computed(
     () => this.selectedSections().size > 0 && this.companyName().trim().length > 0 && !this.saving()
   );
+  readonly canContinueLegacy = computed(() => this.selectedSections().size > 0);
 
   ngOnInit(): void {
     this.onboardingService.listCompanies().subscribe({
@@ -77,6 +78,7 @@ export class ModuleSelectorComponent implements OnInit {
   createLink(): void {
     if (!this.canCreate()) return;
 
+    this.saveSelection();
     this.saving.set(true);
     this.successMessage.set('');
     this.errorMessage.set('');
@@ -113,5 +115,19 @@ export class ModuleSelectorComponent implements OnInit {
     if (!this.createdLink()) return;
     const url = new URL(this.createdLink());
     this.router.navigateByUrl(url.pathname);
+  }
+
+  continueLegacyFlow(): void {
+    if (!this.canContinueLegacy()) return;
+
+    this.saveSelection();
+    this.router.navigate(['/input-method']);
+  }
+
+  private saveSelection(): void {
+    localStorage.setItem(
+      'selectedSections',
+      JSON.stringify(Array.from(this.selectedSections()))
+    );
   }
 }

@@ -22,24 +22,19 @@ export class InputMethodComponent implements OnInit {
   ngOnInit(): void {
     const linkToken = this.route.snapshot.paramMap.get('linkToken');
     if (!linkToken) {
-      this.errorMessage.set('Missing onboarding link.');
       return;
     }
 
     this.onboardingService.getPublicInstance(linkToken).subscribe({
-      next: (instance: OnboardingInstance) => this.instance.set(instance),
+      next: (instance: OnboardingInstance) => {
+        this.instance.set(instance);
+        localStorage.setItem('selectedSections', JSON.stringify(instance.selectedSections));
+      },
       error: () => this.errorMessage.set('Failed to load onboarding link.'),
     });
   }
 
   choose(method: 'upload' | 'manual'): void {
-    const linkToken = this.route.snapshot.paramMap.get('linkToken');
-    if (!linkToken) return;
-
-    this.router.navigate([
-      '/onboarding',
-      linkToken,
-      method === 'upload' ? 'upload' : 'form',
-    ]);
+    this.router.navigate([method === 'upload' ? '/upload' : '/form']);
   }
 }

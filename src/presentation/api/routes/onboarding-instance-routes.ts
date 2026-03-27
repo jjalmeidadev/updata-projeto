@@ -1,4 +1,6 @@
 import express from "express"
+import { RequestHandler } from "express"
+import { authMiddleware } from "../middleware/auth-middleware.js"
 import {
   completeEquiemReviewHandler,
   createOnboardingInstanceHandler,
@@ -10,13 +12,16 @@ import {
 } from "../controllers/onboarding-instance-controller.js"
 
 const router = express.Router()
+const env = (globalThis as { process?: { env?: Record<string, string | undefined> } }).process?.env ?? {}
+const bypassOnboardingAuth = env.DISABLE_ONBOARDING_AUTH === "true"
+const onboardingAuth: RequestHandler = bypassOnboardingAuth
+  ? (_req, _res, next) => next()
+  : authMiddleware
 
-// Temporarily left open for local development so the onboarding UI can be tested
-// without requiring Auth0 tokens on the new instance-management flow.
-router.get("/api/companies", listCompaniesHandler)
-router.get("/api/onboarding-instances", listOnboardingInstancesHandler)
-router.post("/api/onboarding-instances", createOnboardingInstanceHandler)
-router.post("/api/onboarding-instances/:linkToken/review/complete", completeEquiemReviewHandler)
+router.get("/api/companies", onboardingAuth, listCompaniesHandler)
+router.get("/api/onboarding-instances", onboardingAuth, listOnboardingInstancesHandler)
+router.post("/api/onboarding-instances", onboardingAuth, createOnboardingInstanceHandler)
+router.post("/api/onboarding-instances/:linkToken/review/complete", onboardingAuth, completeEquiemReviewHandler)
 
 router.get("/api/public/onboarding/:linkToken", getOnboardingByLinkHandler)
 router.patch("/api/public/onboarding/:linkToken/progress", saveOnboardingProgressHandler)

@@ -66,8 +66,7 @@ export class OnboardingFormComponent implements OnInit {
     const linkToken = this.route.snapshot.paramMap.get('linkToken');
 
     if (!linkToken) {
-      this.pageMessage.set('Missing onboarding link.');
-      this.loading.set(false);
+      this.initializeLegacyFlow();
       return;
     }
 
@@ -245,10 +244,8 @@ export class OnboardingFormComponent implements OnInit {
 
   goToUpload(): void {
     const linkToken = this.route.snapshot.paramMap.get('linkToken');
-    if (!linkToken) return;
-
     sessionStorage.setItem(UPLOAD_SECTION_INDEX_KEY, this.currentSectionIndex().toString());
-    this.router.navigate(['/onboarding', linkToken, 'upload']);
+    this.router.navigate(linkToken ? ['/onboarding', linkToken, 'upload'] : ['/upload']);
   }
 
   submit(): void {
@@ -269,6 +266,12 @@ export class OnboardingFormComponent implements OnInit {
 
       const linkToken = this.route.snapshot.paramMap.get('linkToken');
       if (!linkToken) {
+        this.router.navigate(['/review'], {
+          state: {
+            reviewSource,
+            reviewIssues: reviewItems,
+          },
+        });
         return;
       }
 
@@ -287,6 +290,9 @@ export class OnboardingFormComponent implements OnInit {
   private completeSubmission(): void {
     const linkToken = this.route.snapshot.paramMap.get('linkToken');
     if (!linkToken) {
+      this.clearTransientFlowState();
+      this.fromUpload.set(false);
+      this.submitted.set(true);
       return;
     }
 
@@ -620,5 +626,85 @@ export class OnboardingFormComponent implements OnInit {
         this.instance.set(instance);
       },
     });
+  }
+
+  private initializeLegacyFlow(): void {
+    this.questionService.getQuestions().subscribe({
+      next: (allQuestions: Question[]) => {
+        const selected = this.getSelectedSections();
+        const questions = selected.length
+          ? allQuestions.filter((q: Question) => selected.includes(q.sectionId))
+          : allQuestions;
+
+        this.questions.set(questions);
+        this.sections.set(this.questionService.getSections(questions));
+
+        const builtForm = this.buildForm(questions);
+        this.form.set(builtForm);
+
+        builtForm.valueChanges.subscribe(() => {
+          this.formVersion.update((value: number) => value + 1);
+        });
+
+        this.loading.set(false);
+
+        this.route.queryParams.subscribe((params: Params) => {
+          this.fromUpload.set(params['fromUpload'] === 'true' || params['fromUpload'] === true);
+
+          if (params['section']) {
+            const sectionIndex = parseInt(params['section'], 10);
+            if (!Number.isNaN(sectionIndex) && sectionIndex >= 0 && sectionIndex < this.sections().length) {
+              this.currentSectionIndex.set(sectionIndex);
+            }
+          } else {
+            this.restoreReviewSectionIndex();
+          }
+
+          const shouldAutoSubmit =
+            params['autoSubmit'] === 'true' ||
+            params['autoSubmit'] === true ||
+            history.state?.['autoSubmit'] === true;
+
+          this.handleUploadedData(builtForm);
+          this.applyReviewCorrections(builtForm);
+          this.formVersion.update((value: number) => value + 1);
+          this.autoSaveReady = true;
+
+          if (shouldAutoSubmit) {
+            setTimeout(() => {
+              this.completeSubmission();
+            });
+          }
+
+          setTimeout(() => {
+            if (
+              this.route.snapshot.queryParamMap.has('fromUpload') ||
+              this.route.snapshot.queryParamMap.has('fromReview') ||
+              this.route.snapshot.queryParamMap.has('section') ||
+              this.route.snapshot.queryParamMap.has('autoSubmit')
+            ) {
+              this.router.navigate([], {
+                relativeTo: this.route,
+                queryParams: {},
+                replaceUrl: true,
+              });
+            }
+          });
+        });
+      },
+      error: (err: unknown) => {
+        console.error('Failed to load questions:', err);
+        this.loading.set(false);
+      },
+    });
+  }
+
+  private getSelectedSections(): string[] {
+    try {
+      const raw = localStorage.getItem('selectedSections');
+      return raw ? JSON.parse(raw) : [];
+    } catch {
+      return [];
+    }
   }
 }

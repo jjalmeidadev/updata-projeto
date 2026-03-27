@@ -52,8 +52,7 @@ export class UploadComponent implements OnInit {
     const linkToken = this.route.snapshot.paramMap.get('linkToken');
 
     if (!linkToken) {
-      this.errorMessage.set('Missing onboarding link.');
-      this.loading.set(false);
+      this.loadQuestionsFromSelection();
       return;
     }
 
@@ -89,7 +88,7 @@ export class UploadComponent implements OnInit {
     const file = target.files?.[0];
     const linkToken = this.route.snapshot.paramMap.get('linkToken');
 
-    if (!file || !linkToken) {
+    if (!file) {
       return;
     }
 
@@ -124,7 +123,7 @@ export class UploadComponent implements OnInit {
         })
       );
 
-      this.router.navigate(['/onboarding', linkToken, 'review'], {
+      this.router.navigate(linkToken ? ['/onboarding', linkToken, 'review'] : ['/review'], {
         state: {
           reviewSource: 'template',
           reviewIssues: reviewItems,
@@ -149,8 +148,7 @@ export class UploadComponent implements OnInit {
 
   goToManualForm(): void {
     const linkToken = this.route.snapshot.paramMap.get('linkToken');
-    if (!linkToken) return;
-    this.router.navigate(['/onboarding', linkToken, 'form']);
+    this.router.navigate(linkToken ? ['/onboarding', linkToken, 'form'] : ['/form']);
   }
 
   async downloadTemplate(): Promise<void> {
@@ -264,6 +262,24 @@ export class UploadComponent implements OnInit {
 
   onSubmit(): void {
     this.goToManualForm();
+  }
+
+  private loadQuestionsFromSelection(): void {
+    this.questionService.getQuestions().subscribe({
+      next: (allQuestions: Question[]) => {
+        const selected = this.getSelectedSections();
+        const filteredQuestions = selected.length
+          ? allQuestions.filter((q: Question) => selected.includes(q.sectionId))
+          : allQuestions;
+
+        this.questions.set(filteredQuestions);
+        this.loading.set(false);
+      },
+      error: (err: unknown) => {
+        console.error('Failed to load questions:', err);
+        this.loading.set(false);
+      },
+    });
   }
 
   private async parseExcelTemplate(file: File): Promise<Record<string, unknown>> {
@@ -521,5 +537,14 @@ export class UploadComponent implements OnInit {
 
     used.add(name.toLowerCase());
     return name;
+  }
+
+  private getSelectedSections(): string[] {
+    try {
+      const raw = localStorage.getItem('selectedSections');
+      return raw ? JSON.parse(raw) : [];
+    } catch {
+      return [];
+    }
   }
 }
