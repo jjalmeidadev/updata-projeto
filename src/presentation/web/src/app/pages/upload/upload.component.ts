@@ -230,7 +230,7 @@ export class UploadComponent implements OnInit {
             bottom: { style: 'thin', color: { argb: 'FFBDBDBD' } },
             right: { style: 'thin', color: { argb: 'FFBDBDBD' } },
           };
-        }
+        });
       });
 
       ws.getRow(2).font = { bold: true };
