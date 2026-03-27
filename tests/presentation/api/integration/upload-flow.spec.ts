@@ -1,7 +1,8 @@
 import { describe, it, expect, beforeEach, vi } from "vitest"
-import express from "express"
+import express, { Request, Response } from "express"
+import { Server } from "http"
 
-function startServer(router: express.Router): Promise<any> {
+function startServer(router: express.Router): Promise<Server> {
   const app = express()
   app.use(router)
 
@@ -10,7 +11,7 @@ function startServer(router: express.Router): Promise<any> {
   })
 }
 
-function stopServer(server: any): Promise<void> {
+function stopServer(server: Server): Promise<void> {
   return new Promise((resolve, reject) => {
     server.close((error: unknown) => {
       if (error) {
@@ -24,7 +25,7 @@ function stopServer(server: any): Promise<void> {
 }
 
 async function postJson(
-  server: any,
+  server: Server,
   path: string,
   body: unknown,
   headers: Record<string, string> = {}
@@ -86,7 +87,7 @@ describe("upload-flow integration", () => {
 
   it("returns 400 when request body missing rows", async () => {
     // Arrange
-    const handleUploadMock = vi.fn((_req: any, res: any) => {
+    const handleUploadMock = vi.fn((_req: Request, res: Response) => {
       return res.status(400).json({ error: "Missing rows payload" })
     })
 
@@ -123,7 +124,7 @@ describe("upload-flow integration", () => {
   it("returns 200 with redirect and traceId on successful upload", async () => {
     // Arrange
     const mockRows = [{ "Building Name": "Tower A", Company: "Acme" }]
-    const handleUploadMock = vi.fn((_req: any, res: any) => {
+    const handleUploadMock = vi.fn((_req: Request, res: Response) => {
       return res.json({
         redirect: "/form",
         data: [{ building_name: "Tower A", company: "Acme" }],
@@ -166,7 +167,7 @@ describe("upload-flow integration", () => {
 
   it("includes trace ID in response headers", async () => {
     // Arrange
-    const handleUploadMock = vi.fn((_req: any, res: any) => {
+    const handleUploadMock = vi.fn((_req: Request, res: Response) => {
       res.setHeader("x-debug-trace-id", "trace-abc")
       return res.json({
         redirect: "/form",
@@ -199,7 +200,7 @@ describe("upload-flow integration", () => {
   it("returns error response when service throws", async () => {
     // Arrange
     const errorMessage = "No rows received"
-    const handleUploadMock = vi.fn((_req: any, res: any) => {
+    const handleUploadMock = vi.fn((_req: Request, res: Response) => {
       return res.status(500).json({
         error: "Error processing upload",
         traceId: "trace-1",

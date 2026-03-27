@@ -1,7 +1,8 @@
-import express from "express"
+import express, { Request, Response, NextFunction } from "express"
+import { Server } from "http"
 import { beforeEach, describe, expect, it, vi } from "vitest"
 
-function startServer(router: express.Router): Promise<any> {
+function startServer(router: express.Router): Promise<Server> {
   const app = express()
   app.use(router)
 
@@ -10,7 +11,7 @@ function startServer(router: express.Router): Promise<any> {
   })
 }
 
-function stopServer(server: any): Promise<void> {
+function stopServer(server: Server): Promise<void> {
   return new Promise((resolve, reject) => {
     server.close((error: unknown) => {
       if (error) {
@@ -24,7 +25,7 @@ function stopServer(server: any): Promise<void> {
 }
 
 async function getJson(
-  server: any,
+  server: Server,
   path: string,
   headers: Record<string, string> = {}
 ): Promise<{ status: number; body: unknown }> {
@@ -55,8 +56,8 @@ describe("auth-flow integration", () => {
 
   it("returns 401 and does not execute controller when Authorization header is missing", async () => {
     // Arrange
-    const getPayloadMock = vi.fn((_req: any, res: any) => res.status(200).json({ next: "/company/1" }))
-    const authMiddlewareMock = vi.fn((req: any, res: any, next: any) => {
+    const getPayloadMock = vi.fn((_req: Request, res: Response) => res.status(200).json({ next: "/company/1" }))
+    const authMiddlewareMock = vi.fn((req: Request, res: Response, next: NextFunction) => {
       if (!req.headers.authorization) {
         return res.status(401).json({ error: "Unauthorized" })
       }
@@ -89,8 +90,8 @@ describe("auth-flow integration", () => {
 
   it("returns 401 and does not execute controller when token is invalid", async () => {
     // Arrange
-    const getPayloadMock = vi.fn((_req: any, res: any) => res.status(200).json({ next: "/company/1" }))
-    const authMiddlewareMock = vi.fn((req: any, res: any, next: any) => {
+    const getPayloadMock = vi.fn((_req: Request, res: Response) => res.status(200).json({ next: "/company/1" }))
+    const authMiddlewareMock = vi.fn((req: Request, res: Response, next: NextFunction) => {
       if (req.headers.authorization !== "Bearer valid-token") {
         return res.status(401).json({ error: "Unauthorized" })
       }
@@ -125,8 +126,8 @@ describe("auth-flow integration", () => {
 
   it("returns 200 and executes controller when token is accepted", async () => {
     // Arrange
-    const getPayloadMock = vi.fn((_req: any, res: any) => res.status(200).json({ next: "/company/1" }))
-    const authMiddlewareMock = vi.fn((req: any, res: any, next: any) => {
+    const getPayloadMock = vi.fn((_req: Request, res: Response) => res.status(200).json({ next: "/company/1" }))
+    const authMiddlewareMock = vi.fn((req: Request, res: Response, next: NextFunction) => {
       if (req.headers.authorization !== "Bearer valid-token") {
         return res.status(401).json({ error: "Unauthorized" })
       }

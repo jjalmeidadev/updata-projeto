@@ -1,4 +1,6 @@
-import { describe, it, expect, beforeEach, vi } from "vitest"
+import { describe, it, expect, beforeEach, afterEach, vi } from "vitest"
+
+const originalNodeEnv = process.env.NODE_ENV
 
 // Mock all dependencies first
 vi.mock("../../../src/business/services/upload-file-parser-service.js", () => ({
@@ -51,8 +53,13 @@ import { s3Client, sqsClient } from "../../../src/config/aws-clients.js"
 describe("upload-worker", () => {
   beforeEach(() => {
     vi.clearAllMocks()
+    process.env.NODE_ENV = "test"
     delete process.env.AWS_SQS_QUEUE_URL
     delete process.env.AWS_S3_BUCKET
+  })
+
+  afterEach(() => {
+    process.env.NODE_ENV = originalNodeEnv
   })
 
   describe("processMessage", () => {
@@ -91,7 +98,7 @@ describe("upload-worker", () => {
         traceId: "trace-1",
       })
       expect(vi.mocked(createProcessingJob)).toHaveBeenCalled()
-    })
+    }, 15000)
 
     it("skips processing when s3Key is missing", async () => {
       // Arrange

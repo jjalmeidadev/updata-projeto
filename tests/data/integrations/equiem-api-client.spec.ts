@@ -1,13 +1,19 @@
-import { describe, it, expect, beforeEach, vi } from "vitest"
+import { describe, it, expect, beforeEach, afterEach, vi } from "vitest"
 import { sendToEquiemApi } from "../../../src/data/integrations/equiem-api-client.js"
 
 global.fetch = vi.fn()
+
+const originalProcess = globalThis.process
 
 describe("equiem-api-client", () => {
   beforeEach(() => {
     vi.clearAllMocks()
     vi.mocked(global.fetch).mockReset()
     delete (globalThis as any).process
+  })
+
+  afterEach(() => {
+    ;(globalThis as any).process = originalProcess
   })
 
   describe("sendToEquiemApi", () => {
@@ -103,7 +109,7 @@ describe("equiem-api-client", () => {
       )
     })
 
-    it("returns sent:false when API returns non-OK status", async () => {
+    it("throws when API returns non-OK status", async () => {
       // Arrange
       ;(globalThis as any).process = {
         env: { EQUIEM_API_URL: "https://api.equiem.com" },
@@ -115,11 +121,10 @@ describe("equiem-api-client", () => {
 
       const payload = { test: "data" }
 
-      // Act
-      const result = await sendToEquiemApi(payload, "trace-1")
-
-      // Assert
-      expect(result.sent).toBe(false)
+      // Act / Assert
+      await expect(sendToEquiemApi(payload, "trace-1")).rejects.toThrow(
+        "Equiem API error (500): Error message"
+      )
     })
 
     it("parses JSON response body", async () => {
@@ -206,6 +211,19 @@ describe("equiem-api-client", () => {
 
       // Assert
       expect(vi.mocked(global.fetch)).toHaveBeenCalled()
+    })
+
+    it("falls back safely when global process.env is undefined", async () => {
+      // Arrange
+      delete (globalThis as any).process
+
+      // Act
+      const result = await sendToEquiemApi({ test: "data" }, "trace-no-process")
+
+      // Assert
+      expect(result.sent).toBe(false)
+      expect(result.reason).toBe("missing_equiem_api_url")
+      expect(vi.mocked(global.fetch)).not.toHaveBeenCalled()
     })
   })
 })

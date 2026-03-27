@@ -5,11 +5,15 @@ import {
   createProcessingJob,
   updateProcessingJobStatus,
   createProcessingLog,
+  saveOnboardingPayloads,
+  saveOnboardingMappings,
 } from "../../../src/data/repositories/onboarding-repository.js"
 
-const mockPool = {
-  query: vi.fn(),
-}
+const { mockPool } = vi.hoisted(() => ({
+  mockPool: {
+    query: vi.fn(),
+  },
+}))
 
 vi.mock("../../../src/data/database/index-table.js", () => ({
   default: mockPool,
@@ -272,6 +276,90 @@ describe("onboarding-repository", () => {
         "error",
         "Error message",
       ])
+    })
+  })
+
+  describe("saveOnboardingPayloads", () => {
+    it("returns early without querying when payload list is empty", async () => {
+      await saveOnboardingPayloads("batch-1", [])
+
+      expect(mockPool.query).not.toHaveBeenCalled()
+    })
+
+    it("inserts each payload row with serialized JSON fields", async () => {
+      mockPool.query.mockResolvedValue({})
+
+      await saveOnboardingPayloads("batch-1", [
+        {
+          rowNumber: 1,
+          entityType: "building",
+          rawData: { external_id: "b-1", name: "Tower A" },
+          isValid: true,
+          validationErrors: [],
+        },
+        {
+          rowNumber: 2,
+          entityType: "company",
+          rawData: { external_id: "c-1", name: "Acme" },
+          isValid: false,
+          validationErrors: ["Missing field"],
+        },
+      ])
+
+      expect(mockPool.query).toHaveBeenCalledTimes(2)
+      expect(mockPool.query).toHaveBeenNthCalledWith(
+        1,
+        expect.stringContaining("INSERT INTO equiem.onboarding_payload"),
+        [
+          "batch-1",
+          1,
+          "building",
+          JSON.stringify({ external_id: "b-1", name: "Tower A" }),
+          true,
+          JSON.stringify([]),
+        ]
+      )
+      expect(mockPool.query).toHaveBeenNthCalledWith(
+        2,
+        expect.stringContaining("INSERT INTO equiem.onboarding_payload"),
+        [
+          "batch-1",
+          2,
+          "company",
+          JSON.stringify({ external_id: "c-1", name: "Acme" }),
+          false,
+          JSON.stringify(["Missing field"]),
+        ]
+      )
+    })
+  })
+
+  describe("saveOnboardingMappings", () => {
+    it("returns early without querying when mapping list is empty", async () => {
+      await saveOnboardingMappings([])
+
+      expect(mockPool.query).not.toHaveBeenCalled()
+    })
+
+    it("inserts each mapping entry", async () => {
+      mockPool.query.mockResolvedValue({})
+
+      await saveOnboardingMappings([
+        { entityType: "building", externalId: "b-1", internalId: "uuid-1" },
+        { entityType: "company", externalId: "c-1", internalId: "uuid-2" },
+      ])
+
+      expect(mockPool.query).toHaveBeenCalledTimes(2)
+      expect(mockPool.query).toHaveBeenNthCalledWith(
+        1,
+        expect.stringContaining("INSERT INTO equiem.onboarding_mapping"),
+        ["building", "b-1", "uuid-1"]
+      )
+      expect(mockPool.query).toHaveBeenNthCalledWith(
+        2,
+        expect.stringContaining("INSERT INTO equiem.onboarding_mapping"),
+        ["company", "c-1", "uuid-2"]
+      )
     })
   })
 })
