@@ -17,10 +17,7 @@ import { sendToEquiemApi } from "../../data/integrations/equiem-api-client.js"
 
 dotenv.config({ path: "config/.env" })
 
-const env = ((globalThis as { process?: { env?: Record<string, string | undefined> } }).process?.env ?? {}) as Record<
-  string,
-  string | undefined
->
+const env = process.env as Record<string, string | undefined>
 
 const queueUrl = env.AWS_SQS_QUEUE_URL
 const bucketName = env.AWS_S3_BUCKET
@@ -95,7 +92,7 @@ function parseIncomingUploadMessage(body: string): UploadJobMessage | null {
   return null
 }
 
-async function processMessage(message: UploadJobMessage): Promise<void> {
+export async function processMessage(message: UploadJobMessage): Promise<void> {
   const traceId = message.traceId || `worker-${Date.now()}`
   let batchId = ""
   let jobId = ""
@@ -241,7 +238,7 @@ async function processMessage(message: UploadJobMessage): Promise<void> {
   }
 }
 
-async function pollQueue(): Promise<void> {
+export async function pollQueue(maxCycles = Number.POSITIVE_INFINITY): Promise<void> {
   if (!queueUrl) {
     console.error("[WORKER] Queue URL not set, cannot start polling")
     return
@@ -249,7 +246,10 @@ async function pollQueue(): Promise<void> {
 
   console.log(`[WORKER] Starting SQS long polling on ${queueUrl}`)
 
-  while (true) {
+  let cycle = 0
+
+  while (cycle < maxCycles) {
+    cycle += 1
     try {
       const command = new ReceiveMessageCommand({
         QueueUrl: queueUrl,
@@ -308,7 +308,9 @@ async function pollQueue(): Promise<void> {
   }
 }
 
-pollQueue().catch((error) => {
-  console.error("[WORKER] Fatal error", error)
-  process.exit(1)
-})
+if (process.env.NODE_ENV !== "test") {
+  pollQueue().catch((error) => {
+    console.error("[WORKER] Fatal error", error)
+    process.exit(1)
+  })
+}

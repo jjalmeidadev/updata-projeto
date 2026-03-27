@@ -189,10 +189,8 @@ export class UploadComponent implements OnInit {
       });
 
       [2, 3, 4].forEach((r: number) => {
-        ws.getRow(r).eachCell({ includeEmpty: true }, (cell: ExcelJS.Cell, col: number) => {
-          if (col > colCount) {
-            return;
-          }
+        for (let col = 1; col <= colCount; col++) {
+          const cell = ws.getCell(r, col);
 
           cell.alignment = {
             wrapText: true,
@@ -206,7 +204,7 @@ export class UploadComponent implements OnInit {
             bottom: { style: 'thin', color: { argb: 'FFBDBDBD' } },
             right: { style: 'thin', color: { argb: 'FFBDBDBD' } },
           };
-        });
+        }
       });
 
       ws.getRow(2).font = { bold: true };
