@@ -8,10 +8,12 @@ import { UploadComponent } from './pages/upload/upload.component';
 import { ModuleSelectorComponent } from './pages/module-selector/module-selector.component';
 import { ReviewComponentsComponent } from './pages/review/review-components';
 import { InputMethodComponent } from './pages/input-method/input-method.component';
+import { OnboardingIntroComponent } from './pages/onboarding-intro/onboarding-intro.component';
 
 export const routes: Routes = [
   { path: '', redirectTo: '/login', pathMatch: 'full' },
   { path: 'login', component: LoginComponent },
+  { path: 'onboarding-intro', component: OnboardingIntroComponent, canActivate: [authGuardFn] },
   { path: 'signup', component: SignupComponent },
   { path: 'home', component: HomeComponent, canActivate: [authGuardFn] },
   {
