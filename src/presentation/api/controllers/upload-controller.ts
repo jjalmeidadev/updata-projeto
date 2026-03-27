@@ -1,25 +1,5 @@
 import { Request, Response } from "express"
-import { PutObjectCommand } from "@aws-sdk/client-s3"
-import { s3Client } from "../../../config/aws-clients.ts"
-import { enqueueUploadJob } from "../../../business/queue/upload-queue.ts"
-
-function getContentType(fileName: string): string {
-  const extension = fileName.toLowerCase().split(".").pop() || ""
-
-  if (extension === "csv") {
-    return "text/csv"
-  }
-
-  if (extension === "xlsx") {
-    return "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
-  }
-
-  if (extension === "xls") {
-    return "application/vnd.ms-excel"
-  }
-
-  return "application/octet-stream"
-}
+import { processUploadFile } from "../../../business/services/upload-service.js"
 
 export const handleUpload = async (
   req: Request,
@@ -33,7 +13,7 @@ export const handleUpload = async (
 
   try {
 
-    const file = (req as any).file  // multer middleware
+    const file = req.file
 
     if (!file) {
       return res.status(400).json({
@@ -42,29 +22,12 @@ export const handleUpload = async (
       })
     }
 
-    // Salvar arquivo original no S3 para processamento assíncrono.
-    const s3Key = `uploads/${traceId}/${file.originalname}`
-    
-    const putCommand = new PutObjectCommand({
-      Bucket: (globalThis as any).process?.env?.AWS_S3_BUCKET,
-      Key: s3Key,
-      Body: file.buffer,
-      ContentType: getContentType(file.originalname)
-    })
-
-    await s3Client.send(putCommand)
-    console.log(`[FLOW][${traceId}] controller:s3_upload s3Key=${s3Key}`)
-
-    // Enfileirar S3 key (não mais o JSON)
-    await enqueueUploadJob(
-      { s3Key, fileName: file.originalname },  // apenas metadados
-      traceId
-    )
+    const result = await processUploadFile(file, traceId)
 
     return res.json({
       redirect: "/form",
-      s3Key,
-      fileName: file.originalname,
+      s3Key: result.s3Key,
+      fileName: result.fileName,
       traceId
     })
 
