@@ -18,9 +18,9 @@ const onboardingAuth: RequestHandler = bypassOnboardingAuth
   ? (_req, _res, next) => next()
   : authMiddleware
 
-router.get("/api/companies", onboardingAuth, listCompaniesHandler)
+router.get("/api/companies", listCompaniesHandler)
 router.get("/api/onboarding-instances", onboardingAuth, listOnboardingInstancesHandler)
-router.post("/api/onboarding-instances", onboardingAuth, createOnboardingInstanceHandler)
+router.post("/api/onboarding-instances", createOnboardingInstanceHandler)
 router.post("/api/onboarding-instances/:linkToken/review/complete", onboardingAuth, completeEquiemReviewHandler)
 
 router.get("/api/public/onboarding/:linkToken", getOnboardingByLinkHandler)
