@@ -3,10 +3,10 @@ import type { Request, Response } from "express"
 import { getPayload } from "../../../../src/presentation/api/controllers/user-controllers.js"
 
 vi.mock("../../../../src/business/services/user-service.js", () => ({
-  checkUser: vi.fn(),
+  resolveUserNavigation: vi.fn(),
 }))
 
-import { checkUser } from "../../../../src/business/services/user-service.js"
+import { resolveUserNavigation } from "../../../../src/business/services/user-service.js"
 
 function mockRes(): Response {
   const res = {} as Response
@@ -18,7 +18,7 @@ function mockRes(): Response {
 
 describe("user-controllers", () => {
   beforeEach(() => {
-    vi.mocked(checkUser).mockReset()
+    vi.mocked(resolveUserNavigation).mockReset()
   })
 
   describe("getPayload", () => {
@@ -32,7 +32,7 @@ describe("user-controllers", () => {
       expect(res.json).toHaveBeenCalledWith(
         expect.objectContaining({ error: "Invalid token payload" })
       )
-      expect(checkUser).not.toHaveBeenCalled()
+      expect(resolveUserNavigation).not.toHaveBeenCalled()
     })
 
     it("returns 401 when req.auth.payload.sub is missing", async () => {
@@ -45,16 +45,12 @@ describe("user-controllers", () => {
       expect(res.json).toHaveBeenCalledWith(
         expect.objectContaining({ error: "Invalid token payload" })
       )
-      expect(checkUser).not.toHaveBeenCalled()
+      expect(resolveUserNavigation).not.toHaveBeenCalled()
     })
 
     it("returns 200 with next /monitoring when email ends with @getequiem.com", async () => {
-      vi.mocked(checkUser).mockResolvedValue({
-        user_id: 1,
-        user_name: "Internal",
-        user_email: "dev@getequiem.com",
-        auth0_id: "auth0|1",
-        company_id: null,
+      vi.mocked(resolveUserNavigation).mockResolvedValue({
+        outcome: "monitoring",
       })
 
       const req = {
@@ -65,6 +61,10 @@ describe("user-controllers", () => {
 
       await getPayload(req, res)
 
+      expect(resolveUserNavigation).toHaveBeenCalledWith(
+        { sub: "auth0|1", name: "Internal", email: "dev@getequiem.com" },
+        expect.any(String)
+      )
       expect(res.status).toHaveBeenCalledWith(200)
       expect(res.json).toHaveBeenCalledWith(
         expect.objectContaining({ next: "/monitoring" })
@@ -72,12 +72,9 @@ describe("user-controllers", () => {
     })
 
     it("returns 200 with next /company/:id when user has company_id", async () => {
-      vi.mocked(checkUser).mockResolvedValue({
-        user_id: 2,
-        user_name: "Customer",
-        user_email: "c@customer.com",
-        auth0_id: "auth0|2",
-        company_id: 42,
+      vi.mocked(resolveUserNavigation).mockResolvedValue({
+        outcome: "company",
+        companyId: "42",
       })
 
       const req = {
@@ -95,12 +92,8 @@ describe("user-controllers", () => {
     })
 
     it("returns 403 when user has no company_id and is not internal", async () => {
-      vi.mocked(checkUser).mockResolvedValue({
-        user_id: 3,
-        user_name: "Unknown",
-        user_email: "u@unknown.com",
-        auth0_id: "auth0|3",
-        company_id: null,
+      vi.mocked(resolveUserNavigation).mockResolvedValue({
+        outcome: "unregistered",
       })
 
       const req = {
@@ -117,8 +110,10 @@ describe("user-controllers", () => {
       )
     })
 
-    it("returns 404 when checkUser returns null", async () => {
-      vi.mocked(checkUser).mockResolvedValue(null as never)
+    it("returns 404 when navigation service returns not found", async () => {
+      vi.mocked(resolveUserNavigation).mockResolvedValue({
+        outcome: "not_found",
+      })
 
       const req = {
         auth: { payload: { sub: "auth0|404", email: "missing@company.com" } },
@@ -128,7 +123,7 @@ describe("user-controllers", () => {
 
       await getPayload(req, res)
 
-      expect(checkUser).toHaveBeenCalledWith(
+      expect(resolveUserNavigation).toHaveBeenCalledWith(
         { sub: "auth0|404", name: undefined, email: "missing@company.com" },
         "trace-404"
       )
@@ -138,13 +133,10 @@ describe("user-controllers", () => {
       )
     })
 
-    it("normalizes non-string claims before calling checkUser", async () => {
-      vi.mocked(checkUser).mockResolvedValue({
-        user_id: 4,
-        user_name: "Customer",
-        user_email: "customer@company.com",
-        auth0_id: "auth0|4",
-        company_id: 10,
+    it("normalizes non-string claims before calling navigation service", async () => {
+      vi.mocked(resolveUserNavigation).mockResolvedValue({
+        outcome: "company",
+        companyId: "10",
       })
 
       const req = {
@@ -161,7 +153,7 @@ describe("user-controllers", () => {
 
       await getPayload(req, res)
 
-      expect(checkUser).toHaveBeenCalledWith(
+      expect(resolveUserNavigation).toHaveBeenCalledWith(
         { sub: "auth0|4", name: undefined, email: undefined },
         "trace-claims"
       )
@@ -174,12 +166,8 @@ describe("user-controllers", () => {
     it("generates default traceId and propagates it to response and service", async () => {
       const nowSpy = vi.spyOn(Date, "now").mockReturnValue(123456)
 
-      vi.mocked(checkUser).mockResolvedValue({
-        user_id: 5,
-        user_name: "DefaultTrace",
-        user_email: "trace@getequiem.com",
-        auth0_id: "auth0|5",
-        company_id: null,
+      vi.mocked(resolveUserNavigation).mockResolvedValue({
+        outcome: "monitoring",
       })
 
       const req = {
@@ -191,7 +179,7 @@ describe("user-controllers", () => {
       await getPayload(req, res)
 
       expect(res.setHeader).toHaveBeenCalledWith("x-debug-trace-id", "server-123456")
-      expect(checkUser).toHaveBeenCalledWith(
+      expect(resolveUserNavigation).toHaveBeenCalledWith(
         { sub: "auth0|5", name: undefined, email: "trace@getequiem.com" },
         "server-123456"
       )
@@ -199,8 +187,8 @@ describe("user-controllers", () => {
       nowSpy.mockRestore()
     })
 
-    it("returns 500 when checkUser throws", async () => {
-      vi.mocked(checkUser).mockRejectedValue(new Error("DB error"))
+    it("returns 500 when navigation service throws", async () => {
+      vi.mocked(resolveUserNavigation).mockRejectedValue(new Error("DB error"))
 
       const req = {
         auth: { payload: { sub: "auth0|1", email: "a@b.com" } },
@@ -226,16 +214,13 @@ describe("user-controllers", () => {
       expect(res.json).toHaveBeenCalledWith(
         expect.objectContaining({ error: "Invalid token payload" })
       )
-      expect(checkUser).not.toHaveBeenCalled()
+      expect(resolveUserNavigation).not.toHaveBeenCalled()
     })
 
     it("handles empty string email by treating it as undefined", async () => {
-      vi.mocked(checkUser).mockResolvedValue({
-        user_id: 6,
-        user_name: "EmptyEmail",
-        user_email: "",
-        auth0_id: "auth0|6",
-        company_id: 1,
+      vi.mocked(resolveUserNavigation).mockResolvedValue({
+        outcome: "company",
+        companyId: "1",
       })
 
       const req = {
@@ -247,7 +232,7 @@ describe("user-controllers", () => {
       await getPayload(req, res)
 
       // Empty string should be treated as undefined 
-      expect(checkUser).toHaveBeenCalledWith(
+      expect(resolveUserNavigation).toHaveBeenCalledWith(
         { sub: "auth0|6", name: undefined, email: "" },
         expect.any(String)
       )
@@ -255,12 +240,9 @@ describe("user-controllers", () => {
     })
 
     it("sanitizes XSS content in string claims by validating types only", async () => {
-      vi.mocked(checkUser).mockResolvedValue({
-        user_id: 7,
-        user_name: "Customer",
-        user_email: "clean@company.com",
-        auth0_id: "auth0|7",
-        company_id: 5,
+      vi.mocked(resolveUserNavigation).mockResolvedValue({
+        outcome: "company",
+        companyId: "5",
       })
 
       const req = {
@@ -278,7 +260,7 @@ describe("user-controllers", () => {
       await getPayload(req, res)
 
       // Name claim is a string, so it passes the typeof check 
-      expect(checkUser).toHaveBeenCalledWith(
+      expect(resolveUserNavigation).toHaveBeenCalledWith(
         {
           sub: "auth0|7",
           name: "<script>alert('xss')</script>",

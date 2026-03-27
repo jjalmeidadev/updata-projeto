@@ -2,18 +2,11 @@ import { describe, it, expect, vi, beforeEach } from "vitest"
 import type { Request, Response } from "express"
 import { handleUpload } from "../../../../src/presentation/api/controllers/upload-controller.js"
 
-vi.mock("../../../../src/config/aws-clients.ts", () => ({
-  s3Client: {
-    send: vi.fn(),
-  },
+vi.mock("../../../../src/business/services/upload-service.js", () => ({
+  processUploadFile: vi.fn(),
 }))
 
-vi.mock("../../../../src/business/queue/upload-queue.js", () => ({
-  enqueueUploadJob: vi.fn(),
-}))
-
-import { s3Client } from "../../../../src/config/aws-clients.js"
-import { enqueueUploadJob } from "../../../../src/business/queue/upload-queue.js"
+import { processUploadFile } from "../../../../src/business/services/upload-service.js"
 
 function mockRes(): Response {
   const res = {} as Response
@@ -25,366 +18,89 @@ function mockRes(): Response {
 
 describe("upload-controller", () => {
   beforeEach(() => {
-    vi.mocked(s3Client.send).mockReset()
-    vi.mocked(enqueueUploadJob).mockReset()
-    delete (globalThis as any).process
+    vi.mocked(processUploadFile).mockReset()
   })
 
   describe("handleUpload", () => {
     it("returns 400 when file is missing", async () => {
-      // Arrange
-      ;(globalThis as any).process = { env: {} }
-      const req = { headers: {}, file: undefined } as any as Request
+      const req = { headers: {}, file: undefined } as unknown as Request
       const res = mockRes()
 
-      // Act
       await handleUpload(req, res)
 
-      // Assert
       expect(res.status).toHaveBeenCalledWith(400)
       expect(res.json).toHaveBeenCalledWith(
         expect.objectContaining({ error: "Missing upload file" })
       )
-      expect(vi.mocked(s3Client.send)).not.toHaveBeenCalled()
+      expect(vi.mocked(processUploadFile)).not.toHaveBeenCalled()
     })
 
-    it("uploads file to S3 with correct key format", async () => {
-      // Arrange
-      ;(globalThis as any).process = {
-        env: { AWS_S3_BUCKET: "upload-bucket" },
-      }
-
+    it("calls service and returns redirect payload", async () => {
       const file = {
         originalname: "data.csv",
         buffer: Buffer.from("csv,data"),
       }
 
-      const req = { headers: {}, file: file as any } as any as Request
+      const req = { headers: { "x-debug-trace-id": "trace-123" }, file: file as any } as unknown as Request
       const res = mockRes()
 
-      vi.mocked(s3Client.send).mockResolvedValue({})
-      vi.mocked(enqueueUploadJob).mockResolvedValue(undefined)
+      vi.mocked(processUploadFile).mockResolvedValue({
+        s3Key: "uploads/trace-123/data.csv",
+        fileName: "data.csv",
+      })
 
-      // Act
       await handleUpload(req, res)
 
-      // Assert
-      expect(vi.mocked(s3Client.send)).toHaveBeenCalled()
-      expect(vi.mocked(enqueueUploadJob)).toHaveBeenCalled()
+      expect(vi.mocked(processUploadFile)).toHaveBeenCalledWith(file, "trace-123")
+      expect(res.json).toHaveBeenCalledWith({
+        redirect: "/form",
+        s3Key: "uploads/trace-123/data.csv",
+        fileName: "data.csv",
+        traceId: "trace-123",
+      })
     })
 
-    it("enqueues upload job with S3 metadata", async () => {
-      // Arrange
-      ;(globalThis as any).process = {
-        env: { AWS_S3_BUCKET: "upload-bucket" },
-      }
-
+    it("generates traceId when header is missing", async () => {
       const file = {
         originalname: "data.csv",
         buffer: Buffer.from("csv,data"),
       }
 
-      const req = { headers: { "x-debug-trace-id": "trace-123" }, file: file as any } as any as Request
+      const req = { headers: {}, file: file as any } as unknown as Request
       const res = mockRes()
 
-      vi.mocked(s3Client.send).mockResolvedValue({})
-      vi.mocked(enqueueUploadJob).mockResolvedValue(undefined)
+      vi.mocked(processUploadFile).mockResolvedValue({
+        s3Key: "uploads/server-1/data.csv",
+        fileName: "data.csv",
+      })
 
-      // Act
       await handleUpload(req, res)
 
-      // Assert
-      expect(vi.mocked(enqueueUploadJob)).toHaveBeenCalledWith(
-        expect.objectContaining({
-          s3Key: expect.stringContaining("trace-123"),
-          fileName: "data.csv",
-        }),
-        "trace-123"
-      )
+      const traceId = (vi.mocked(processUploadFile).mock.calls[0] || [])[1]
+      expect(traceId).toEqual(expect.stringMatching(/^server-\d+$/))
+      expect(res.setHeader).toHaveBeenCalledWith("x-debug-trace-id", traceId)
     })
 
-    it("returns 200 with redirect URL on successful upload", async () => {
-      // Arrange
-      ;(globalThis as any).process = {
-        env: { AWS_S3_BUCKET: "upload-bucket" },
-      }
-
+    it("returns 500 when service throws", async () => {
       const file = {
         originalname: "data.csv",
         buffer: Buffer.from("csv,data"),
       }
 
-      const req = { headers: {}, file: file as any } as any as Request
+      const req = { headers: { "x-debug-trace-id": "trace-error" }, file: file as any } as unknown as Request
       const res = mockRes()
 
-      vi.mocked(s3Client.send).mockResolvedValue({})
-      vi.mocked(enqueueUploadJob).mockResolvedValue(undefined)
+      vi.mocked(processUploadFile).mockRejectedValue(new Error("service failed"))
 
-      // Act
       await handleUpload(req, res)
 
-      // Assert
-      expect(res.json).toHaveBeenCalledWith(
-        expect.objectContaining({
-          redirect: "/form",
-          s3Key: expect.any(String),
-          fileName: "data.csv",
-          traceId: expect.any(String),
-        })
-      )
-    })
-
-    it("generates traceId when x-debug-trace-id header is missing", async () => {
-      // Arrange
-      ;(globalThis as any).process = {
-        env: { AWS_S3_BUCKET: "upload-bucket" },
-      }
-
-      const file = {
-        originalname: "data.csv",
-        buffer: Buffer.from("csv,data"),
-      }
-
-      const req = { headers: {}, file: file as any } as any as Request
-      const res = mockRes()
-
-      vi.mocked(s3Client.send).mockResolvedValue({})
-      vi.mocked(enqueueUploadJob).mockResolvedValue(undefined)
-
-      // Act
-      await handleUpload(req, res)
-
-      // Assert
-      expect(res.json).toHaveBeenCalledWith(
-        expect.objectContaining({
-          traceId: expect.stringMatching(/^server-\d+$/),
-        })
-      )
-    })
-
-    it("sets x-debug-trace-id response header", async () => {
-      // Arrange
-      ;(globalThis as any).process = {
-        env: { AWS_S3_BUCKET: "upload-bucket" },
-      }
-
-      const file = {
-        originalname: "data.csv",
-        buffer: Buffer.from("csv,data"),
-      }
-
-      const req = { headers: { "x-debug-trace-id": "trace-abc" }, file: file as any } as any as Request
-      const res = mockRes()
-
-      vi.mocked(s3Client.send).mockResolvedValue({})
-      vi.mocked(enqueueUploadJob).mockResolvedValue(undefined)
-
-      // Act
-      await handleUpload(req, res)
-
-      // Assert
-      expect(res.setHeader).toHaveBeenCalledWith("x-debug-trace-id", "trace-abc")
-    })
-
-    it("returns 500 when S3 upload fails", async () => {
-      // Arrange
-      ;(globalThis as any).process = {
-        env: { AWS_S3_BUCKET: "upload-bucket" },
-      }
-
-      const file = {
-        originalname: "data.csv",
-        buffer: Buffer.from("csv,data"),
-      }
-
-      const req = { headers: {}, file: file as any } as any as Request
-      const res = mockRes()
-
-      vi.mocked(s3Client.send).mockRejectedValue(new Error("S3 connection failed"))
-
-      // Act
-      await handleUpload(req, res)
-
-      // Assert
       expect(res.status).toHaveBeenCalledWith(500)
       expect(res.json).toHaveBeenCalledWith(
-        expect.objectContaining({ error: "Error processing upload" })
+        expect.objectContaining({
+          error: "Error processing upload",
+          traceId: "trace-error",
+        })
       )
-    })
-
-    it("returns 500 when queue enqueue fails", async () => {
-      // Arrange
-      ;(globalThis as any).process = {
-        env: { AWS_S3_BUCKET: "upload-bucket" },
-      }
-
-      const file = {
-        originalname: "data.csv",
-        buffer: Buffer.from("csv,data"),
-      }
-
-      const req = { headers: {}, file: file as any } as any as Request
-      const res = mockRes()
-
-      vi.mocked(s3Client.send).mockResolvedValue({})
-      vi.mocked(enqueueUploadJob).mockRejectedValue(new Error("Queue error"))
-
-      // Act
-      await handleUpload(req, res)
-
-      // Assert
-      expect(res.status).toHaveBeenCalledWith(500)
-    })
-
-    it("includes trace ID in error response", async () => {
-      // Arrange
-      ;(globalThis as any).process = {
-        env: { AWS_S3_BUCKET: "upload-bucket" },
-      }
-
-      const file = {
-        originalname: "data.csv",
-        buffer: Buffer.from("csv,data"),
-      }
-
-      const req = { headers: { "x-debug-trace-id": "trace-error" }, file: file as any } as any as Request
-      const res = mockRes()
-
-      vi.mocked(s3Client.send).mockRejectedValue(new Error("S3 failed"))
-
-      // Act
-      await handleUpload(req, res)
-
-      // Assert
-      expect(res.json).toHaveBeenCalledWith(
-        expect.objectContaining({ traceId: "trace-error" })
-      )
-    })
-
-    it("handles .xlsx file uploads", async () => {
-      // Arrange
-      ;(globalThis as any).process = {
-        env: { AWS_S3_BUCKET: "upload-bucket" },
-      }
-
-      const file = {
-        originalname: "data.xlsx",
-        buffer: Buffer.from("xlsx,data"),
-      }
-
-      const req = { headers: {}, file: file as any } as any as Request
-      const res = mockRes()
-
-      vi.mocked(s3Client.send).mockResolvedValue({})
-      vi.mocked(enqueueUploadJob).mockResolvedValue(undefined)
-
-      // Act
-      await handleUpload(req, res)
-
-      // Assert
-      expect(res.json).toHaveBeenCalledWith(
-        expect.objectContaining({ fileName: "data.xlsx" })
-      )
-    })
-
-    it("uses xls content type for .xls uploads", async () => {
-      // Arrange
-      ;(globalThis as any).process = {
-        env: { AWS_S3_BUCKET: "upload-bucket" },
-      }
-
-      const file = {
-        originalname: "legacy.xls",
-        buffer: Buffer.from("xls,data"),
-      }
-
-      const req = { headers: {}, file: file as any } as any as Request
-      const res = mockRes()
-
-      vi.mocked(s3Client.send).mockResolvedValue({} as never)
-      vi.mocked(enqueueUploadJob).mockResolvedValue(undefined)
-
-      // Act
-      await handleUpload(req, res)
-
-      // Assert
-      const command = vi.mocked(s3Client.send).mock.calls[0][0] as any
-      expect(command.input.ContentType).toBe("application/vnd.ms-excel")
-    })
-
-    it("uses octet-stream content type for unknown extension", async () => {
-      // Arrange
-      ;(globalThis as any).process = {
-        env: { AWS_S3_BUCKET: "upload-bucket" },
-      }
-
-      const file = {
-        originalname: "blob.bin",
-        buffer: Buffer.from("bin,data"),
-      }
-
-      const req = { headers: {}, file: file as any } as any as Request
-      const res = mockRes()
-
-      vi.mocked(s3Client.send).mockResolvedValue({} as never)
-      vi.mocked(enqueueUploadJob).mockResolvedValue(undefined)
-
-      // Act
-      await handleUpload(req, res)
-
-      // Assert
-      const command = vi.mocked(s3Client.send).mock.calls[0][0] as any
-      expect(command.input.ContentType).toBe("application/octet-stream")
-    })
-
-    it("uses octet-stream when file has no extension", async () => {
-      // Arrange
-      ;(globalThis as any).process = {
-        env: { AWS_S3_BUCKET: "upload-bucket" },
-      }
-
-      const file = {
-        originalname: "payload",
-        buffer: Buffer.from("raw,data"),
-      }
-
-      const req = { headers: {}, file: file as any } as any as Request
-      const res = mockRes()
-
-      vi.mocked(s3Client.send).mockResolvedValue({} as never)
-      vi.mocked(enqueueUploadJob).mockResolvedValue(undefined)
-
-      // Act
-      await handleUpload(req, res)
-
-      // Assert
-      const command = vi.mocked(s3Client.send).mock.calls[0][0] as any
-      expect(command.input.ContentType).toBe("application/octet-stream")
-    })
-
-    it("uses octet-stream when filename ends with dot", async () => {
-      // Arrange
-      ;(globalThis as any).process = {
-        env: { AWS_S3_BUCKET: "upload-bucket" },
-      }
-
-      const file = {
-        originalname: "payload.",
-        buffer: Buffer.from("raw,data"),
-      }
-
-      const req = { headers: {}, file: file as any } as any as Request
-      const res = mockRes()
-
-      vi.mocked(s3Client.send).mockResolvedValue({} as never)
-      vi.mocked(enqueueUploadJob).mockResolvedValue(undefined)
-
-      // Act
-      await handleUpload(req, res)
-
-      // Assert
-      const command = vi.mocked(s3Client.send).mock.calls[0][0] as any
-      expect(command.input.ContentType).toBe("application/octet-stream")
     })
   })
 })
