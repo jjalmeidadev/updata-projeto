@@ -99,5 +99,34 @@ describe("user-service", () => {
       )
       expect(result).toEqual(newUser)
     })
+
+    it("falls back to empty name/email when claims are missing", async () => {
+      vi.mocked(userRepo.findUser).mockResolvedValue(null)
+      vi.mocked(userRepo.findCompanyByDomain).mockResolvedValue(null)
+
+      const newUser = {
+        user_id: "4",
+        user_name: "Unknown User",
+        user_email: "",
+        auth0_id: "auth0|4",
+        company_id: null,
+      }
+
+      vi.mocked(userRepo.createUser).mockResolvedValue(newUser)
+
+      const result = await checkUser({ sub: "auth0|4" }, "trace-empty")
+
+      expect(userRepo.findCompanyByDomain).toHaveBeenCalledWith("", "trace-empty")
+      expect(userRepo.createUser).toHaveBeenCalledWith(
+        {
+          auth0_id: "auth0|4",
+          name: "",
+          email: "",
+          company_id: undefined,
+        },
+        "trace-empty"
+      )
+      expect(result).toEqual(newUser)
+    })
   })
 })

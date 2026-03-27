@@ -3,9 +3,20 @@ import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { AuthService } from '@auth0/auth0-angular';
 import { Subject, of, throwError } from 'rxjs';
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { LoginComponent } from '../../../src/presentation/web/src/app/pages/login/login.component';
+
+async function resolveAngularResources(): Promise<void> {
+  const core = await import('@angular/core');
+  const resolver = (core as Record<string, unknown>)['\u0275resolveComponentResources'] as
+    | ((loader: (url: string) => Promise<string>) => Promise<void>)
+    | undefined;
+
+  if (typeof resolver === 'function') {
+    await resolver(async () => '');
+  }
+}
 
 describe('LoginComponent', () => {
   let component: LoginComponent;
@@ -47,6 +58,8 @@ describe('LoginComponent', () => {
       navigateByUrl: vi.fn(),
     };
 
+    await resolveAngularResources();
+
     await TestBed.configureTestingModule({
       imports: [LoginComponent],
       providers: [
@@ -58,6 +71,10 @@ describe('LoginComponent', () => {
 
     const fixture = TestBed.createComponent(LoginComponent);
     component = fixture.componentInstance;
+  });
+
+  afterEach(() => {
+    TestBed.resetTestingModule();
   });
 
   it('does not resolve user flow when URL is not an Auth0 callback', () => {
