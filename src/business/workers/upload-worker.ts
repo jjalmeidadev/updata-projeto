@@ -21,6 +21,15 @@ const env = process.env as Record<string, string | undefined>
 
 const queueUrl = env.AWS_SQS_QUEUE_URL
 const bucketName = env.AWS_S3_BUCKET
+const parsedWorkerBatchSize = Number.parseInt(env.WORKER_BATCH_SIZE || "5", 10)
+const workerBatchSize = Number.isInteger(parsedWorkerBatchSize) && parsedWorkerBatchSize >= 1 && parsedWorkerBatchSize <= 10
+  ? parsedWorkerBatchSize
+  : 5
+const benchmarkSkipExternalSend = env.BENCHMARK_SKIP_EXTERNAL_SEND === "true"
+
+if (!Number.isInteger(parsedWorkerBatchSize) || parsedWorkerBatchSize < 1 || parsedWorkerBatchSize > 10) {
+  console.error("[WORKER] WORKER_BATCH_SIZE must be an integer between 1 and 10.")
+}
 
 if (!queueUrl) {
   console.error("[WORKER] AWS_SQS_QUEUE_URL is not set; worker cannot start.")
@@ -36,10 +45,51 @@ interface UploadJobMessage {
   fileName: string
 }
 
+interface QueueEnvelope {
+  version?: string
+  type?: string
+  emittedAt?: string
+  traceId?: string
+  payload?: unknown
+}
+
 interface EquiemResponseRecord {
   entityType: string
   externalId: string
   internalId: string
+}
+
+function isObject(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null
+}
+
+function isUploadJobMessage(value: unknown): value is UploadJobMessage {
+  return Boolean(
+    isObject(value) &&
+      typeof value.traceId === "string" &&
+      typeof value.s3Key === "string" &&
+      typeof value.fileName === "string"
+  )
+}
+
+function parseIncomingUploadMessage(body: string): UploadJobMessage | null {
+  const parsed = JSON.parse(body) as unknown
+
+  // Formato legado: payload direto
+  if (isUploadJobMessage(parsed)) {
+    return parsed
+  }
+
+  // Formato novo: envelope v1
+  if (isObject(parsed)) {
+    const envelope = parsed as QueueEnvelope
+
+    if (envelope.version === "v1" && envelope.type === "upload.stage1" && isUploadJobMessage(envelope.payload)) {
+      return envelope.payload
+    }
+  }
+
+  return null
 }
 
 export async function processMessage(message: UploadJobMessage): Promise<void> {
@@ -124,42 +174,48 @@ export async function processMessage(message: UploadJobMessage): Promise<void> {
       return
     }
 
-    const equiemPayload = buildEquiemPayload(validRecords, {
-      traceId,
-      fileName: message.fileName,
-      batchId,
-    })
-
-    const equiemResult = await sendToEquiemApi(equiemPayload, traceId)
-
-    if (!equiemResult.sent) {
-      await updateProcessingJobStatus(jobId, "pending_external_send", {
-        errorMessage: equiemResult.reason || "Equiem endpoint not configured",
+    if (benchmarkSkipExternalSend) {
+      await updateProcessingJobStatus(jobId, "completed")
+      await updateOnboardingBatchStatus(batchId, "completed")
+      await createProcessingLog(jobId, "warn", "Benchmark mode: external send skipped")
+      console.log(`[FLOW][${traceId}] worker:benchmark_skip_external_send`)
+    } else {
+      const equiemPayload = buildEquiemPayload(validRecords, {
+        traceId,
+        fileName: message.fileName,
+        batchId,
       })
-      await updateOnboardingBatchStatus(batchId, "pending_external_send", equiemResult.reason)
-      await createProcessingLog(jobId, "warn", "Payload prepared but external send was skipped")
-      console.log(`[FLOW][${traceId}] worker:pending_external_send`)
-      return
+
+      const equiemResult = await sendToEquiemApi(equiemPayload, traceId)
+
+      if (!equiemResult.sent) {
+        await updateProcessingJobStatus(jobId, "pending_external_send", {
+          errorMessage: equiemResult.reason || "Equiem endpoint not configured",
+        })
+        await updateOnboardingBatchStatus(batchId, "pending_external_send", equiemResult.reason)
+        await createProcessingLog(jobId, "warn", "Payload prepared but external send was skipped")
+        console.log(`[FLOW][${traceId}] worker:pending_external_send`)
+        return
+      }
+
+      const mappingCandidates = (
+        (equiemResult.responseBody as { mappings?: EquiemResponseRecord[] } | undefined)?.mappings || []
+      ).filter((item) => Boolean(item.entityType && item.externalId && item.internalId))
+
+      await saveOnboardingMappings(
+        mappingCandidates.map((item) => ({
+          entityType: item.entityType,
+          externalId: item.externalId,
+          internalId: item.internalId,
+        }))
+      )
+
+      await updateProcessingJobStatus(jobId, "completed", {
+        externalReference: equiemResult.externalReference,
+      })
+      await updateOnboardingBatchStatus(batchId, "completed")
+      await createProcessingLog(jobId, "info", "Processing completed and payload sent to Equiem")
     }
-
-    const mappingCandidates = (
-      (equiemResult.responseBody as { mappings?: EquiemResponseRecord[] } | undefined)?.mappings || []
-    ).filter((item) => Boolean(item.entityType && item.externalId && item.internalId))
-
-    await saveOnboardingMappings(
-      mappingCandidates.map((item) => ({
-        entityType: item.entityType,
-        externalId: item.externalId,
-        internalId: item.internalId,
-      }))
-    )
-
-    await updateProcessingJobStatus(jobId, "completed", {
-      externalReference: equiemResult.externalReference,
-    })
-    await updateOnboardingBatchStatus(batchId, "completed")
-
-    await createProcessingLog(jobId, "info", "Processing completed and payload sent to Equiem")
 
     console.log(`[FLOW][${traceId}] worker:processing_complete`)
 
@@ -197,7 +253,7 @@ export async function pollQueue(maxCycles = Number.POSITIVE_INFINITY): Promise<v
     try {
       const command = new ReceiveMessageCommand({
         QueueUrl: queueUrl,
-        MaxNumberOfMessages: 5,
+        MaxNumberOfMessages: workerBatchSize,
         WaitTimeSeconds: 20
       })
 
@@ -216,25 +272,29 @@ export async function pollQueue(maxCycles = Number.POSITIVE_INFINITY): Promise<v
           continue
         }
 
-        let parsed: UploadJobMessage
+        let parsed: UploadJobMessage | null = null
 
         try {
-          parsed = JSON.parse(body) as UploadJobMessage
+          parsed = parseIncomingUploadMessage(body)
         } catch (error) {
           console.error("[WORKER] Failed to parse message body", error)
           continue
         }
 
+        if (!parsed) {
+          console.warn("[WORKER] Unsupported/invalid message format")
+          continue
+        }
+
         try {
           await processMessage(parsed)
-
-          const deleteCmd = new DeleteMessageCommand({
-            QueueUrl: queueUrl,
-            ReceiptHandle: receiptHandle
-          })
-
-          await sqsClient.send(deleteCmd)
-          console.log(`[FLOW][${parsed.traceId}] worker:message_deleted`)
+          await sqsClient.send(
+            new DeleteMessageCommand({
+              QueueUrl: queueUrl,
+              ReceiptHandle: receiptHandle,
+            })
+          )
+          console.log(`[FLOW][${parsed.traceId || "no-trace"}] worker:message_deleted`)
         } catch (error) {
           console.error(`[WORKER] Error processing message`, error)
           // Em produção: usar dead-letter queue ou retry logic
