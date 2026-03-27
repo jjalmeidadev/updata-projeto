@@ -206,3 +206,8 @@ CREATE TABLE processing_log (
   message TEXT,
   created_at TIMESTAMPTZ DEFAULT NOW()
 );
+
+CREATE INDEX IF NOT EXISTS idx_onboarding_batch_trace_id ON equiem.onboarding_batch(trace_id);
+CREATE INDEX IF NOT EXISTS idx_processing_job_batch_id ON equiem.processing_job(batch_id);
+CREATE INDEX IF NOT EXISTS idx_onboarding_payload_batch_id ON equiem.onboarding_payload(batch_id);
+

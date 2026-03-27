@@ -1598,3 +1598,407 @@ All external communications use HTTPS to ensure encrypted data transmission.
 - Authentication and identity management are handled through Auth0 using OAuth 2.0 and OpenID Connect protocols.
 - The backend validates JWT tokens to ensure that only authenticated users can access system functionality.
 - Using managed AWS infrastructure also provides additional security mechanisms, including network isolation, access policies, and infrastructure-level protections.
+
+--- 
+
+## Appendix A: System Configuration and Optimization Report
+
+This appendix determines the optimal configuration for two critical parameters of the system:
+
+- **Batch Size (B):** the number of rows processed in a single transaction (chunk).
+- **Worker Count (W):** the number of parallel consumers running simultaneously.
+
+Selecting appropriate values for these parameters requires balancing multiple performance trade-offs:
+
+- If **B is too small**, network and transaction overhead dominate processing time.
+- If **B is too large**, memory consumption increases and may degrade system stability.
+- If **W is too low**, the processing queue drains slowly.
+- If **W is too high**, database contention and locking may reduce throughput.
+
+To identify an optimal configuration, a series of **controlled benchmarks** was executed and the results were analyzed using a regression-based performance model.
+
+---
+
+### 1. Benchmark Data Log
+
+To generate the benchmark dataset, a script called [generate-data.py](../appendix-math/scripts/generate-data.py) was implemented. This script produces a CSV file containing **50,000 rows of synthetic data** using the Python Faker library. The generated dataset is stored in [onboarding_50000.csv](../appendix-math/csv/onboarding_50000.csv).
+
+A second script, [benchmark-throughput.ts](../appendix-math/scripts/benchmark-throughput.ts), was developed to process the dataset and evaluate system throughput across multiple configurations.
+
+The benchmark evaluates **12 combinations** of batch sizes and worker counts.  Each configuration is executed **three times** to reduce noise and allow the calculation of mean throughput values.
+
+The benchmark was executed using the following command on the terminal:
+
+```bash
+$env:BENCHMARK_BATCH_SIZES="1,3,5,10";
+$env:BENCHMARK_WORKER_COUNTS="1,2,4";
+$env:BENCHMARK_RUNS_PER_COMBINATION="3";
+$env:BENCHMARK_SKIP_EXTERNAL_SEND="true";
+$env:BENCHMARK_RESUME_CSV="appendix-math/csv/throughput-2026-03-25T23-03-58-989Z.csv";
+npm run benchmark:throughput
+```
+This command generated the following output file: [throughput-2026-03-25T23-03-58-989Z.csv](../appendix-math/csv/throughput-2026-03-25T23-03-58-989Z.csv). The file records the results of three benchmark runs for each configuration.
+
+To compute the average throughput (T) in records per second, an additional script called [optimize-throughput.ts](../appendix-math/scripts/optimize-throughput.ts) was executed. This script processes the raw benchmark results and generates a new file called: [throughput-2026-03-25T23-03-58-989Z-combination-means.csv](../appendix-math/csv/throughput-2026-03-25T23-03-58-989Z-combination-means.csv) This file contains the mean throughput for each of the 12 (B, W) combinations, calculated from the three benchmark runs performed for every configuration. The averaged results are then used as the dataset for the regression model described in Section 2.
+
+The table below summarizes the evaluated configurations and their corresponding average throughput values.
+
+| Batch Size (B) | Worker Nodes (W) | Throughput (T) |
+|:--------------:|:----------------:|:--------------:|
+| 1              | 1                | 799.48         |
+| 1              | 2                | 829.46         |
+| 1              | 4                | 871.46         |
+| 3              | 1                | 900.91         |
+| 3              | 2                | 896.98         |
+| 3              | 4                | 708.42         |
+| 5              | 1                | 523.10         |
+| 5              | 2                | 718.40         |
+| 5              | 4                | 904.10         |
+| 10             | 1                | 884.70         |
+| 10             | 2                | 842.02         |
+| 10             | 4                | 870.80         |
+
+#### 1.1. Justification for Benchmark Parameters
+
+The selected parameter ranges reflect the operational characteristics of the backend architecture and the expected workload of the onboarding system.
+
+For **Batch Size (B)**, the system processes each uploaded file as a single batch, and the typical file size is moderate. A lower bound of **B = 1** represents the smallest possible transaction size, while **B = 10** was chosen as a practical upper limit to avoid excessive memory usage and long transaction times. Intermediate values (**B = 3** and **B = 5**) allow observation of how throughput changes as batch size increases.
+
+For **Worker Count (W)**, the worker service supports horizontal scaling but is constrained by database concurrency limits. A single worker (**W = 1**) provides the sequential baseline, while **W = 4** was selected as the practical upper bound to avoid database contention observed in preliminary tests. The intermediate value (**W = 2**) captures the effect of moderate parallelism.
+
+Testing all combinations of these parameters (**4 batch sizes × 3 worker counts**) produces **12 configurations**, each executed three times, providing sufficient data to estimate a reliable regression model for system throughput.
+
+--- 
+
+### 2. The Performance Model
+
+To model the relationship between system configuration and throughput, a **quadratic surface regression** was fitted to the benchmark data.
+
+The objective of this model is to approximate the system throughput **T(B, W)** as a function of:
+
+- **B:** Batch Size
+- **W:** Worker Count
+
+A quadratic model was chosen because it allows the representation of **non-linear performance effects**, such as diminishing returns or performance degradation caused by excessive parallelism or batch sizes.
+
+The regression produced the following function:
+
+\[
+T(B, W) = a + bB + cW + dB² + eBW + fW²
+\]
+
+Where the coefficients were estimated from the benchmark data as:
+
+| Coefficient | Value |
+|-------------|------|
+| a | 814.403197 |
+| b | -59.590438 |
+| c | 75.334222 |
+| d | 5.241891 |
+| e | 1.159864 |
+| f | -12.058743 |
+
+Substituting these coefficients into the model results in the following performance function:
+
+T(B,W) = 814.403197 - 59.590438B + 75.334222W + 5.241891B² + 1.159864BW - 12.058743W²
+
+This equation estimates the **expected throughput (records per second)** for any combination of batch size and worker count within the tested range.
+
+--- 
+
+#### 2.1. Model Fit Quality
+
+The regression model produced an **R² (coefficient of determination) of 0.244348**.
+
+The R² value measures how well the regression explains the variance observed in the benchmark data.
+
+- **R² = 1** indicates a perfect fit.
+- **R² = 0** indicates that the model explains none of the variation.
+
+In this case:
+
+\[
+R² = 0.244348
+\]
+
+This indicates that approximately **24.4% of the throughput variance** is explained by the quadratic model.
+
+The relatively low value suggests that additional factors, such as I/O variability, database contention, or runtime scheduling, also influence system performance. However, the model still provides a **useful approximation of the performance landscape**, allowing analytical exploration of optimal configurations.
+
+--- 
+
+#### 2.2. Model Estimation Method
+
+The coefficients of the performance model were estimated using the script [optimize-throughput.ts](../appendix-math/scripts/optimize-throughput.ts), which performs a **quadratic regression analysis** on the benchmark results.
+
+The script reads the benchmark dataset generated in Section 1. Each record in the dataset contains:
+
+- **Batch Size (B)**
+- **Worker Count (W)**
+- **Measured Throughput (T)**
+
+Using this data, the script fits the following quadratic model:
+
+T(B,W) = a + bB + cW + dB² + eBW + fW²
+
+The objective of the regression is to determine the coefficients **(a, b, c, d, e, f)** that best approximate the relationship between the system parameters and the observed throughput.
+
+--- 
+
+#### 2.3. Regression Procedure
+
+The script constructs a **design matrix** where each benchmark observation contributes one row containing the explanatory variables:
+
+[1, B, W, B², BW, W²]
+
+For a dataset containing **n benchmark observations**, this produces the matrix **X**:
+
+| 1 | B₁ | W₁ | B₁² | B₁W₁ | W₁² |
+|---|----|----|-----|------|-----|
+| 1 | B₂ | W₂ | B₂² | B₂W₂ | W₂² |
+| ... | ... | ... | ... | ... | ... |
+| 1 | Bₙ | Wₙ | Bₙ² | BₙWₙ | Wₙ² |
+
+The measured throughput values form the vector **Y**:
+
+Y = [T₁, T₂, ..., Tₙ]
+
+The regression problem can therefore be expressed as:
+
+Y = Xβ
+
+where the coefficient vector is:
+
+β = [a, b, c, d, e, f]
+
+These coefficients represent the unknown parameters of the quadratic model.
+
+--- 
+
+#### 2.4. Least Squares Solution
+
+To estimate the coefficients, the script applies the **Ordinary Least Squares (OLS)** method, which finds the coefficient vector **β** that minimizes the squared error between the predicted throughput and the observed throughput.
+
+The optimal coefficients are computed using the matrix equation:
+
+β = (XᵀX)⁻¹ XᵀY
+
+This computation is implemented programmatically in [optimize-throughput.ts](../appendix-math/scripts/optimize-throughput.ts). The script performs the following steps:
+
+1. Load the benchmark CSV file.
+2. Extract the values of **B**, **W**, and **T**.
+3. Construct the regression features **B²**, **BW**, and **W²**.
+4. Build the design matrix **X**.
+5. Apply the least squares formula to compute the coefficient vector **β**.
+6. Output the resulting performance model.
+
+The resulting coefficients define the throughput function presented in Section 2.1.
+
+--- 
+
+#### 2.5. Surface Visualization
+
+To visually analyze the relationship between the system parameters and the predicted throughput, a **3-dimensional performance surface** can be generated using the regression model obtained in Section 2.
+
+In this visualization:
+
+- The **X-axis** represents **Batch Size (B)**  
+- The **Y-axis** represents **Worker Count (W)**  
+- The **Z-axis** represents the predicted **Throughput (T)** in records per second  
+
+The surface illustrates how throughput varies as both parameters change simultaneously and provides an intuitive interpretation of the **performance landscape** used in the optimization analysis.
+
+To generate this visualization, a script called [plot-surface.py]() is used. The script evaluates the regression function **T(B,W)** across a grid of values for **B** and **W**, computes the predicted throughput for each point, and renders a 3D surface plot.
+
+The resulting surface plot is included below to illustrate the predicted performance behavior of the system.
+
+<div align="center">
+<sub>FIGURE 1 – 3D surface plot of the T(B, W) function.</sub><br>
+  <img src="../docs/assets/throughput-surface.png" width="100%" alt="3D surface plot"><br>
+  <sup>Source: Material produced by the authors, 2026.</sup>
+</div>
+
+--- 
+
+### 3. Optimization Derivation
+
+Using the performance model obtained in Section 2, it is possible to analytically determine the configuration that maximizes system throughput.
+
+The regression produced the following function:
+
+T(B,W) = 814.403197 - 59.590438B + 75.334222W + 5.241891B² + 1.159864BW - 12.058743W²
+
+To identify the optimal configuration, the **critical points of the function** must be determined.
+
+---
+
+#### 3.1. Gradient Vector
+
+The gradient of a function represents the vector of its partial derivatives.
+
+For the throughput function T(B,W), the gradient is:
+
+∇T(B,W) = ( ∂T/∂B , ∂T/∂W )
+
+Computing the partial derivatives:
+
+∂T/∂B = -59.590438 + 2(5.241891)B + 1.159864W
+
+∂T/∂B = -59.590438 + 10.483782B + 1.159864W
+
+∂T/∂W = 75.334222 + 1.159864B - 2(12.058743)W
+
+∂T/∂W = 75.334222 + 1.159864B - 24.117486W
+
+Therefore the gradient vector becomes:
+
+∇T(B,W) = ( -59.590438 + 10.483782B + 1.159864W , 75.334222 + 1.159864B - 24.117486W )
+
+---
+
+#### 3.2. Critical Point Calculation
+
+The optimal point occurs where the gradient is equal to zero.
+
+∂T/∂B = 0  
+∂T/∂W = 0
+
+This produces the system of equations:
+
+-59.590438 + 10.483782B + 1.159864W = 0
+
+75.334222 + 1.159864B - 24.117486W = 0
+
+Rearranging:
+
+10.483782B + 1.159864W = 59.590438
+
+1.159864B - 24.117486W = -75.334222
+
+Solving this linear system yields the critical point is:
+
+B* ≈ 6.49  
+W* ≈ 3.43
+
+Since batch size and worker count must be integers in practice, the configuration can be approximated as:
+
+B ≈ 6  
+W ≈ 3
+
+---
+
+#### 3.3. Hessian Matrix and Point Classification
+
+To determine whether the critical point corresponds to a maximum, minimum, or saddle point, the **Hessian matrix** is evaluated. The Hessian matrix is composed of the second-order partial derivatives:
+
+H(T) =
+
+| ∂²T/∂B² |  ∂²T/∂B∂W |
+|-----------|----------|
+| ∂²T/∂W∂B |  ∂²T/∂W² |
+
+Computing the derivatives:
+
+∂²T/∂B² = 10.483782
+
+∂²T/∂W² = -24.117486
+
+∂²T/∂B∂W = 1.159864
+
+Thus the Hessian matrix is:
+
+H = 
+| 10.483782 | 1.159864 |
+|-----------|----------|
+| 1.159864  | -24.117486 |
+
+The determinant of the Hessian is:
+
+det(H) = (10.483782)(-24.117486) - (1.159864)²
+
+det(H) ≈ -254.5
+
+Because the determinant of the Hessian is negative, the critical point corresponds to a saddle point rather than a strict local maximum in the continuous domain. 
+
+This result indicates that the regression surface does not contain a single continuous maximum. Instead, the critical point represents the center of a ridge-like region where throughput values are relatively high.
+
+In practice, the system parameters Batch Size (B) and Worker Count (W) must take integer values, meaning the optimization problem is discrete rather than continuous.
+
+Therefore, the analytical solution identifies the region of highest predicted performance, and the optimal configuration is obtained by selecting the nearest feasible integer values.
+
+The closest operational configuration to the critical point is:
+
+- Batch Size (B) = 6
+- Worker Count (W) = 3
+
+This configuration lies within the high-throughput region suggested by the regression surface and therefore represents the recommended operational configuration.
+
+--- 
+
+### 4. Strategic Recommendation
+
+The analytical model developed in the previous sections provides a mathematical estimate of how system throughput changes as a function of **Batch Size (B)** and **Worker Count (W)**.
+
+By solving the optimization problem in Section 3, the critical point of the throughput function was obtained at:
+
+- B ≈ 6.49  
+- W ≈ 3.43  
+
+Since the system configuration parameters must be integers, the recommended operational configuration is obtained by rounding to the nearest practical values.
+
+**Recommended configuration:**
+
+- **Batch Size (B): 6**
+- **Worker Count (W): 3**
+
+This configuration lies in the region where the performance model predicts the highest throughput values and represents a balanced trade-off between parallelism and resource consumption.
+
+---
+
+#### 4.1. Sensitivity Analysis
+
+The partial derivatives of the throughput function indicate how sensitive system performance is to changes in each parameter.
+
+From the gradient expressions:
+
+∂T/∂B = -59.590438 + 10.483782B + 1.159864W  
+∂T/∂W = 75.334222 + 1.159864B - 24.117486W  
+
+it can be observed that the coefficients associated with **W** are larger in magnitude than those associated with **B**, particularly in the quadratic term **−24.117486W²**.
+
+This indicates that **worker count has a stronger impact on throughput variation than batch size**. Increasing the number of workers can significantly improve throughput up to a certain point, but excessive parallelism may lead to database contention and locking, reducing performance.
+
+Batch size, on the other hand, influences throughput more gradually. Small adjustments to **B** tend to produce smaller performance changes compared to adjustments in **W**.
+
+Therefore, tuning **worker count** should generally be prioritized when optimizing system throughput.
+
+---
+
+#### 4.2. Usage Scenarios
+
+Although the recommended configuration (**B = 6, W = 3**) provides a balanced solution for the tested environment, practical system constraints may require adjustments depending on operational priorities.
+
+**Memory-constrained environments**
+
+If system memory is limited, smaller batch sizes may be preferable because they reduce the number of rows held in memory during processing. In this scenario, configurations such as **B = 3 or B = 5** may improve system stability while maintaining reasonable throughput.
+
+**Latency-sensitive processing**
+
+In situations where rapid response time is more important than maximum throughput, smaller batch sizes can reduce processing delay per request. Using **B = 1–3** may produce faster individual processing cycles even if overall throughput decreases slightly.
+
+**High-throughput workloads**
+
+For large onboarding operations or periods of high system load, maintaining a worker count close to **W = 3 or W = 4** can help maximize parallel processing capacity. However, increasing the worker count beyond this range may introduce database contention and reduce performance.
+
+---
+
+#### 4.3. Engineering Recommendation
+
+Based on the benchmark results, regression analysis, and optimization derivation, the following configuration is recommended as the default operational setup:
+
+- **Batch Size (B): 6**
+- **Worker Count (W): 3**
+
+This configuration provides a balanced level of parallelism while maintaining manageable memory usage and minimizing database contention.
+
+Future deployments may refine this configuration as additional production data becomes available, but the analytical model provides a strong initial guideline for system tuning.
