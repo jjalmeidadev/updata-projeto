@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, signal, computed } from '@angular/core';
+import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { QuestionService } from '../../services/question.service';
@@ -44,9 +44,6 @@ export class UploadComponent implements OnInit {
   readonly fileName = signal<string | null>(null);
   readonly errorMessage = signal<string | null>(null);
   readonly successMessage = signal<string | null>(null);
-
-  readonly totalQuestionsLength = computed(() => this.questions().length);
-  readonly uploadProgress = computed(() => (this.uploading() ? 50 : 0));
 
   ngOnInit(): void {
     const linkToken = this.route.snapshot.paramMap.get('linkToken');
