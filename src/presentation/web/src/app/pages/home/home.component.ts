@@ -71,7 +71,8 @@ export class HomeComponent {
   }
 
   viewDetails(company: Company) {
-    console.log('Viewing details for', company.name);
+    sessionStorage.setItem('onboardingCompany', company.name);
+    this.router.navigate(['/module-selector']);
   }
 
   toggleProfileMenu(event: MouseEvent) {

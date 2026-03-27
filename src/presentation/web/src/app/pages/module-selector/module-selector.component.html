@@ -1,41 +1,271 @@
-<div class="selector-shell">
-  <header class="selector-header">
-    <h1>Select sections for this onboarding</h1>
-    <p>Only the selected sections will appear in the form.</p>
-  </header>
+<div class="selector-container">
+  <svg
+    class="background-svg"
+    xmlns="http://www.w3.org/2000/svg"
+    width="588"
+    height="822"
+    viewBox="0 0 588 822"
+    fill="none"
+    aria-hidden="true"
+  >
+    <g clip-path="url(#clip0_selector_bg)">
+      <path
+        d="M587.5 655.697V821.5C344.053 821.233 146.773 626.402 146.5 386H314.405C314.678 534.803 436.775 655.431 587.5 655.697Z"
+        stroke="#d6c5fb"
+      ></path>
+      <path
+        d="M-127.596 385.5C-127.596 534.533 -5.3938 655.43 145.5 655.697V821.5C-98.116 821.233 -295.5 626.132 -295.5 385.5C-295.5 144.704 -97.8459 -50.5 146 -50.5C389.677 -50.5 587.226 144.433 587.5 385H419.595C419.322 236.032 296.893 115.303 146 115.303C-5.06229 115.303 -127.596 236.302 -127.596 385.5Z"
+        stroke="#d6c5fb"
+      ></path>
+    </g>
+    <defs>
+      <clipPath id="clip0_selector_bg">
+        <rect
+          width="884"
+          height="873"
+          fill="white"
+          transform="translate(-296 -51)"
+        ></rect>
+      </clipPath>
+    </defs>
+  </svg>
 
-  @if (loading()) {
-    <p class="loading">Loading sections…</p>
-  } @else {
-    <section class="selector-card">
-      <div class="actions">
-        <button type="button" class="btn btn-secondary" (click)="selectAll()">Select all</button>
-        <button type="button" class="btn btn-secondary" (click)="clearAll()">Clear all</button>
-      </div>
-
-      <div class="section-list">
-        @for (section of sections(); track section) {
-          <label class="section-item">
-            <input
-              type="checkbox"
-              [checked]="isSelected(section)"
-              (change)="toggleSection(section)"
+  <header class="navbar">
+    <div class="navbar-left">
+      <div class="logo">
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="100"
+          height="20"
+          viewBox="0 0 100 20"
+          fill="none"
+        >
+          <g clip-path="url(#clip0_module_selector_logo)">
+            <path
+              fill-rule="evenodd"
+              clip-rule="evenodd"
+              d="M0.353516 1.41077V17.4694H12.2559V14.3758H3.77777V11.0933H11.2877V7.99959H3.77777V4.50437H12.2559V1.41077H0.353516Z"
+              fill="#363640"
             />
-            <span>{{ sectionLabels[section] ?? section }}</span>
-          </label>
-        }
+            <path
+              fill-rule="evenodd"
+              clip-rule="evenodd"
+              d="M52.3526 10.1721C52.3526 14.9663 49.4713 17.8237 45.0789 17.8237C40.7099 17.8237 37.8525 14.9663 37.8525 10.1721V1.41077H41.2532V10.1958C41.2532 12.8644 42.7882 14.6356 45.0789 14.6356C47.4168 14.6356 48.952 12.8644 48.952 10.1958V1.41077H52.3526V10.1721Z"
+              fill="#363640"
+            />
+            <mask
+              id="mask0_module_selector"
+              style="mask-type: alpha"
+              maskUnits="userSpaceOnUse"
+              x="0"
+              y="1"
+              width="101"
+              height="17"
+            >
+              <path
+                d="M0.353516 17.8241H100.317V1.08057H0.353516V17.8241Z"
+                fill="white"
+              />
+            </mask>
+            <g mask="url(#mask0_module_selector)">
+              <path
+                fill-rule="evenodd"
+                clip-rule="evenodd"
+                d="M57.6665 17.4694H61.0909V1.41077H57.6665V17.4694Z"
+                fill="#363640"
+              />
+              <path
+                fill-rule="evenodd"
+                clip-rule="evenodd"
+                d="M70.0411 7.9995H77.5509V11.0932H70.0411V14.3758H78.5191V17.4693H66.6167V1.41077H78.5191V4.50427H70.0411V7.9995Z"
+                fill="#363640"
+              />
+              <path
+                fill-rule="evenodd"
+                clip-rule="evenodd"
+                d="M100.317 17.4694H96.8932V8.75518L92.8785 15.0606H90.8712V15.0369L86.8328 8.6844L86.8801 17.4694H83.4321V1.41077H85.8882L91.8866 10.857L97.8849 1.41077H100.317V17.4694Z"
+                fill="#363640"
+              />
+              <path
+                fill-rule="evenodd"
+                clip-rule="evenodd"
+                d="M27.9498 9.45203H24.751C24.751 14.0756 28.4991 17.8238 33.1228 17.8238V14.625C30.2659 14.625 27.9498 12.309 27.9498 9.45203Z"
+                fill="#363640"
+              />
+              <path
+                fill-rule="evenodd"
+                clip-rule="evenodd"
+                d="M24.7501 14.6253C21.8932 14.6253 19.5772 12.3092 19.5772 9.45229C19.5772 6.59537 21.8932 4.27932 24.7501 4.27932C27.6071 4.27932 29.9231 6.59537 29.9231 9.45229H33.1219C33.1219 4.8287 29.3737 1.08057 24.7501 1.08057C20.1266 1.08057 16.3784 4.8287 16.3784 9.45229C16.3784 14.0759 20.1266 17.824 24.7501 17.824V14.6253Z"
+                fill="#363640"
+              />
+            </g>
+          </g>
+          <defs>
+            <clipPath id="clip0_module_selector_logo">
+              <rect
+                width="100"
+                height="18.5662"
+                fill="white"
+                transform="translate(0 0.716919)"
+              />
+            </clipPath>
+          </defs>
+        </svg>
       </div>
+    </div>
 
-      <div class="footer">
+    <div class="navbar-right">
+      <button type="button" class="back-btn" (click)="goHome()">← Back</button>
+      <div class="profile">
         <button
           type="button"
-          class="btn btn-primary"
-          [disabled]="!canContinue()"
-          (click)="continueToForm()"
+          class="avatar-btn"
+          aria-haspopup="menu"
+          [attr.aria-expanded]="profileMenuOpen"
+          (click)="toggleProfileMenu($event)"
         >
-          Continue
+          <span class="avatar"><span>{{ userInitials$ | async }}</span></span>
+        </button>
+
+        <div *ngIf="profileMenuOpen" class="profile-menu" role="menu">
+          <div class="profile-menu-header">
+            <div class="profile-menu-label">Account</div>
+            <div class="profile-menu-email">{{ userEmail$ | async }}</div>
+          </div>
+          <div class="profile-menu-divider"></div>
+          <button type="button" class="logout-btn" role="menuitem" (click)="logout()">
+            Logout
+          </button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <section class="content">
+    <div class="selector-panel">
+      <h1 class="page-title">Configure this onboarding</h1>
+
+      <section class="page-section email-section" aria-labelledby="email-recipient-title">
+        <h2 id="email-recipient-title" class="section-heading">
+          <span class="section-heading-accent">Email</span> recipient
+        </h2>
+        <p class="section-subtitle">
+          Add the email address that will receive the onboarding form to complete.
+        </p>
+        <input
+          id="recipient-email"
+          class="email-input"
+          type="email"
+          name="recipientEmail"
+          autocomplete="email"
+          aria-label="Recipient email"
+          placeholder="name@company.com"
+          [value]="recipientEmail()"
+          (input)="onRecipientEmailInput($event)"
+        />
+      </section>
+
+      @if (loading()) {
+        <p class="loading">Loading sections…</p>
+      } @else {
+        <section class="page-section module-section" aria-labelledby="module-selection-title">
+          <div class="selector-card">
+            <header class="selector-card-header">
+              <div class="selector-card-header-text">
+                <h2 id="module-selection-title" class="section-heading">
+                  <span class="section-heading-accent">Select sections</span> for this onboarding
+                </h2>
+                <p class="section-subtitle selector-card-subtitle">
+                  Only the selected sections will appear in the form.
+                </p>
+              </div>
+              <div class="actions selector-card-actions">
+                <button type="button" class="btn-secondary" (click)="clearAll()">Clear all</button>
+                <button type="button" class="btn-secondary" (click)="selectAll()">Select all</button>
+              </div>
+            </header>
+
+            <div class="section-columns">
+              <div class="section-column">
+                <div class="column-block">
+                  <div class="column-title">Your company</div>
+                  <div class="section-list">
+                    @for (section of groupedSections().company; track section) {
+                      <label class="section-item">
+                        <input
+                          type="checkbox"
+                          [checked]="isSelected(section)"
+                          (change)="toggleSection(section)"
+                        />
+                        <span>{{ getSectionLabel(section) }}</span>
+                      </label>
+                    }
+                  </div>
+                </div>
+
+                <div class="column-block">
+                  <div class="column-title">Building</div>
+                  <div class="section-list">
+                    @for (section of groupedSections().building; track section) {
+                      <label class="section-item">
+                        <input
+                          type="checkbox"
+                          [checked]="isSelected(section)"
+                          (change)="toggleSection(section)"
+                        />
+                        <span>{{ getSectionLabel(section) }}</span>
+                      </label>
+                    }
+                  </div>
+                </div>
+              </div>
+
+              <div class="section-column">
+                <div class="column-title">Amenities</div>
+                <div class="section-list">
+                  @for (section of groupedSections().amenities; track section) {
+                    <label class="section-item">
+                      <input
+                        type="checkbox"
+                        [checked]="isSelected(section)"
+                        (change)="toggleSection(section)"
+                      />
+                      <span>{{ getSectionLabel(section) }}</span>
+                    </label>
+                  }
+                </div>
+              </div>
+
+              <div class="section-column">
+                <div class="column-title">Permits → request management</div>
+                <div class="section-list">
+                  @for (section of groupedSections().permitsToRequestManagement; track section) {
+                    <label class="section-item">
+                      <input
+                        type="checkbox"
+                        [checked]="isSelected(section)"
+                        (change)="toggleSection(section)"
+                      />
+                      <span>{{ getSectionLabel(section) }}</span>
+                    </label>
+                  }
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+      }
+
+      <div class="page-footer">
+        <button
+          type="button"
+          class="btn-primary"
+          [disabled]="!canContinue()"
+          (click)="sendForm()"
+        >
+          Send form
         </button>
       </div>
-    </section>
-  }
+    </div>
+  </section>
 </div>

@@ -21,6 +21,7 @@
     "test:staged": "npm run stage:validate && npm run stage:up:prod && npm run stage:test:prod && npm run stage:down:prod && npm run stage:up:dev && npm run stage:test:dev && npm run stage:cleanup"
   },
   "dependencies": {
+    "@angular/animations": "^21.2.6",
     "@aws-sdk/client-s3": "^3.637.0",
     "@aws-sdk/client-sqs": "^3.637.0",
     "cors": "^2.8.6",
