@@ -33,28 +33,36 @@
     <div class="input-panel">
       <header class="input-header">
         <h1>Choose how you want to complete your onboarding</h1>
+        @if (instance()) {
+          <p class="subtitle">
+            Company: <strong>{{ instance()?.companyName }}</strong>
+          </p>
+        }
+        @if (errorMessage()) {
+          <p class="subtitle">{{ errorMessage() }}</p>
+        }
       </header>
 
       <section class="method-grid">
-          <article class="method-option">
-            <h2>Upload a <span class="accent">file</span></h2>
-            <p>
-              Download a Excel template (.xlsx) and upload it to the platform.
-            </p>
-            <button type="button" class="start-btn method-btn" (click)="choose('upload')">
-              Continue with option one
-            </button>
-          </article>
+        <article class="method-option">
+          <h2>Upload a <span class="accent">file</span></h2>
+          <p>
+            Download a Excel template (.xlsx) and upload it to the platform.
+          </p>
+          <button type="button" class="start-btn method-btn" (click)="choose('upload')">
+            Continue with option one
+          </button>
+        </article>
 
-          <article class="method-option">
-            <h2>Fill in <span class="accent">Manually</span></h2>
-            <p>
-              Enter the information directly on the platform, section by section.
-            </p>
-            <button type="button" class="details-btn method-btn" (click)="choose('manual')">
-              Continue with option two
-            </button>
-          </article>
+        <article class="method-option">
+          <h2>Fill in <span class="accent">Manually</span></h2>
+          <p>
+            Enter the information directly on the platform, section by section.
+          </p>
+          <button type="button" class="details-btn method-btn" (click)="choose('manual')">
+            Continue with option two
+          </button>
+        </article>
       </section>
     </div>
   </section>

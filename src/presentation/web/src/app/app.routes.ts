@@ -29,5 +29,9 @@ export const routes: Routes = [
     component: InputMethodComponent,
     data: { routeAnimation: 'inputMethod' },
   },
+  { path: 'onboarding/:linkToken', component: InputMethodComponent },
+  { path: 'onboarding/:linkToken/form', component: OnboardingFormComponent },
+  { path: 'onboarding/:linkToken/upload', component: UploadComponent },
+  { path: 'onboarding/:linkToken/review', component: ReviewComponentsComponent },
   { path: '**', redirectTo: '/login' }
 ];

@@ -138,11 +138,19 @@
   <section class="content">
     <div class="home-panel">
       <div class="home-header">
-        <h1>Current Onboarding Processes</h1>
-        <p class="subtitle">
-          Track the progress of all ongoing onboarding flows.
-        </p>
+        <div>
+          <h1>Current Onboarding Processes</h1>
+          <p class="subtitle">
+            Track the progress of all ongoing onboarding flows.
+          </p>
+        </div>
+        <button class="start-btn" type="button" (click)="createOnboarding()">
+          Create Onboarding
+        </button>
       </div>
+
+      <p *ngIf="feedbackMessage" class="subtitle">{{ feedbackMessage }}</p>
+      <p *ngIf="errorMessage" class="subtitle">{{ errorMessage }}</p>
 
       <div class="table-wrapper">
         <table class="company-table">
@@ -155,9 +163,12 @@
             </tr>
           </thead>
           <tbody>
-            <tr *ngFor="let company of companies">
+            <tr *ngIf="loading">
+              <td colspan="4">Loading onboarding instances...</td>
+            </tr>
+            <tr *ngFor="let instance of instances">
               <td class="company-name">
-                {{ company.name }}
+                {{ instance.companyName }}
               </td>
               <td>
                 <div class="progress-container">
@@ -165,7 +176,7 @@
                   <div class="progress-bar">
                     <div
                       class="progress-fill"
-                      [style.width.%]="company.progress"
+                      [style.width.%]="instance.progressPercent"
                     ></div>
                   </div>
                   <span class="percent">100%</span>
@@ -174,28 +185,48 @@
               <td class="status-cell">
                 <span
                   class="status-pill"
-                  [class.status-started]="company.started"
-                  [class.status-not-started]="!company.started"
+                  [ngClass]="statusClass(instance)"
                 >
-                  {{ company.started ? 'In progress' : 'Not started' }}
+                  {{ statusLabel(instance) }}
                 </span>
               </td>
               <td class="actions-cell">
                 <button
-                  *ngIf="company.started"
-                  class="details-btn"
-                  (click)="viewDetails(company)"
+                  class="icon-btn"
+                  type="button"
+                  title="Copy onboarding link"
+                  (click)="copyLink(instance)"
                 >
-                  View details →
+                  Copy Link
                 </button>
                 <button
-                  *ngIf="!company.started"
+                  *ngIf="showContinue(instance)"
                   class="start-btn"
-                  (click)="startOnboarding(company)"
+                  type="button"
+                  (click)="openOnboarding(instance)"
                 >
-                  Configure onboarding
+                  Continue
+                </button>
+                <button
+                  *ngIf="instance.status === 'equiem_review'"
+                  class="details-btn"
+                  type="button"
+                  (click)="completeReview(instance)"
+                >
+                  Complete review
+                </button>
+                <button
+                  *ngIf="instance.status === 'completed'"
+                  class="details-btn"
+                  type="button"
+                  (click)="viewDetails(instance)"
+                >
+                  View details ->
                 </button>
               </td>
+            </tr>
+            <tr *ngIf="!loading && instances.length === 0">
+              <td colspan="4">No onboarding instances found.</td>
             </tr>
           </tbody>
         </table>
