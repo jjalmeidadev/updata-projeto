@@ -86,6 +86,7 @@
     - [Automated Test Frameworks](#automated-test-frameworks)
   - [21. Test Coverage Discussion](#21-test-coverage-discussion)
     - [21.1 Unit Tests (Backend): Strategy, Implementation, and Coverage](#211-unit-tests-backend-strategy-implementation-and-coverage)
+    - [21.2 Usability Tests](#212-usability-tests)
   - [22. FR–NFR Correlation Matrix](#22-frnfr-correlation-matrix)
   - [23. User Stories and Traceability](#23-user-stories-and-traceability)
     - [User Stories](#user-stories)
@@ -1007,6 +1008,342 @@ tests/
 
 To refresh coverage numbers, run `npm run test:coverage` and check the terminal output or `coverage/index.html`.
 
+### 21.2 Usability Tests
+
+The purpose of usability testing is to evaluate how effectively external users can interact with the onboarding system, focusing on the two primary interaction paths available in the current MVP:
+
+1. **File Upload Flow (automated form completion)**
+2. **Manual Form Filling Flow**
+
+These tests validate whether users can:
+- Understand the available interaction paths,
+- Identify the most efficient workflow,
+- Complete tasks without assistance,
+- And correctly interpret system feedback.
+
+---
+
+### Test Responsibility 
+
+#### Upload Flow Test Team
+
+The following members were responsible for planning, executing, and documenting the **File Upload Flow usability tests**:
+
+- **Facilitator:** Owen  
+- **Presenter:** Jaime  
+- **Recorders:** Matheus, Vitor  
+- **Evaluators (external):** Karol Barbosa, Mariana, Tobias  
+
+This team focused on evaluating the **automated onboarding path**, including file upload, system processing, and auto-filled form feedback.
+
+---
+
+#### Manual Form Flow Test Team
+
+The following members were responsible for planning, executing, and documenting the **Manual Form Filling usability tests**:
+
+- **Facilitator:** Débora  
+- **Presenter:** Ana  
+- **Recorder:** Yudi  
+- **Evaluators (external):** Celso, Rui  
+
+This team focused on evaluating the **manual data entry workflow**, including form navigation, field clarity, and submission process.
+
+---
+
+#### Notes on Test Organization
+
+The division into two groups allowed the team to:
+- evaluate **both primary and secondary user flows independently**,  
+- ensure **focused observation and analysis per interaction type**,  
+- and improve **documentation clarity and depth** for each usability path.
+
+---
+
+#### Testing Methodology
+
+The evaluation was conducted using a **Cognitive Walkthrough** approach, focusing on **first-time user experience and learnability**.
+
+Participants were **external to the development group**, ensuring unbiased interaction and realistic behavior.
+
+The evaluation was based on the persona:
+
+- **Chloe Smith (Office Manager)**  
+  A moderately technical user responsible for organizing and submitting onboarding data, seeking efficiency and clarity.
+
+---
+
+#### Test Setup
+
+- **Prototype fidelity:** High-fidelity  
+- **Entry point:** Login page  
+- **Environment:** Controlled observation session  
+- **Test type:** Task-based usability evaluation  
+
+Each participant performed tasks independently while evaluators recorded:
+
+- Decision-making process,
+- Interaction patterns,
+- Misunderstandings,
+- And completion success.
+
+---
+
+### Test 1 – File Upload Flow (Primary Path)
+
+#### Objective
+
+Evaluate whether users can identify and use the **file upload feature** to automatically populate the onboarding form.
+
+#### Task Definition
+
+- **Task:** Upload a CSV/XLSX file and complete the onboarding flow  
+- **Expected outcome:** Form fields are auto-filled and user reaches the **pending review page**  
+- **Success criteria:** Task completed without external assistance  
+
+---
+
+#### Results Summary
+
+- **Success rate:** 100%  
+- **Severity:** Low to Medium (initial interaction only)  
+- **Critical failures:** None  
+
+---
+
+#### Individual User Experiences
+
+##### **Karol Barbosa**
+
+<div align="center">
+<sub>FIGURE 10 – Karol Usability Test</sub><br>
+  <img src="assets/karolusability.jpg" width="100%" alt="Karol Usability Test"><br>
+  <sup>Source: Material produced by the authors, 2026.</sup>
+</div>
+
+- Initially considered manual form filling before noticing the upload option  
+- Quickly adapted after identifying the upload button  
+- Successfully completed the flow with no further issues  
+
+**Insight:** Upload feature is functional and intuitive after discovery, but not immediately prioritized.
+
+---
+
+##### **Mariana**
+
+<div align="center">
+<sub>FIGURE 11 – Mariana Usability Test</sub><br>
+  <img src="assets/marianausability.jpg" width="100%" alt="Mariana Usability Test"><br>
+  <sup>Source: Material produced by the authors, 2026.</sup>
+</div>
+
+- Experienced initial confusion regarding:
+  - form structure  
+  - navigation between sections  
+- Required a moment to understand that upload button was the intended starting point  
+- Successfully completed the process after understanding workflow  
+
+**Insight:** Lack of early guidance increases cognitive load for first-time users.
+
+---
+
+##### **Tobias**
+
+<div align="center">
+<sub>FIGURE 12 – Tobias Usability Test</sub><br>
+  <img src="assets/tobiasusability.jpg" width="100%" alt="Tobias Usability Test"><br>
+  <sup>Source: Material produced by the authors, 2026.</sup>
+</div>
+
+- Immediately identified the upload functionality  
+- Completed the task smoothly without hesitation  
+- Demonstrated clear understanding of system feedback  
+
+**Insight:** When the correct mental model is triggered early, the system is highly efficient.
+
+---
+
+#### Key Findings – Upload Flow
+
+- Users **eventually identify** the correct action, but not always immediately  
+- The **upload feature lacks visual prioritization** as the main entry point  
+- Once triggered, the system provides **clear and effective feedback**  
+- Auto-fill behavior significantly improves user confidence  
+
+---
+
+### Test 2 – Manual Form Filling Flow (Secondary Path)
+
+#### Objective
+
+Evaluate how users interact with the **manual form filling option** when completing the *Company Details* section, and identify usability issues related to navigation, clarity, and workflow understanding.
+
+#### Task Definition
+
+- **Task:** Fill in the Company Details section manually and submit the information  
+- **Expected outcome:** User completes the form and successfully submits the onboarding data  
+- **Success criteria:** Form is filled and submitted without blocking errors  
+
+---
+
+#### Results Summary
+
+- **Success rate:** 100%  
+- **Severity:** Medium  
+- **Critical issues:** Confusion in specific fields and unclear workflow prioritization  
+
+---
+
+#### Individual User Experiences
+
+##### **Celso**
+
+<div align="center">
+<sub>FIGURE 13 – Celso Usability Test</sub><br>
+  <img src="assets/celsousability.jpg" width="100%" alt="Celso Usability Test"><br>
+  <sup>Source: Material produced by the authors, 2026.</sup>
+</div>
+
+- Initially attempted to **create an account instead of logging in**, indicating confusion in entry point  
+- Successfully logged in using Google afterward  
+- Selected onboarding sections, but not all of them  
+- Attempted to **upload a CSV before proceeding manually**, suggesting unclear prioritization between flows  
+- Completed manual form filling successfully  
+- Reported confusion in the field: **“Build they are located in”**  
+- Successfully submitted the form  
+
+**Insight:**  
+User behavior shows **uncertainty in the overall workflow**, especially in distinguishing between upload and manual paths, and highlights **unclear field labeling**.
+
+---
+
+##### **Henrique**
+
+<div align="center">
+<sub>FIGURE 14 – Henrique Usability Test</sub><br>
+  <img src="assets/ruiusability.jpg" width="100%" alt="Rui Usability Test"><br>
+  <sup>Source: Material produced by the authors, 2026.</sup>
+</div>
+
+- Logged in via Google without issues  
+- Attempted to **create a new company**, indicating partial misunderstanding of flow sequence  
+- Also attempted to **upload a CSV before using manual input**  
+- Completed manual form filling without major difficulty  
+- Expressed confusion in the field: **“Build they are located in”**  
+- Successfully submitted the form  
+
+**Insight:**  
+Even with smoother progression, the user still demonstrated **ambiguity between available actions** and **unclear meaning of specific fields**.
+
+---
+
+#### Key Findings – Manual Flow
+
+- Users frequently **deviate from the intended path** before completing the task:
+  - Attempting account creation
+  - Attempting CSV upload
+  - Attempting unrelated actions (creating a company)
+
+- There is **no clear distinction between interaction paths (upload vs manual)**
+
+- The field **“Build they are located in”** caused consistent confusion:
+  - Unclear wording
+  - Unclear expected input
+
+- Despite confusion, users are able to **recover and complete the task**, indicating:
+  - Good system resilience
+  - Suboptimal clarity
+
+---  
+
+### Cross-Test Analysis
+
+#### Patterns Observed
+
+- All users successfully completed tasks -> **strong baseline usability**
+- Initial friction occurs in **understanding how to start**
+- Upload flow becomes **highly efficient after discovery**
+- Manual flow is:
+  - Usable, but less efficient and less intuitive
+
+---
+
+#### Core Usability Issues Identified
+
+1. **Unclear primary action (Upload vs Manual)**  
+2. **Lack of onboarding guidance for first-time users**  
+3. **Form structure not immediately scannable**  
+
+---
+
+### Actionable Improvements (Current Scope)
+
+| Issue | Recommendation | Priority |
+|------|--------------|----------|
+| Upload not clearly prioritized | Highlight upload as primary CTA (visual hierarchy, placement) | High |
+| Users default to manual input | Add instructional microcopy (“Start by uploading your file”) | High |
+| Lack of first-time guidance | Introduce onboarding tooltip or hint | High |
+| Form structure unclear | Improve section grouping and labeling | Medium |
+
+---
+
+### Future Improvements (Post-MVP)
+
+| Opportunity | Description |
+|------------|------------|
+| Guided onboarding flow | Step-by-step interaction guiding users toward upload |
+| Interactive tutorial | First-time walkthrough explaining system logic |
+| Smart empty states | Contextual hints before user action |
+| Advanced feedback states | More granular processing indicators |
+| Behavioral analytics | Track user interaction patterns and drop-offs |
+
+---
+
+### Evaluation of Test Coverage
+
+The usability tests covered the main user interaction flows related to:
+
+- **FR01 – Structured Onboarding Data Upload**
+- **FR08 – Dynamic Onboarding Interface**
+- **FR11 – Onboarding Status and Feedback**
+
+Additionally, the tests indirectly evaluated:
+- User decision-making between alternative interaction paths.
+- Clarity of system affordances.
+- Effectiveness of UI feedback mechanisms.
+
+#### Identified Gaps
+
+The following areas were not covered and should be tested in future iterations:
+
+- Collaborative workflows (FR10)  
+- Error correction and re-submission (FR05)  
+- Dependency enforcement (FR09)  
+- Large-scale usability under high data volume (NFR02)  
+
+---
+
+### Conclusion
+
+The usability evaluation demonstrates that the system is:
+
+- **Effective:** All users completed both interaction paths  
+- **Learnable:** Users adapt quickly after initial interaction  
+- **Efficient (in upload flow):** Automation significantly improves performance  
+
+However, the system currently presents **moderate friction in first-time use**, primarily due to:
+
+- Unclear prioritization of the upload feature,  
+- Lack of initial guidance,  
+- Structure complexity.  
+
+These issues are **non-critical and highly addressable**, requiring primarily UX and interface adjustments rather than structural changes.
+
+Improving the initial interaction experience will significantly enhance:
+- User efficiency,
+- Onboarding speed,
+- Overall product perception.
+
 ## 22. FR–NFR Correlation Matrix
 
 | FR ID | Related NFRs | Justification                                                                  |
@@ -1086,12 +1423,12 @@ The main components of the architecture include:
 
 The deployment architecture was designed to satisfy the project's non-functional requirements, particularly those related to performance, scalability, availability, and security.
 
-Figure 10 illustrates the deployment architecture of the onboarding automation platform.
+Figure 15 illustrates the deployment architecture of the onboarding automation platform.
 
 For better visualization, please access the following [link](https://drive.google.com/file/d/1jHnyVEm3KI1-ERu1pNhjq-7KT3i-hlVW/view?usp=sharing).
 
 <div align="center">
-<sub>FIGURE 10 – Deployment Architecture Diagram</sub><br>
+<sub>FIGURE 15 – Deployment Architecture Diagram</sub><br>
   <img src="assets/deployment_map.svg" width="100%" alt="Deployment Architecture Diagram"><br>
   <sup>Source: Material produced by the authors, 2026.</sup>
 </div>
