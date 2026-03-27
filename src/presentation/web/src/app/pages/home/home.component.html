@@ -185,8 +185,7 @@
               <td class="status-cell">
                 <span
                   class="status-pill"
-                  [class.status-started]="instance.status === 'in_progress' || instance.status === 'equiem_review' || instance.status === 'completed'"
-                  [class.status-not-started]="instance.status === 'draft'"
+                  [ngClass]="statusClass(instance)"
                 >
                   {{ statusLabel(instance) }}
                 </span>
@@ -198,7 +197,7 @@
                   title="Copy onboarding link"
                   (click)="copyLink(instance)"
                 >
-                  🔗
+                  Copy Link
                 </button>
                 <button
                   *ngIf="showContinue(instance)"
@@ -222,7 +221,7 @@
                   type="button"
                   (click)="viewDetails(instance)"
                 >
-                  View details →
+                  View details ->
                 </button>
               </td>
             </tr>

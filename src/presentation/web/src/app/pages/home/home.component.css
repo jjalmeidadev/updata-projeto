@@ -339,6 +339,14 @@
   color: #2f7d32;
 }
 
+.status-review {
+  color: #9a6700;
+}
+
+.status-completed {
+  color: #155eef;
+}
+
 .status-not-started {
   color: #c0392b;
 }

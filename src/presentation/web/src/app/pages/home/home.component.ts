@@ -98,6 +98,13 @@ export class HomeComponent implements OnInit {
     return 'Not started';
   }
 
+  statusClass(instance: OnboardingInstance): string {
+    if (instance.status === 'completed') return 'status-completed';
+    if (instance.status === 'equiem_review') return 'status-review';
+    if (instance.status === 'in_progress') return 'status-started';
+    return 'status-not-started';
+  }
+
   showContinue(instance: OnboardingInstance): boolean {
     return instance.status === 'draft' || instance.status === 'in_progress';
   }
