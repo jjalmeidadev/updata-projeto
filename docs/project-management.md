@@ -31,16 +31,14 @@
    - [Improvement Backlog for Sprint 4](#353-improvement-backlog-for-sprint-4)
    - [Risk Analysis and Tracking](#354-risk-analysis-and-tracking)
 
-4. [Sprint 4 Planning](#4-sprint-4-planning)
+4. [Group Development Process Management](#4-group-development-process-management)
+   - [Daily Meetings Policy](#41-daily-meetings-policy)
+   - [Development and Collaboration Policies](#42-development-and-collaboration-policies)
 
-5. [Group Development Process Management](#5-group-development-process-management)
-   - [Daily Meetings Policy](#51-daily-meetings-policy)
-   - [Development and Collaboration Policies](#52-development-and-collaboration-policies)
-
-6. [Cost Analysis and Effort Estimation](#6-cost-analysis-and-effort-estimation)
-   - [Effort and Labor Scope](#61-effort-and-labor-scope)
-   - [Infrastructure and Tools](#62-infrastructure-and-tools)
-   - [Financial Summary](#63-financial-summary)
+5. [Cost Analysis and Effort Estimation](#5-cost-analysis-and-effort-estimation)
+   - [Effort and Labor Scope](#51-effort-and-labor-scope)
+   - [Infrastructure and Tools](#52-infrastructure-and-tools)
+   - [Financial Summary](#53-financial-summary)
 
 ---
 
@@ -352,107 +350,15 @@ This section presents an analysis of Sprint 3 execution based on workflow, task 
 
 
 ---
+## 4. Group Development Process Management
 
-## 4. Sprint 4 Planning
-### 4.1. Objectives 
-- **Perform Analytic Optimization of System Throughput** using Multivariable Calculus to determine optimal Batch Size (B) and Worker Count (W).
-- **Implement Asynchronous SQS Worker** to handle large file uploads without causing application crashes or request timeouts.
-- **Automate Data Consolidation and Export** to generate consolidated onboarding datasets in CSV or JSON format.
-- **Enhance Frontend Usability** by implementing progress feedback to prevent duplicate submissions.
-- **Conduct Final NFR and Usability Tests** to validate concurrent submission handling and system responsiveness.
-- **Finalize Project Documentation and Video Evidence** showing the application execution and VSCode console.
-
-**Expected outcomes:**
-- Analytically proven optimal system configuration documented in Appendix A.
-- Scalable asynchronous processing system capable of handling files up to 100 MB.
-- Fully functioning export module for validated onboarding data.
-- Validated FR, NFR, and usability aspects with comprehensive test cases and execution evidence.
-- Video evidence presenting the system execution as requested.
-
-### 4.2. Backlog and Task Allocation
-| Task ID | Task Name | Type | Size | Owner | DoR | DoD |
-| ------- | --------- | ---- | ---- | ----- | --- | --- |
-| S4-01 | Benchmark Environment Setup | Chore | M | Tech Lead | Test environment deployed | 12+ combinations of Batch (B) and Worker (W) tested; data logged. |
-| S4-02 | Mathematical Modeling & Calculus | Feature | L | Backend Dev Team | Benchmark data collected (S4-01) | Quadratic function fitted; partial derivatives and Hessian matrix calculated. |
-| S4-03 | Math Artifact Documentation | Docs | S | Tech Lead | Calculus calculations verified (S4-02) | Appendix A written with strategic recommendations and surface plot. |
-| S4-04 | AWS SQS Provisioning | Chore | S | Tech Lead | Cloud architecture defined | Amazon SQS queue created; IAM roles configured. |
-| S4-05 | Queue Publisher Implementation | Feature | M | Backend Dev Team | SQS provisioned (S4-04) | Node.js backend successfully publishes upload events to the queue. |
-| S4-06 | SQS Worker Consumer Logic | Feature | L | Backend Dev Team | Publisher working (S4-05) | Worker processes files asynchronously using optimal B and W parameters. |
-| S4-07 | JSON/CSV Data Export API | Feature | M | Backend Dev Team | Staging DB populated | REST endpoint generates and returns consolidated JSON/CSV files. |
-| S4-08 | Angular Upload Progress UI | Feature | M | Frontend Dev Team | UX feedback analyzed | Dynamic loading states and progress bars implemented in Angular. |
-| S4-09 | Toast Notifications & Error Handling | Feature | S | Frontend Dev Team | API error mapping defined | Success/Error toast notifications integrated into the UI. |
-| S4-10 | Final NFR & Concurrent Load Tests | Test | M | QA Team | SQS Worker deployed (S4-06) | System tested with 10+ concurrent submissions and 100MB files without crashing. |
-| S4-11 | Final Usability Testing | Test | S | UX Team | Progress UI completed (S4-08) | External users tested; feedback documented confirming reduction in duplicate uploads. |
-| S4-12 | Video Evidence & Artifact Review | Chore | S | Review Team | All features integrated | Split-screen video recorded (Angular + VSCode); documentation finalized. |
-
-**Allocation Logic**
-
-- **Days 1–3:** S4-01 & S4-04 
-  - The Tech Lead provisions the AWS SQS infrastructure, while the backend team sets up the environment to run the 12+ benchmarks required for the Math Artifact.
-
-- **Days 3–5:** S4-02 & S4-05 
-  - Backend developers implement the queue publisher logic. Concurrently, the math modeling (Quadratic Surface, partial derivatives, and Hessian Matrix) is calculated to find the optimal Batch and Worker limits.
-
-- **Days 4–7:** S4-06, S4-08 & S4-09
-  - **Parallel Execution:** Backend team develops the Worker consumer applying the calculated mathematical parameters. Frontend team implements loading states, progress bars, and toast notifications in Angular to solve usability bottlenecks.
-
-- **Days 6–8:** S4-03 & S4-07
-  - The Math Artifact is documented as Appendix A, and the backend concludes the Data Consolidation export feature (JSON/CSV).
-
-- **Days 8–9:** S4-10 & S4-11
-  - QA and UX teams run final Non-Functional Requirement (NFR) stress tests (handling 100MB limits and 10+ concurrent users) and validate the new UI enhancements with external users.
-
-- **Day 10:** S4-12
-  - Review team records the mandatory split-screen video demonstrating the application and the Node.js/VSCode console, ensuring all artifacts are ready for the Sprint Review.
-
-## 4.3. Sprint 4 Analysis
-This section evaluates the execution of Sprint 4, focusing on feature development, testing, and database evolution.
-
-### 4.3.1. Strengths
-- **Auth0 & Stack Compliance**
-  - The team successfully integrated Auth0 for identity management and adhered strictly to the required technology stack (Node.js + TypeScript for the backend; Angular + TypeScript for the frontend).
-- **Database Traceability**
-    - The physical database model was effectively evolved, with versioned create_database.sql, initial_data.sql, and a functional rollback.sql script implementing transaction traceability.
-- **Testing**
-  - Unit, functional, and Non-Functional Requirement (NFR) tests were planned and executed, successfully identifying critical integration gaps before the sprint review.
-
-### 4.3.2. Weaknesses
-- **Task Estimation Inaccuracies**
-    - The team underestimated the technical complexity and time required to fully integrate the backend. This led to minor sprint delays.
-- **Merge requests Bottlenecks**
-  - Despite clearly defined GitFlow policies, several Merge Requests remained in the "Waiting Review" stage significantly longer than anticipated.
-
-### 4.3.3 Improvement Backlog for Sprint 5
-
-| Action | Owner | Target Sprint | Metric | Evidence | Status | Observed Result |
-|--------|-------|---------------|--------|----------|--------|-----------------|
-| improve merge requests review time | Tech Lead | Sprint 5 | Average time MRs remain in "Waiting Review" status | GitLab MR logs | Planned | To be measured at Sprint 5 Retrospective |
-| Optimize database | Backend Dev Team | Sprint 5 | Number of DB connection timeouts during load tests | NFR stress test reports | Planned | To be measured at Sprint 5 Review |
-
-### 4.3.4 Risk Analysis and Tracking
-#### Risk Register
-
-| Risk | Description | Probability | Impact | Owner | Status | Trend | Mitigation |
-|------|-------------|-------------|--------|-------|--------|-------|------------|
-| **Performance Degradation** | Large file uploads (near 100MB) block the main thread and cause UI timeouts. | High | High | Tech Lead | Open | Increasing | Implement asynchronous background workers using Amazon SQS in Sprint 5. |
-| **System Throughput Inefficiency** | Suboptimal batch sizes (B) and worker counts (W) cause network overhead or database locking. | High | Medium | Tech Lead | Open | Increasing | Run benchmarks and execute mathematical modeling (Calculus/Hessian Matrix) to derive optimal parameters. |
-| **Testing & Integration Delays** | Late Merge Request approvals bottleneck the QA testing window before the sprint ends. | Medium | Medium | Scrum Master | Mitigating | Stable | Enforce a strict 24-hour SLA for all MR peer reviews. |
-
-- **Risk Tracking:** Risks are continuously reviewed during Sprint Planning, Mid-Sprint Checkpoints, and Sprint Retrospectives.  
-- **Status definitions:** Open, Mitigating, Closed.  
-- **Trend:** Increasing, Stable, Decreasing.
-
-
---- 
-## 5. Group Development Process Management
-
-### 5.1 Daily Meetings Policy
+### 4.1 Daily Meetings Policy
 - **Frequency:** Daily during sprint execution  
 - **Objective:** Share progress, blockers, next actions  
 - **Duration:** Short, time-boxed  
 - **Participation:** Entire team  
 
-### 5.2 Development and Collaboration Policies
+### 4.2 Development and Collaboration Policies
 
 - **GitLab usage rules:** Version all code and documentation; follow GitFlow for branching.  
 - **Commit conventions:** Conventional Commits for traceability.  
@@ -472,11 +378,11 @@ This section evaluates the execution of Sprint 4, focusing on feature developmen
 
 - **Configuration management documentation:** See [configuration-management.md](configuration-management.md) for branch naming, MR templates, and commit rules.
 
-## 6. Cost Analysis and Effort Estimation
+## 5. Cost Analysis and Effort Estimation
 
 This section presents the financial assessment for the development of the Equiem Onboarding MVP. The calculation considers a 10-week development cycle and maps all costs related to human resources, cloud infrastructure, and third-party tools necessary to build and deploy the solution.
 
-### 6.1. Effort and Labor Scope
+### 5.1. Effort and Labor Scope
 
 The team is composed of entry-level professionals (Interns/Juniors). The effort estimation is based on a 10-week development cycle, with an average dedication of 16 hours per sprint per member. The "Technical Hourly Rate" is established at R$ 20,00/h, reflecting the current market average for tech interns/juniors in São Paulo.
 
@@ -489,7 +395,7 @@ The team is composed of entry-level professionals (Interns/Juniors). The effort 
 | Designer | 1 | 16 | 80 | R$ 20,00 | R$ 1.600,00 |
 | **Total Labor** | **7** | **-** | **560** | **-** | **R$ 11.200,00** |
 
-### 6.2. Infrastructure and Tools
+### 5.2. Infrastructure and Tools
 
 The infrastructure costs reflect the required environments to support the proposed deployment architecture, which utilizes AWS services and Auth0. Costs are projected for the duration of the MVP development and testing phase (approx. 2.5 months).
 
@@ -504,7 +410,7 @@ The infrastructure costs reflect the required environments to support the propos
 | **GitHub / GitLab** | CI/CD and Version Control | R$ 0,00 (Free) | R$ 0,00 |
 | **Total Infrastructure** | - | **R$ 605,00** | **R$ 1.512.50** |
 
-### 6.3. Financial Summary
+### 5.3. Financial Summary
 
 The table below consolidates the total estimated production cost for the development of the Equiem onboarding MVP, including a symbolic tax rate of 6% to simulate the basic tax burden.
 
