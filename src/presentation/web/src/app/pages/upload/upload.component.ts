@@ -212,7 +212,7 @@ export class UploadComponent implements OnInit {
         }
       });
 
-      [2, 3, 4].forEach((r: number) => {
+      ;[2, 3, 4].forEach((r: number) => {
         ws.getRow(r).eachCell({ includeEmpty: true }, (cell: any, col: number) => {
           if (col > colCount) {
             return;
@@ -230,7 +230,7 @@ export class UploadComponent implements OnInit {
             bottom: { style: 'thin', color: { argb: 'FFBDBDBD' } },
             right: { style: 'thin', color: { argb: 'FFBDBDBD' } },
           };
-        }
+        });
       });
 
       ws.getRow(2).font = { bold: true };
