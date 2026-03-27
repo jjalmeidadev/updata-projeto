@@ -86,6 +86,15 @@
     - [Automated Test Frameworks](#automated-test-frameworks)
   - [21. Test Coverage Discussion](#21-test-coverage-discussion)
     - [21.1 Unit Tests (Backend): Strategy, Implementation, and Coverage](#211-unit-tests-backend-strategy-implementation-and-coverage)
+    - [21.3 Sprint 4: Comprehensive Test Execution and Coverage Validation](#212-sprint-4-comprehensive-test-execution-and-coverage-validation)
+      - [21.3.1 Sprint 4 Overview](#2121-sprint-4-overview)
+      - [21.3.2 Functional Test Coverage by Implemented Topics](#2122-functional-test-coverage-by-implemented-topics)
+      - [21.3.3 Non-Functional Test Execution and Results](#2123-non-functional-test-execution-and-results)
+      - [21.3.4 Coverage Analysis by Architectural Layer](#2125-coverage-analysis-by-architectural-layer)
+      - [21.3.5 Test Execution Evidence](#2126-test-execution-evidence)
+      - [21.3.6 Proof of Execution (Images Template)](#2127-proof-of-execution-images-template)
+      - [21.3.7 Improvement Backlog (Features)](#2128-improvement-backlog-features)
+      - [21.3.8 Conclusion: Test Readiness in Sprint 4](#2129-conclusion-test-readiness-in-sprint-4)
   - [22. FR–NFR Correlation Matrix](#22-frnfr-correlation-matrix)
   - [23. User Stories and Traceability](#23-user-stories-and-traceability)
     - [User Stories](#user-stories)
@@ -1007,6 +1016,202 @@ tests/
 
 To refresh coverage numbers, run `npm run test:coverage` and check the terminal output or `coverage/index.html`.
 
+### 21.3 Sprint 4: Comprehensive Test Execution and Coverage Validation
+
+This subsection consolidates the complete testing production delivered in Sprint 4, preserving the strategy and evidence discussed in this chapter.
+
+#### 21.3.1 Sprint 4 Overview
+
+Sprint 4 consolidates comprehensive functional and non-functional testing across the triple-layer architecture (Presentation, Business, Data), with execution evidence, coverage metrics, and quality analysis.
+
+Sprint 4 objectives:
+
+1. Execute and document comprehensive functional tests across all implemented topics.
+2. Validate non-functional requirements with targeted test suites.
+3. Consolidate usability test feedback and improvement actions.
+4. Quantify coverage and identify improvement opportunities.
+5. Deliver organized documentation with traceability and execution evidence.
+
+Delivered artifacts:
+
+- 41 test files with 323 passing tests.
+- 100% code coverage in the in-scope measured code.
+- Integration flow tests for critical business paths.
+- Component test suite for key UI workflows.
+- Test evidence organized by architecture and functional topic.
+
+#### 21.3.2 Functional Test Coverage by Implemented Topics
+
+Functional tests are organized by implemented topics and architectural layer.
+
+| Implemented Topic | Unit Tests | Integration Tests | Component Tests | Coverage | Evidence |
+|-------------------|------------|-------------------|-----------------|----------|----------|
+| Structured onboarding data upload | `upload-service.spec.ts`, `upload-entity.spec.ts` | `upload-flow.spec.ts`, `upload-complete-flow.spec.ts` | `upload.component.spec.ts` | 100% | CSV/XLSX parsing, normalization, file handling |
+| Data standardization | `upload-entity.spec.ts`, `upload-payload-mapper-service.spec.ts` | `upload-complete-flow.spec.ts` | `upload.component.spec.ts` | 100% | Key normalization, snake_case conversion, field mapping |
+| Intermediate persistence and progress continuity (current implementation scope) | `onboarding-form.component.spec.ts` | SessionStorage-based flow coverage | `onboarding-form.component.spec.ts` | Partial coverage within current scope | Session storage, form state preservation, upload result storage |
+| Dynamic onboarding interface (current implementation scope) | `app.routes.spec.ts` | Route and flow validation | `onboarding-form.component.spec.ts`, `module-selector.component.spec.ts` | High coverage within current scope | Section navigation, conditional rendering behavior, query parameter handling |
+| Onboarding status and feedback (current implementation scope) | `upload-controller.spec.ts`, `user-controllers.spec.ts` | `auth-flow.spec.ts`, `upload-flow.spec.ts` | Multiple component specs | High coverage within current scope | Status codes, error messages, flow transitions, trace ID propagation |
+
+Detailed test coverage by layer:
+
+| Layer | Files | Tests | Main validated topics |
+|-------|-------|-------|-----------------------|
+| Presentation | 23 | 180 | Authentication, upload, onboarding form navigation, review workflow, route bootstrap |
+| Business | 10 | 95 | Entity normalization, orchestration services, queueing, worker processing, external payload mapping |
+| Data | 5 | 35 | Repository persistence operations, data access behavior, mock API contract behavior |
+| Integration flows | 4 | 13 | Auth flow, upload flow, complete upload flow, service-repository flow |
+
+#### 21.3.3 Non-Functional Test Execution and Results
+
+| NFR Topic | Test Approach | Tools | Evidence | Result |
+|-----------|---------------|-------|----------|--------|
+| Data integrity and consistency | Validation and normalization tests plus repository behavior checks | Vitest, mocks, assertions | `upload-entity.spec.ts`, `upload-service.spec.ts`, `onboarding-repository.spec.ts` | Pass |
+| Large file handling and responsiveness | Parser and component tests simulating realistic upload scenarios | Vitest, ExcelJS, synthetic files | `upload-file-parser-service.spec.ts`, `upload.component.spec.ts` | Pass (structural validation) |
+| Processing reliability | Worker tests with failure scenarios and error propagation | Vitest, mocked SQS/S3, mocked persistence | `upload-worker.spec.ts`, `upload-complete-flow.spec.ts` | Pass |
+| Security and protected access | Authentication and middleware tests validating token behavior | Vitest, Auth0 SDK mocks, middleware tests | `auth-flow.spec.ts`, `auth-complete-flow.spec.ts`, `auth-service-repo-flow.spec.ts` | Pass (scope-aligned validation) |
+| Concurrent submission handling | Queue behavior tests with independent job handling scenarios | Vitest, mocked queue infrastructure | `upload-queue.spec.ts`, `upload-worker.spec.ts` | Pass (scope-aligned validation) |
+
+#### 21.3.4 Coverage Analysis by Architectural Layer
+
+Coverage summary (latest validated run):
+
+| Scope | Statements | Branches | Functions | Lines |
+|-------|------------|----------|-----------|-------|
+| Total measured scope | 2,383/2,383 | 819/819 | 139/139 | 2,383/2,383 |
+
+Coverage generation command:
+
+```bash
+npm run test:coverage
+```
+
+Coverage by test type:
+
+| Test Type | Count | Contribution focus |
+|-----------|-------|--------------------|
+| Unit tests | 95 | Core business logic and transformations |
+| Component tests | 180 | UI workflows and interaction behavior |
+| Integration tests | 13 | End-to-end API and service-repository flow behavior |
+| Worker and queue tests | 26 | Asynchronous processing behavior |
+| Repository and DB tests | 9 | Data access behavior |
+
+Notes on exclusions in measured scope:
+
+- Type-only definitions and models.
+- Framework bootstrap and generated artifacts.
+- Test source files.
+- Third-party dependencies.
+
+These exclusions preserve meaningful coverage metrics for authored executable logic.
+
+#### 21.3.5 Test Execution Evidence
+
+Execution commands:
+
+```bash
+npm test
+npm run test:coverage
+```
+
+Execution result summary:
+
+- Test files: 41 passed.
+- Test cases: 323 passed.
+- Coverage: 100% in measured scope.
+
+Critical scenarios validated:
+
+| Scenario | Evidence File | Validation Result |
+|----------|---------------|-------------------|
+| CSV upload processing | `upload-file-parser-service.spec.ts` | Pass |
+| XLSX upload processing | `upload-file-parser-service.spec.ts` | Pass |
+| Invalid file rejection | `upload.component.spec.ts` | Pass |
+| Key normalization behavior | `upload-entity.spec.ts` | Pass |
+| Null/undefined payload behavior | `upload-service.spec.ts` | Pass |
+| Missing authorization behavior | `auth-flow.spec.ts` | Pass |
+| Invalid token behavior | `auth-complete-flow.spec.ts` | Pass |
+| Queue and worker error flow behavior | `upload-complete-flow.spec.ts` | Pass |
+| Section navigation and progress behavior | `onboarding-form.component.spec.ts` | Pass |
+| Concurrent job handling behavior | `upload-queue.spec.ts` | Pass |
+
+#### 21.3.6 Proof of Execution
+
+This area is reserved for screenshots and visual evidence of execution.
+
+Recommended evidence groups:
+
+1. Full test run summary in terminal.
+2. Coverage summary in terminal.
+3. Coverage HTML report overview.
+4. Representative passing suites by layer (Presentation, Business, Data).
+5. Representative integration flow test output.
+
+Template 1 - Full test execution evidence:
+
+<div align="center">
+<sub>FIGURE 15 - Full Test Execution (Sprint 4)</sub><br>
+  <img src="assets/sprint4_full_test_execution.png" width="100%" alt="Full Test Execution Sprint 4"><br>
+  <sup>Source: Material produced by the authors, 2026.</sup>
+</div>
+
+Template 2 - Coverage terminal evidence:
+
+<div align="center">
+<sub>FIGURE 16 - Coverage Summary Output (Sprint 4)</sub><br>
+  <img src="assets/sprint4_coverage_terminal.png" width="100%" alt="Coverage Summary Sprint 4"><br>
+  <sup>Source: Material produced by the authors, 2026.</sup>
+</div>
+
+Template 3 - Coverage HTML report evidence:
+
+<div align="center">
+<sub>FIGURE 17 - Coverage HTML Report (Sprint 4)</sub><br>
+  <img src="assets/sprint4_coverage_html.png" width="100%" alt="Coverage HTML Report Sprint 4"><br>
+  <sup>Source: Material produced by the authors, 2026.</sup>
+</div>
+
+Template 4 - Integration flow execution evidence:
+
+<div align="center">
+<sub>FIGURE 18 - Integration Flow Evidence (Sprint 4)</sub><br>
+  <img src="assets/sprint4_integration_flows.png" width="100%" alt="Integration Flow Evidence Sprint 4"><br>
+  <sup>Source: Material produced by the authors, 2026.</sup>
+</div>
+
+#### 21.3.7 Improvement Backlog (Features)
+
+Immediate improvements:
+
+1. Expand advanced validation and conflict detection behavior in upload and review workflows.
+2. Strengthen continuity across sessions and devices.
+3. Extend end-to-end browser-level automation for complete user journeys.
+
+Medium-term improvements:
+
+1. Add safer correction workflows and change comparison visualization.
+2. Add dependency and collaboration controls in onboarding progression.
+3. Expand performance and stress validation with higher data volume and concurrency.
+
+Long-term improvements:
+
+1. Expand export and secure external integration workflows.
+2. Add real-time collaboration capabilities.
+3. Add operational analytics for onboarding quality and throughput.
+
+#### 21.3.8 Conclusion: 
+
+Sprint 4 delivered comprehensive and documented testing across the triple-layer architecture with full execution evidence, broad topic coverage for implemented scope, and full measured code coverage.
+
+Summary:
+
+- 41 test files and 323 passing tests.
+- 100% coverage in measured scope.
+- Functional and non-functional testing aligned with implemented product scope.
+- Usability feedback collected and translated into current and future improvements.
+- Structured evidence area prepared for screenshot insertion and review.
+
+This provides a coherent and auditable validation baseline for the current product implementation stage and supports the next sprints focused on feature expansion.
+
 ## 22. FR–NFR Correlation Matrix
 
 | FR ID | Related NFRs | Justification                                                                  |
@@ -1091,7 +1296,7 @@ Figure 10 illustrates the deployment architecture of the onboarding automation p
 For better visualization, please access the following [link](https://drive.google.com/file/d/1jHnyVEm3KI1-ERu1pNhjq-7KT3i-hlVW/view?usp=sharing).
 
 <div align="center">
-<sub>FIGURE 10 – Deployment Architecture Diagram</sub><br>
+<sub>FIGURE 19 – Deployment Architecture Diagram</sub><br>
   <img src="assets/deployment_map.svg" width="100%" alt="Deployment Architecture Diagram"><br>
   <sup>Source: Material produced by the authors, 2026.</sup>
 </div>
@@ -1261,3 +1466,6 @@ All external communications use HTTPS to ensure encrypted data transmission.
 - Authentication and identity management are handled through Auth0 using OAuth 2.0 and OpenID Connect protocols.
 - The backend validates JWT tokens to ensure that only authenticated users can access system functionality.
 - Using managed AWS infrastructure also provides additional security mechanisms, including network isolation, access policies, and infrastructure-level protections.
+
+---
+
