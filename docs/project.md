@@ -947,8 +947,7 @@ Non-functional tests ensure that the system meets key operational requirements, 
 - secure data storage and transmission
 - concurrent submission handling
 
-Together, these tests ensure that both business requirements and technical system constraints are validated.  
-The combination of functional, non-functional, and usability tests provides strong verification of system correctness, reliability, and user experience.
+Together, these tests ensure that both business requirements and technical system constraints are validated. The combination of functional, non-functional, and usability tests provides strong verification of system correctness, reliability, and user experience.
 
 ### 21.1 Unit Tests (Backend): Strategy, Implementation, and Coverage
 
@@ -992,10 +991,17 @@ Unit tests for the backend and business layer are implemented with **Vitest** (N
 ```
 tests/
 ├── business/
-│   ├── entities/   (user-entity.spec.ts, upload-entity.spec.ts)
-│   └── services/   (upload-service.spec.ts, user-service.spec.ts)
+│   ├── entities/
+│   │   ├── user-entity.spec.ts
+│   │   └── upload-entity.spec.ts
+│   └── services/
+│       ├── upload-service.spec.ts
+│       └── user-service.spec.ts
 └── presentation/
-    └── api/controllers/   (upload-controller.spec.ts, user-controllers.spec.ts)
+    └── api/
+        └── controllers/
+            ├── upload-controller.spec.ts
+            └── user-controllers.spec.ts
 ```
 
 **Conventions.** One `*.spec.ts` file per tested module, mirroring `src/`. Use `vi.mock()` for DB/HTTP modules. Descriptive test names; Arrange–Act–Assert where appropriate.
