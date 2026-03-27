@@ -105,7 +105,8 @@
     - [25.10. Deployment Rationale](#2510-deployment-rationale)
     - [25.11. Performance Considerations](#2511-performance-considerations)
     - [25.12. Security Considerations](#2512-security-considerations)
-
+    - [Appendix A: System Configuration and Optimization Report](#appendix-a-system-configuration-and-optimization-report)
+    
 ## 1. Introduction
 
 This document presents the Business Analysis and Requirements Specification for the proposed onboarding intake solution. It consolidates the problem definition, industry context, product vision, scope boundaries, functional and non-functional requirements, delivery strategy, and risk considerations. The purpose of this document is to provide a clear and structured foundation for aligning business objectives with technical implementation, ensuring that the solution effectively addresses the identified operational challenges while remaining scalable, reliable, and aligned with the MVP strategy.
