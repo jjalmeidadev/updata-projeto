@@ -1,6 +1,7 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
+import { firstValueFrom } from 'rxjs';
 import { QuestionService } from '../../services/question.service';
 import { Question, QuestionType } from '../../models/question.model';
 import ExcelJS from 'exceljs';
@@ -59,12 +60,8 @@ export class UploadComponent implements OnInit {
 
         this.questionService.getQuestions().subscribe({
           next: (allQuestions: Question[]) => {
-            const selected = instance.selectedSections;
-            const filteredQuestions = selected.length
-              ? allQuestions.filter((q: Question) => selected.includes(q.sectionId))
-              : allQuestions;
-
-            this.questions.set(filteredQuestions);
+            const selected = instance.selectedSections ?? [];
+            this.questions.set(this.buildOrderedQuestionsForScope(allQuestions, selected));
             this.loading.set(false);
           },
           error: (err: unknown) => {
@@ -104,6 +101,9 @@ export class UploadComponent implements OnInit {
     this.uploading.set(true);
 
     try {
+      const scopedQuestions = await this.resolveScopedQuestions();
+      this.questions.set(scopedQuestions);
+
       const parsedValues =
         fileExtension === '.csv'
           ? await this.parseCsvFile(file)
@@ -261,15 +261,71 @@ export class UploadComponent implements OnInit {
     this.goToManualForm();
   }
 
+  /**
+   * Full question list for the current onboarding scope (module-selector sections or
+   * instance.selectedSections), in the same section order as the module selector.
+   * Used before parsing an upload so review lists every field — including empty modules.
+   */
+  private async resolveScopedQuestions(): Promise<Question[]> {
+    const allQuestions = await firstValueFrom(this.questionService.getQuestions());
+    const linkToken = this.route.snapshot.paramMap.get('linkToken');
+
+    let selectedSections: string[] = [];
+
+    if (linkToken) {
+      let instance = this.instance();
+      if (!instance) {
+        instance = await firstValueFrom(this.onboardingService.getPublicInstance(linkToken));
+        this.instance.set(instance);
+      }
+      selectedSections = instance?.selectedSections ?? [];
+    } else {
+      selectedSections = this.getSelectedSections();
+    }
+
+    return this.buildOrderedQuestionsForScope(allQuestions, selectedSections);
+  }
+
+  private buildOrderedQuestionsForScope(
+    allQuestions: Question[],
+    selectedSections: string[]
+  ): Question[] {
+    const filtered =
+      selectedSections.length > 0
+        ? allQuestions.filter((q: Question) => selectedSections.includes(q.sectionId))
+        : allQuestions;
+
+    const sectionIds = this.questionService.getSections(filtered);
+    const orderedSectionIds = this.reorderSectionsLikeModuleSelector(sectionIds);
+
+    const ordered: Question[] = [];
+    for (const sectionId of orderedSectionIds) {
+      ordered.push(
+        ...this.questionService
+          .getQuestionsBySection(filtered, sectionId)
+          .sort((a: Question, b: Question) => a.order - b.order)
+      );
+    }
+
+    return ordered;
+  }
+
+  private reorderSectionsLikeModuleSelector(sectionIds: string[]): string[] {
+    const building = sectionIds.filter(
+      (s) => s === 'building-setup' || s === 'residential-details'
+    );
+    const company = sectionIds.filter((s) => s === 'company-details');
+    const amenities = sectionIds.filter((s) => s.startsWith('amenity-'));
+    const used = new Set<string>([...building, ...company, ...amenities]);
+    const permitsToRequestManagement = sectionIds.filter((s) => !used.has(s));
+    return [...company, ...building, ...amenities, ...permitsToRequestManagement];
+  }
+
   private loadQuestionsFromSelection(): void {
     this.questionService.getQuestions().subscribe({
       next: (allQuestions: Question[]) => {
         const selected = this.getSelectedSections();
-        const filteredQuestions = selected.length
-          ? allQuestions.filter((q: Question) => selected.includes(q.sectionId))
-          : allQuestions;
-
-        this.questions.set(filteredQuestions);
+        this.questions.set(this.buildOrderedQuestionsForScope(allQuestions, selected));
         this.loading.set(false);
       },
       error: (err: unknown) => {
