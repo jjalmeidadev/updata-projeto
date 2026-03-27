@@ -38,13 +38,17 @@
 						<strong>{{ invalidCount() }}</strong>
 						{{ invalidCount() === 1 ? 'field needs correction' : 'fields need correction' }}
 					</div>
+				} @else if (hasAnyItems()) {
+					<div class="summary-alert summary-alert--ok" role="status" aria-live="polite">
+						All fields pass validation. You can submit your changes.
+					</div>
 				}
 			</header>
 
-			@if (!hasIssues()) {
+			@if (!hasAnyItems()) {
 				<div class="empty-state">
-					<h2>No errors found</h2>
-					<p>There are no items to review right now.</p>
+					<h2>No items to review</h2>
+					<p>There is no review data. Return to the form or upload and try again.</p>
 					<button type="button" class="btn btn-secondary" (click)="goBack()">Back to form</button>
 				</div>
 			} @else {
