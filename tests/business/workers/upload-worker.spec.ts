@@ -2,6 +2,13 @@ import { describe, it, expect, beforeEach, afterEach, vi } from "vitest"
 
 const originalNodeEnv = process.env.NODE_ENV
 
+// Keep worker imports deterministic in tests by preventing dotenv from mutating process.env.
+vi.mock("dotenv", () => ({
+  default: {
+    config: vi.fn(() => ({})),
+  },
+}))
+
 // Mock all dependencies first
 vi.mock("../../../src/business/services/upload-file-parser-service.js", () => ({
   parseUploadFile: vi.fn(),
