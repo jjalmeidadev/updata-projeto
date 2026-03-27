@@ -1,6 +1,7 @@
 import express from "express";
 import userRoutes from "./presentation/api/routes/user-routes.ts";
 import uploadRoutes from "./presentation/api/routes/upload-routes.ts";
+import onboardingInstanceRoutes from "./presentation/api/routes/onboarding-instance-routes.ts";
 
 const app = express();
 
@@ -13,6 +14,9 @@ app.use(userRoutes);
 
 // Mount all upload-related API routes.
 app.use(uploadRoutes);
+
+// Mount onboarding instance routes for dashboard, creation and public link flows.
+app.use(onboardingInstanceRoutes);
 
 app.listen(3000, () => {
   console.log("Server running on port 3000");

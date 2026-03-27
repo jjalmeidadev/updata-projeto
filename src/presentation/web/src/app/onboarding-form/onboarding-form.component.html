@@ -27,7 +27,7 @@
 
   <section class="content">
     @if (loading()) {
-      <p class="loading">Loading questions…</p>
+      <p class="loading">Loading questions...</p>
     } @else if (submitted()) {
       <div class="page-panel page-panel--centered">
         <div class="success">
@@ -39,7 +39,17 @@
       <div class="page-panel page-panel--split">
         <header class="page-header-block">
           <div class="page-header-top">
-            <h1 class="page-title">Onboarding Form</h1>
+            <div>
+              <h1 class="page-title">Onboarding Form</h1>
+              @if (instance()) {
+                <p class="progress-heading">
+                  {{ instance()?.companyName }} • Status: {{ instance()?.status }}
+                </p>
+              }
+              @if (pageMessage()) {
+                <p class="progress-heading">{{ pageMessage() }}</p>
+              }
+            </div>
             <div class="progress-block progress-block--header">
               <p class="progress-heading">Overall completion of the form</p>
               <div class="progress-row">
@@ -55,51 +65,51 @@
         <div class="split-layout">
           <div class="nav-stack">
             <aside class="nav-column" aria-label="Section navigation">
-            <h2 class="nav-column-title">Navigation</h2>
-            @for (area of navAreas(); track area.id) {
-              <div class="nav-accordion">
-                <button
-                  type="button"
-                  class="accordion-trigger"
-                  [attr.aria-expanded]="isAreaExpanded(area.id)"
-                  (click)="toggleArea(area.id)"
-                >
-                  <span class="accordion-trigger-top">
-                    <span class="accordion-title">{{ area.title }}</span>
-                    <span
-                      class="accordion-chevron"
-                      [class.accordion-chevron--open]="isAreaExpanded(area.id)"
-                      aria-hidden="true"
-                      >▸</span>
-                  </span>
-                  <span
-                    class="accordion-module-count"
-                    [class.accordion-module-count--complete]="isAreaFullyComplete(area.id)"
+              <h2 class="nav-column-title">Navigation</h2>
+              @for (area of navAreas(); track area.id) {
+                <div class="nav-accordion">
+                  <button
+                    type="button"
+                    class="accordion-trigger"
+                    [attr.aria-expanded]="isAreaExpanded(area.id)"
+                    (click)="toggleArea(area.id)"
                   >
-                    {{ getAreaModuleProgress(area.id).completed }} of
-                    {{ getAreaModuleProgress(area.id).total }} modules completed
-                  </span>
-                </button>
-                @if (isAreaExpanded(area.id)) {
-                  <div class="nav-accordion-body" [@navAccordionBody]>
-                    <ul class="nav-section-list">
-                      @for (item of area.items; track item.sectionId) {
-                        <li>
-                          <button
-                            type="button"
-                            class="nav-section-link"
-                            [class.nav-section-link--active]="currentSectionIndex() === item.index"
-                            (click)="goTo(item.index)"
-                          >
-                            {{ item.label }}
-                          </button>
-                        </li>
-                      }
-                    </ul>
-                  </div>
-                }
-              </div>
-            }
+                    <span class="accordion-trigger-top">
+                      <span class="accordion-title">{{ area.title }}</span>
+                      <span
+                        class="accordion-chevron"
+                        [class.accordion-chevron--open]="isAreaExpanded(area.id)"
+                        aria-hidden="true"
+                      >▸</span>
+                    </span>
+                    <span
+                      class="accordion-module-count"
+                      [class.accordion-module-count--complete]="isAreaFullyComplete(area.id)"
+                    >
+                      {{ getAreaModuleProgress(area.id).completed }} of
+                      {{ getAreaModuleProgress(area.id).total }} modules completed
+                    </span>
+                  </button>
+                  @if (isAreaExpanded(area.id)) {
+                    <div class="nav-accordion-body" [@navAccordionBody]>
+                      <ul class="nav-section-list">
+                        @for (item of area.items; track item.sectionId) {
+                          <li>
+                            <button
+                              type="button"
+                              class="nav-section-link"
+                              [class.nav-section-link--active]="currentSectionIndex() === item.index"
+                              (click)="goTo(item.index)"
+                            >
+                              {{ item.label }}
+                            </button>
+                          </li>
+                        }
+                      </ul>
+                    </div>
+                  }
+                </div>
+              }
             </aside>
 
             <aside class="nav-column nav-upload-card" aria-label="Upload alternative">

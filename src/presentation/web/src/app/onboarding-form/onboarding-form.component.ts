@@ -5,8 +5,12 @@ import { ActivatedRoute, Params, Router } from '@angular/router';
 import { QuestionService, SECTION_LABELS, SOURCE_OPTIONS } from '../services/question.service';
 import { Question, QuestionType } from '../models/question.model';
 import { DynamicFieldComponent } from '../components/dynamic-field/dynamic-field.component';
+import { debounceTime } from 'rxjs';
+import { OnboardingInstance } from '../models/onboarding-instance.model';
+import { OnboardingInstanceService } from '../services/onboarding-instance.service';
 
-/** Same ordering as module-selector: company → building/residential → amenity-* → remaining */
+type ReviewSource = 'manual' | 'template';
+
 function reorderSectionsLikeModuleSelector(sectionIds: string[]): string[] {
   const building = sectionIds.filter(
     (s) => s === 'building-setup' || s === 'residential-details'
@@ -37,12 +41,22 @@ interface ReviewIssue {
   type: QuestionType;
   options?: string[];
   error: string;
+  source: ReviewSource;
+  section?: string;
+  row?: number;
 }
 
-const REVIEW_ISSUES_KEY = 'reviewIssues';
+interface ReviewState {
+  source: ReviewSource;
+  issues: ReviewIssue[];
+}
+
+const REVIEW_STATE_KEY = 'reviewState';
 const REVIEW_CORRECTIONS_KEY = 'reviewCorrections';
 const REVIEW_FORM_DRAFT_KEY = 'reviewFormDraft';
 const REVIEW_SECTION_INDEX_KEY = 'reviewSectionIndex';
+const UPLOADED_DATA_KEY = 'uploadedData';
+const UPLOAD_SECTION_INDEX_KEY = 'uploadSectionIndex';
 
 @Component({
   selector: 'app-onboarding-form',
@@ -93,6 +107,7 @@ export class OnboardingFormComponent implements OnInit {
   private readonly questionService = inject(QuestionService);
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
+  private readonly onboardingService = inject(OnboardingInstanceService);
 
   readonly questions = signal<Question[]>([]);
   readonly sections = signal<string[]>([]);
@@ -101,109 +116,22 @@ export class OnboardingFormComponent implements OnInit {
   readonly submitted = signal(false);
   readonly loading = signal(true);
   readonly fromUpload = signal(false);
+  readonly formVersion = signal(0);
+  readonly formValues = signal<Record<string, unknown>>({});
+  readonly instance = signal<OnboardingInstance | null>(null);
+  readonly pageMessage = signal('');
+  readonly expandedAreas = signal<Record<string, boolean>>({});
+  private autoSaveReady = false;
+  private navAreaCompletionPrev: Record<string, boolean> = {};
 
   readonly sectionLabels = SECTION_LABELS;
-
-  readonly formValues = signal<Record<string, unknown>>({});
-
-  /** Accordion open state per area id (same 4 groups as module-selector). */
-  readonly expandedAreas = signal<Record<string, boolean>>({});
-
-  ngOnInit(): void {
-    this.questionService.getQuestions().subscribe({
-      next: (allQuestions: Question[]) => {
-        const selected = this.getSelectedSections();
-
-        const questions = selected.length
-          ? allQuestions.filter((q: Question) => selected.includes(q.sectionId))
-          : allQuestions;
-
-        this.questions.set(questions);
-        const rawSections = this.questionService.getSections(questions);
-        this.sections.set(reorderSectionsLikeModuleSelector(rawSections));
-        const builtForm = this.buildForm(questions);
-        this.form.set(builtForm);
-        builtForm.valueChanges.subscribe((values: Record<string, unknown>) => this.formValues.set(values));
-        this.loading.set(false);
-
-        // Handle section navigation from query params
-        this.route.queryParams.subscribe((params: Params) => {
-          if (params['section']) {
-            const sectionIndex = parseInt(params['section'], 10);
-            if (!isNaN(sectionIndex) && sectionIndex >= 0 && sectionIndex < this.sections().length) {
-              this.currentSectionIndex.set(sectionIndex);
-            }
-          } else {
-            this.restoreReviewSectionIndex();
-          }
-          if (params['fromUpload']) {
-            this.fromUpload.set(true);
-          }
-        });
-
-        // Handle uploaded data
-        this.handleUploadedData(builtForm);
-        this.applyReviewCorrections(builtForm);
-      },
-      error: (err: unknown) => {
-        console.error('Failed to load questions:', err);
-        this.loading.set(false);
-      }
-    });
-  }
-
-  private handleUploadedData(form: FormGroup): void {
-    const uploadedData = sessionStorage.getItem('uploadedData');
-    if (!uploadedData) return;
-
-    try {
-      const rows = JSON.parse(uploadedData) as Record<string, unknown>[];
-      if (rows.length === 0) return;
-
-      // Take the first row and map it to form fields
-      const firstRow = rows[0];
-      const questions = this.questions();
-
-      // Try to match uploaded columns to question IDs or question text
-      for (const [key, value] of Object.entries(firstRow)) {
-        const normalizedKey = key.toLowerCase().trim();
-        
-        // Find matching question by id or question text
-        const matchingQuestion = questions.find((q: Question) => 
-          q.id.toLowerCase() === normalizedKey ||
-          q.question.toLowerCase().includes(normalizedKey) ||
-          normalizedKey.includes(q.question.toLowerCase().split(' ')[0])
-        );
-
-        if (matchingQuestion && form.get(matchingQuestion.id)) {
-          form.get(matchingQuestion.id)?.setValue(value);
-        }
-      }
-
-      // Clear the uploaded data after processing
-      sessionStorage.removeItem('uploadedData');
-    } catch (error) {
-      console.error('Error processing uploaded data:', error);
-    }
-  }
-
-  private buildForm(questions: Question[]): FormGroup {
-    const controls: Record<string, FormControl> = {};
-    for (const q of questions) {
-      const defaultValue = q.type === 'boolean' ? null
-        : q.type === 'multi-select' ? []
-        : '';
-      controls[q.id] = new FormControl(defaultValue);
-    }
-    return new FormGroup(controls);
-  }
-
   readonly currentSection = computed(() => this.sections()[this.currentSectionIndex()]);
   readonly currentSectionLabel = computed(() => this.getSectionLabel(this.currentSection()));
-  readonly currentQuestions = computed(() => this.questionService.getQuestionsBySection(this.questions(), this.currentSection()));
+  readonly currentQuestions = computed(() =>
+    this.questionService.getQuestionsBySection(this.questions(), this.currentSection())
+  );
   readonly isFirstSection = computed(() => this.currentSectionIndex() === 0);
   readonly isLastSection = computed(() => this.currentSectionIndex() === this.sections().length - 1);
-  /** Progress by valid required fields completion across current onboarding flow. */
   readonly progressPercent = computed(() => {
     const questions = this.questions();
     const values = this.formValues();
@@ -224,15 +152,12 @@ export class OnboardingFormComponent implements OnInit {
       index,
       label: this.getSectionLabel(sectionId),
     }));
-
     const building = withIndex.filter(
       (x) => x.sectionId === 'building-setup' || x.sectionId === 'residential-details'
     );
     const company = withIndex.filter((x) => x.sectionId === 'company-details');
     const amenities = withIndex.filter((x) => x.sectionId.startsWith('amenity-'));
-    const used = new Set<string>(
-      [...building, ...company, ...amenities].map((x) => x.sectionId)
-    );
+    const used = new Set<string>([...building, ...company, ...amenities].map((x) => x.sectionId));
     const permits = withIndex.filter((x) => !used.has(x.sectionId));
 
     const areas: NavAreaGroup[] = [
@@ -241,13 +166,10 @@ export class OnboardingFormComponent implements OnInit {
       { id: 'area-amenities', title: 'Amenities', items: amenities },
       { id: 'area-permits', title: 'Permits', items: permits },
     ];
-    return areas.filter((a) => a.items.length > 0);
+
+    return areas.filter((area) => area.items.length > 0);
   });
 
-  /**
-   * Per navigation area: each sidebar section (sectionId) counts as one module.
-   * A module is complete when every question in that section has a valid value.
-   */
   readonly areaModuleProgress = computed((): Record<string, { completed: number; total: number }> => {
     const values = this.formValues();
     const questions = this.questions();
@@ -263,11 +185,9 @@ export class OnboardingFormComponent implements OnInit {
       }
       map[area.id] = { completed, total };
     }
+
     return map;
   });
-
-  /** Tracks prior full-completion state per area (for transition → auto-collapse once). */
-  private navAreaCompletionPrev: Record<string, boolean> = {};
 
   constructor() {
     effect(() => {
@@ -278,10 +198,43 @@ export class OnboardingFormComponent implements OnInit {
         const nowComplete = total > 0 && completed === total;
         const wasComplete = this.navAreaCompletionPrev[area.id] ?? false;
         if (nowComplete && !wasComplete) {
-          this.expandedAreas.update((m) => ({ ...m, [area.id]: false }));
+          this.expandedAreas.update((items) => ({ ...items, [area.id]: false }));
         }
         this.navAreaCompletionPrev[area.id] = nowComplete;
       }
+    });
+  }
+
+  ngOnInit(): void {
+    this.cleanupStaleUploadState();
+    const linkToken = this.route.snapshot.paramMap.get('linkToken');
+
+    if (!linkToken) {
+      this.initializeLegacyFlow();
+      return;
+    }
+
+    this.onboardingService.getPublicInstance(linkToken).subscribe({
+      next: (instance: OnboardingInstance) => {
+        this.instance.set(instance);
+        this.questionService.getQuestions().subscribe({
+          next: (allQuestions: Question[]) => {
+            const selected = instance.selectedSections;
+            const questions = selected.length
+              ? allQuestions.filter((q: Question) => selected.includes(q.sectionId))
+              : allQuestions;
+            this.setupForm(questions, instance.formData ?? {});
+          },
+          error: (err: unknown) => {
+            console.error('Failed to load questions:', err);
+            this.loading.set(false);
+          },
+        });
+      },
+      error: () => {
+        this.pageMessage.set('Failed to load onboarding link.');
+        this.loading.set(false);
+      },
     });
   }
 
@@ -289,36 +242,36 @@ export class OnboardingFormComponent implements OnInit {
     return this.form().get(questionId) as FormControl;
   }
 
-  next(): void { 
+  next(): void {
     if (!this.isLastSection()) {
       const nextSectionIndex = this.currentSectionIndex() + 1;
-      
-      // If coming from upload, go to upload screen of next section
       if (this.fromUpload()) {
-        sessionStorage.setItem('uploadSectionIndex', nextSectionIndex.toString());
-        this.router.navigate(['/upload']);
-      } else {
-        this.currentSectionIndex.update((i: number) => i + 1);
-        this.expandAreaContainingIndex(nextSectionIndex);
+        sessionStorage.setItem(UPLOAD_SECTION_INDEX_KEY, nextSectionIndex.toString());
       }
+      this.currentSectionIndex.set(nextSectionIndex);
+      this.expandAreaContainingIndex(nextSectionIndex);
     }
+    this.persistDraft();
   }
+
   previous(): void {
     if (!this.isFirstSection()) {
       this.currentSectionIndex.update((i: number) => i - 1);
       this.expandAreaContainingIndex(this.currentSectionIndex());
     }
+    this.persistDraft();
   }
 
   goTo(index: number): void {
     this.currentSectionIndex.set(index);
     this.expandAreaContainingIndex(index);
+    this.persistDraft();
   }
 
   toggleArea(areaId: string): void {
-    this.expandedAreas.update((m: Record<string, boolean>) => ({
-      ...m,
-      [areaId]: !m[areaId],
+    this.expandedAreas.update((items: Record<string, boolean>) => ({
+      ...items,
+      [areaId]: !items[areaId],
     }));
   }
 
@@ -330,7 +283,6 @@ export class OnboardingFormComponent implements OnInit {
     return this.areaModuleProgress()[areaId] ?? { completed: 0, total: 0 };
   }
 
-  /** True when every module (section) in the area has all fields valid. */
   isAreaFullyComplete(areaId: string): boolean {
     const { completed, total } = this.getAreaModuleProgress(areaId);
     return total > 0 && completed === total;
@@ -344,38 +296,201 @@ export class OnboardingFormComponent implements OnInit {
     return rawLabel;
   }
 
-  private expandAreaContainingIndex(sectionIndex: number): void {
-    const area = this.navAreas().find((a: NavAreaGroup) =>
-      a.items.some((item: NavSectionItem) => item.index === sectionIndex)
-    );
-    if (area) {
-      this.expandedAreas.update((m: Record<string, boolean>) => ({
-        ...m,
-        [area.id]: true,
-      }));
-    }
-  }
-
   goToUpload(): void {
-    sessionStorage.setItem('uploadSectionIndex', this.currentSectionIndex().toString());
-    this.router.navigate(['/upload']);
+    const linkToken = this.route.snapshot.paramMap.get('linkToken');
+    sessionStorage.setItem(UPLOAD_SECTION_INDEX_KEY, this.currentSectionIndex().toString());
+    this.router.navigate(linkToken ? ['/onboarding', linkToken, 'upload'] : ['/upload']);
   }
 
   submit(): void {
-    const reviewIssues = this.collectReviewIssues();
+    const reviewItems = this.collectReviewItems();
+    const hasErrors = reviewItems.some((item: ReviewIssue) => Boolean(item.error));
 
-    if (reviewIssues.length > 0) {
-      sessionStorage.setItem(REVIEW_ISSUES_KEY, JSON.stringify(reviewIssues));
+    if (hasErrors) {
+      const reviewSource: ReviewSource = this.fromUpload() ? 'template' : 'manual';
+      const reviewState: ReviewState = { source: reviewSource, issues: reviewItems };
+      sessionStorage.setItem(REVIEW_STATE_KEY, JSON.stringify(reviewState));
       sessionStorage.setItem(REVIEW_FORM_DRAFT_KEY, JSON.stringify(this.form().getRawValue()));
       sessionStorage.setItem(REVIEW_SECTION_INDEX_KEY, this.currentSectionIndex().toString());
-      this.router.navigate(['/review'], { state: { reviewIssues } });
+
+      const linkToken = this.route.snapshot.paramMap.get('linkToken');
+      if (!linkToken) {
+        this.router.navigate(['/review'], {
+          state: { reviewSource, reviewIssues: reviewItems },
+        });
+        return;
+      }
+
+      this.router.navigate(['/onboarding', linkToken, 'review'], {
+        state: { reviewSource, reviewIssues: reviewItems },
+      });
       return;
     }
 
-    this.clearReviewStorage();
+    sessionStorage.removeItem(REVIEW_STATE_KEY);
+    sessionStorage.removeItem(REVIEW_CORRECTIONS_KEY);
+    sessionStorage.removeItem(REVIEW_FORM_DRAFT_KEY);
+    sessionStorage.removeItem(REVIEW_SECTION_INDEX_KEY);
+    this.completeSubmission();
+  }
 
-    this.submitted.set(true);
-    console.log('Onboarding form submitted:', this.form().value);
+  private setupForm(questions: Question[], initialValues: Record<string, unknown>): void {
+    this.questions.set(questions);
+    this.sections.set(reorderSectionsLikeModuleSelector(this.questionService.getSections(questions)));
+
+    const builtForm = this.buildForm(questions);
+    this.form.set(builtForm);
+    this.applyValuesToForm(builtForm, initialValues);
+    this.formValues.set(builtForm.getRawValue() as Record<string, unknown>);
+
+    builtForm.valueChanges.subscribe((values) => {
+      this.formVersion.update((value: number) => value + 1);
+      this.formValues.set((values ?? {}) as Record<string, unknown>);
+    });
+
+    builtForm.valueChanges.pipe(debounceTime(500)).subscribe(() => {
+      if (this.autoSaveReady && !this.submitted()) {
+        this.persistDraft();
+      }
+    });
+
+    this.loading.set(false);
+    this.initializeExpandedAreas();
+
+    this.route.queryParams.subscribe((params: Params) => {
+      this.fromUpload.set(params['fromUpload'] === 'true' || params['fromUpload'] === true);
+
+      if (params['section']) {
+        const sectionIndex = parseInt(params['section'], 10);
+        if (!Number.isNaN(sectionIndex) && sectionIndex >= 0 && sectionIndex < this.sections().length) {
+          this.currentSectionIndex.set(sectionIndex);
+          this.expandAreaContainingIndex(sectionIndex);
+        }
+      } else {
+        this.restoreReviewSectionIndex();
+        this.expandAreaContainingIndex(this.currentSectionIndex());
+      }
+
+      const shouldAutoSubmit =
+        params['autoSubmit'] === 'true' ||
+        params['autoSubmit'] === true ||
+        history.state?.['autoSubmit'] === true;
+
+      this.handleUploadedData(builtForm);
+      this.applyReviewCorrections(builtForm);
+      this.formValues.set(builtForm.getRawValue() as Record<string, unknown>);
+      this.autoSaveReady = true;
+
+      if (shouldAutoSubmit) {
+        setTimeout(() => this.completeSubmission());
+      }
+
+      setTimeout(() => {
+        if (
+          this.route.snapshot.queryParamMap.has('fromUpload') ||
+          this.route.snapshot.queryParamMap.has('fromReview') ||
+          this.route.snapshot.queryParamMap.has('section') ||
+          this.route.snapshot.queryParamMap.has('autoSubmit')
+        ) {
+          this.router.navigate([], {
+            relativeTo: this.route,
+            queryParams: {},
+            replaceUrl: true,
+          });
+        }
+      });
+    });
+  }
+
+  private initializeExpandedAreas(): void {
+    const expanded: Record<string, boolean> = {};
+    for (const area of this.navAreas()) {
+      expanded[area.id] = true;
+    }
+    this.expandedAreas.set(expanded);
+    this.expandAreaContainingIndex(this.currentSectionIndex());
+  }
+
+  private completeSubmission(): void {
+    const linkToken = this.route.snapshot.paramMap.get('linkToken');
+    if (!linkToken) {
+      this.clearTransientFlowState();
+      this.fromUpload.set(false);
+      this.submitted.set(true);
+      return;
+    }
+
+    this.onboardingService.submit(linkToken, {
+      formData: this.form().getRawValue() as Record<string, unknown>,
+    }).subscribe({
+      next: (instance: OnboardingInstance) => {
+        this.instance.set(instance);
+        this.clearTransientFlowState();
+        this.fromUpload.set(false);
+        this.submitted.set(true);
+      },
+      error: () => {
+        this.pageMessage.set('Failed to submit onboarding.');
+      },
+    });
+  }
+
+  private handleUploadedData(form: FormGroup): void {
+    const fromUploadQuery = this.route.snapshot.queryParamMap.get('fromUpload') === 'true';
+    if (!fromUploadQuery) {
+      sessionStorage.removeItem(UPLOADED_DATA_KEY);
+      sessionStorage.removeItem(UPLOAD_SECTION_INDEX_KEY);
+      return;
+    }
+
+    const uploadedDataFromState = history.state?.['uploadedData'];
+    let values: Record<string, unknown> = {};
+
+    if (
+      uploadedDataFromState &&
+      typeof uploadedDataFromState === 'object' &&
+      !Array.isArray(uploadedDataFromState)
+    ) {
+      values = uploadedDataFromState as Record<string, unknown>;
+    } else {
+      const uploadedDataFromStorage = sessionStorage.getItem(UPLOADED_DATA_KEY);
+      if (uploadedDataFromStorage) {
+        try {
+          const parsed = JSON.parse(uploadedDataFromStorage) as
+            | Record<string, unknown>
+            | Record<string, unknown>[];
+          values = Array.isArray(parsed) ? (parsed[0] ?? {}) : parsed;
+        } catch (error) {
+          console.error('Error processing uploaded data:', error);
+        }
+      }
+    }
+
+    this.applyValuesToForm(form, values);
+    this.formValues.set(form.getRawValue() as Record<string, unknown>);
+    sessionStorage.removeItem(UPLOADED_DATA_KEY);
+
+    const uploadSectionIndex = sessionStorage.getItem(UPLOAD_SECTION_INDEX_KEY);
+    if (uploadSectionIndex) {
+      const sectionIndex = parseInt(uploadSectionIndex, 10);
+      if (!Number.isNaN(sectionIndex) && sectionIndex >= 0 && sectionIndex < this.sections().length) {
+        this.currentSectionIndex.set(sectionIndex);
+        this.expandAreaContainingIndex(sectionIndex);
+      }
+      sessionStorage.removeItem(UPLOAD_SECTION_INDEX_KEY);
+    }
+  }
+
+  private buildForm(questions: Question[]): FormGroup {
+    const controls: Record<string, FormControl> = {};
+    for (const q of questions) {
+      const defaultValue =
+        q.type === 'boolean' ? null :
+        q.type === 'multi-select' ? [] :
+        q.type === 'file' ? [] : '';
+      controls[q.id] = new FormControl(defaultValue);
+    }
+    return new FormGroup(controls);
   }
 
   private applyReviewCorrections(form: FormGroup): void {
@@ -386,12 +501,13 @@ export class OnboardingFormComponent implements OnInit {
     const stateValues = this.parseObjectValues(fromState);
     const storageValues = this.parseObjectValues(sessionStorage.getItem(REVIEW_CORRECTIONS_KEY));
     const correctedValues = Object.keys(stateValues).length > 0 ? stateValues : storageValues;
-
     this.applyValuesToForm(form, correctedValues);
+    this.formValues.set(form.getRawValue() as Record<string, unknown>);
 
     if (Object.keys(correctedValues).length > 0) {
       sessionStorage.removeItem(REVIEW_CORRECTIONS_KEY);
-      sessionStorage.removeItem(REVIEW_ISSUES_KEY);
+      sessionStorage.removeItem(REVIEW_STATE_KEY);
+      sessionStorage.removeItem(REVIEW_FORM_DRAFT_KEY);
     }
   }
 
@@ -401,7 +517,6 @@ export class OnboardingFormComponent implements OnInit {
       if (!parsed || typeof parsed !== 'object' || Array.isArray(parsed)) {
         return {};
       }
-
       return parsed as Record<string, unknown>;
     } catch {
       return {};
@@ -411,33 +526,89 @@ export class OnboardingFormComponent implements OnInit {
   private applyValuesToForm(form: FormGroup, values: Record<string, unknown>): void {
     for (const [fieldId, value] of Object.entries(values)) {
       const control = form.get(fieldId);
-      if (!control) {
-        continue;
-      }
-
-      control.setValue(value);
+      if (!control) continue;
+      const question = this.questions().find((q: Question) => q.id === fieldId);
+      control.setValue(this.normalizeValueForQuestion(question, value));
     }
+  }
+
+  private normalizeValueForQuestion(question: Question | undefined, value: unknown): unknown {
+    if (!question) return value;
+
+    if (question.type === 'boolean') {
+      if (typeof value === 'boolean') return value;
+      const normalized = String(value ?? '').trim().toLowerCase();
+      if (['yes', 'true'].includes(normalized)) return true;
+      if (['no', 'false'].includes(normalized)) return false;
+      return null;
+    }
+
+    if (question.type === 'multi-select') {
+      if (Array.isArray(value)) return value;
+      const text = String(value ?? '').trim();
+      if (!text) return [];
+      return text.split(',').map((item: string) => item.trim()).filter(Boolean);
+    }
+
+    if (question.type === 'file') {
+      if (Array.isArray(value)) return value;
+      const text = String(value ?? '').trim();
+      return text ? text : [];
+    }
+
+    return value ?? '';
   }
 
   private restoreReviewSectionIndex(): void {
     const rawIndex = sessionStorage.getItem(REVIEW_SECTION_INDEX_KEY);
-    if (!rawIndex) {
-      return;
-    }
+    if (!rawIndex) return;
 
     const sectionIndex = parseInt(rawIndex, 10);
     if (!Number.isNaN(sectionIndex) && sectionIndex >= 0 && sectionIndex < this.sections().length) {
       this.currentSectionIndex.set(sectionIndex);
+      this.expandAreaContainingIndex(sectionIndex);
     }
 
     sessionStorage.removeItem(REVIEW_SECTION_INDEX_KEY);
   }
 
-  private clearReviewStorage(): void {
-    sessionStorage.removeItem(REVIEW_ISSUES_KEY);
+  private clearTransientFlowState(): void {
+    sessionStorage.removeItem(UPLOADED_DATA_KEY);
+    sessionStorage.removeItem(REVIEW_STATE_KEY);
     sessionStorage.removeItem(REVIEW_CORRECTIONS_KEY);
     sessionStorage.removeItem(REVIEW_FORM_DRAFT_KEY);
     sessionStorage.removeItem(REVIEW_SECTION_INDEX_KEY);
+    sessionStorage.removeItem(UPLOAD_SECTION_INDEX_KEY);
+  }
+
+  private cleanupStaleUploadState(): void {
+    const hasUploadedDataInState = !!history.state?.['uploadedData'];
+    const hasCorrectedValuesInState = !!history.state?.['correctedValues'];
+    const hasStoredUploadedData = !!sessionStorage.getItem(UPLOADED_DATA_KEY);
+    const hasStoredReviewState = !!sessionStorage.getItem(REVIEW_STATE_KEY);
+    const hasStoredCorrections = !!sessionStorage.getItem(REVIEW_CORRECTIONS_KEY);
+    const shouldKeepFlowState =
+      hasUploadedDataInState ||
+      hasCorrectedValuesInState ||
+      hasStoredUploadedData ||
+      hasStoredReviewState ||
+      hasStoredCorrections;
+
+    if (!shouldKeepFlowState) {
+      this.clearTransientFlowState();
+    }
+  }
+
+  private expandAreaContainingIndex(sectionIndex: number): void {
+    const area = this.navAreas().find((item: NavAreaGroup) =>
+      item.items.some((section: NavSectionItem) => section.index === sectionIndex)
+    );
+    if (area) {
+      this.expandedAreas.update((items: Record<string, boolean>) => ({
+        ...items,
+        [area.id]: true,
+      }));
+    }
   }
 
   private isSectionModuleComplete(
@@ -446,92 +617,90 @@ export class OnboardingFormComponent implements OnInit {
     values: Record<string, unknown>
   ): boolean {
     const qs = questions.filter((q: Question) => q.sectionId === sectionId);
-    if (qs.length === 0) {
-      return true;
-    }
+    if (qs.length === 0) return true;
     return qs.every((q: Question) => this.validateQuestionValue(q.type, values[q.id]) === '');
   }
 
-  private collectReviewIssues(): ReviewIssue[] {
+  private collectReviewItems(): ReviewIssue[] {
     const values = this.form().value as Record<string, unknown>;
-
-    return this.questions().reduce((issues: ReviewIssue[], question: Question) => {
+    const reviewSource: ReviewSource = this.fromUpload() ? 'template' : 'manual';
+    return this.questions().map((question: Question) => {
       const value = values[question.id];
       const error = this.validateQuestionValue(question.type, value);
-
-      if (!error) {
-        return issues;
-      }
-
-      issues.push({
+      return {
         id: question.id,
         label: question.question,
         value,
         type: question.type,
         options: this.resolveQuestionOptions(question),
         error,
-      });
-
-      return issues;
-    }, []);
+        source: reviewSource,
+        section: question.sectionId,
+      };
+    });
   }
 
   private validateQuestionValue(type: QuestionType, value: unknown): string {
     if (type === 'file') {
-      if (!Array.isArray(value) || value.length === 0) {
-        return 'Please upload at least one file.';
+      if (this.fromUpload()) return '';
+      if (Array.isArray(value)) {
+        return value.length === 0 ? 'Please upload at least one file.' : '';
       }
-      return '';
+      const textValue = value === null || value === undefined ? '' : String(value).trim();
+      return !textValue ? 'Please upload at least one file.' : '';
     }
 
     if (type === 'multi-select') {
-      if (!Array.isArray(value) || value.length === 0) {
-        return 'Please select at least one option.';
-      }
-      return '';
+      return !Array.isArray(value) || value.length === 0 ? 'Please select at least one option.' : '';
     }
 
     if (type === 'boolean') {
-      if (typeof value !== 'boolean') {
-        return 'Please choose Yes or No.';
-      }
-      return '';
+      return typeof value !== 'boolean' ? 'Please choose Yes or No.' : '';
     }
 
     const textValue = value === null || value === undefined ? '' : String(value).trim();
-    if (!textValue) {
-      return 'This field is required.';
-    }
-
-    if (type === 'integer' && !/^-?\d+$/.test(textValue)) {
-      return 'Please use whole numbers only.';
-    }
-
-    if (type === 'decimal' && !/^-?\d+([.,]\d+)?$/.test(textValue)) {
-      return 'Please enter a valid decimal number.';
-    }
-
-    if (type === 'time' && !/^([01]\d|2[0-3]):([0-5]\d)$/.test(textValue)) {
-      return 'Please enter the time in HH:MM format.';
-    }
-
-    if (type === 'date' && Number.isNaN(Date.parse(textValue))) {
-      return 'Please enter a valid date.';
-    }
-
+    if (!textValue) return 'This field is required.';
+    if (type === 'integer' && !/^-?\d+$/.test(textValue)) return 'Please use whole numbers only.';
+    if (type === 'decimal' && !/^-?\d+([.,]\d+)?$/.test(textValue)) return 'Please enter a valid decimal number.';
+    if (type === 'time' && !/^([01]\d|2[0-3]):([0-5]\d)$/.test(textValue)) return 'Please enter the time in HH:MM format.';
+    if (type === 'date' && Number.isNaN(Date.parse(textValue))) return 'Please enter a valid date.';
     return '';
   }
 
   private resolveQuestionOptions(question: Question): string[] {
-    if (question.options && question.options.length > 0) {
-      return question.options;
-    }
-
-    if (question.source && SOURCE_OPTIONS[question.source]) {
-      return SOURCE_OPTIONS[question.source];
-    }
-
+    if (question.options && question.options.length > 0) return question.options;
+    if (question.source && SOURCE_OPTIONS[question.source]) return SOURCE_OPTIONS[question.source];
     return [];
+  }
+
+  private persistDraft(): void {
+    const linkToken = this.route.snapshot.paramMap.get('linkToken');
+    if (!linkToken || !this.autoSaveReady) return;
+
+    this.onboardingService.saveProgress(linkToken, {
+      formData: this.form().getRawValue() as Record<string, unknown>,
+      progressPercent: this.progressPercent(),
+    }).subscribe({
+      next: (instance: OnboardingInstance) => {
+        this.instance.set(instance);
+      },
+    });
+  }
+
+  private initializeLegacyFlow(): void {
+    this.questionService.getQuestions().subscribe({
+      next: (allQuestions: Question[]) => {
+        const selected = this.getSelectedSections();
+        const questions = selected.length
+          ? allQuestions.filter((q: Question) => selected.includes(q.sectionId))
+          : allQuestions;
+        this.setupForm(questions, {});
+      },
+      error: (err: unknown) => {
+        console.error('Failed to load questions:', err);
+        this.loading.set(false);
+      },
+    });
   }
 
   private getSelectedSections(): string[] {

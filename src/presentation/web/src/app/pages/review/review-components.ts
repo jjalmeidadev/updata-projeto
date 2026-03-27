@@ -1,7 +1,7 @@
 import { CommonModule } from '@angular/common';
 import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 
 type ReviewFieldType =
   | 'text'
@@ -66,6 +66,7 @@ const REVIEW_CORRECTIONS_KEY = 'reviewCorrections';
 })
 export class ReviewComponentsComponent implements OnInit {
   private readonly router = inject(Router);
+  private readonly route = inject(ActivatedRoute);
 
   readonly issues = signal<ReviewIssue[]>([]);
   readonly pageMessage = signal<string | null>(null);
@@ -145,6 +146,27 @@ export class ReviewComponentsComponent implements OnInit {
 
     this.issues.set(loadedIssues);
     this.source.set(loadedSource);
+
+    if (loadedIssues.length === 0) {
+      const linkToken = this.route.snapshot.paramMap.get('linkToken');
+      const queryParams = {
+        fromReview: true,
+        fromUpload: loadedSource === 'template',
+        autoSubmit: true,
+      };
+      const state = {
+        reviewSource: loadedSource,
+        autoSubmit: true,
+      };
+
+      if (!linkToken) {
+        this.router.navigate(['/form'], { queryParams, state });
+        return;
+      }
+
+      this.router.navigate(['/onboarding', linkToken, 'form'], { queryParams, state });
+      return;
+    }
 
     const firstInvalidSectionIndex = this.groupedSections().findIndex(
       (group: ReviewSectionGroup) => group.invalidCount > 0
@@ -272,7 +294,24 @@ export class ReviewComponentsComponent implements OnInit {
     sessionStorage.removeItem(REVIEW_STATE_KEY);
     this.pageMessage.set(null);
 
-    this.router.navigate(['/form'], {
+    const linkToken = this.route.snapshot.paramMap.get('linkToken');
+    if (!linkToken) {
+      this.router.navigate(['/form'], {
+        queryParams: {
+          fromReview: true,
+          fromUpload: this.source() === 'template',
+          autoSubmit: this.source() === 'template',
+        },
+        state: {
+          correctedValues,
+          reviewSource: this.source(),
+          autoSubmit: this.source() === 'template',
+        },
+      });
+      return;
+    }
+
+    this.router.navigate(['/onboarding', linkToken, 'form'], {
       queryParams: {
         fromReview: true,
         fromUpload: this.source() === 'template',
@@ -287,12 +326,18 @@ export class ReviewComponentsComponent implements OnInit {
   }
 
   goBack(): void {
-    if (this.source() === 'template') {
-      this.router.navigate(['/upload']);
+    const linkToken = this.route.snapshot.paramMap.get('linkToken');
+    if (!linkToken) {
+      this.router.navigate([this.source() === 'template' ? '/upload' : '/form']);
       return;
     }
 
-    this.router.navigate(['/form']);
+    if (this.source() === 'template') {
+      this.router.navigate(['/onboarding', linkToken, 'upload']);
+      return;
+    }
+
+    this.router.navigate(['/onboarding', linkToken, 'form']);
   }
 
   private loadFromStorage(): { source: ReviewSource; issues: ReviewIssue[] } {

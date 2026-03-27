@@ -145,28 +145,31 @@
     <div class="selector-panel">
       <h1 class="page-title">Configure this onboarding</h1>
 
-      <section class="page-section email-section" aria-labelledby="email-recipient-title">
-        <h2 id="email-recipient-title" class="section-heading">
-          <span class="section-heading-accent">Email</span> recipient
+      <section class="page-section company-section" aria-labelledby="company-title">
+        <h2 id="company-title" class="section-heading">
+          <span class="section-heading-accent">Company</span> selection
         </h2>
         <p class="section-subtitle">
-          Add the email address that will receive the onboarding form to complete.
+          Define which company this onboarding belongs to before generating the unique link.
         </p>
         <input
-          id="recipient-email"
-          class="email-input"
-          type="email"
-          name="recipientEmail"
-          autocomplete="email"
-          aria-label="Recipient email"
-          placeholder="name@company.com"
-          [value]="recipientEmail()"
-          (input)="onRecipientEmailInput($event)"
+          id="company-name"
+          class="company-input"
+          type="text"
+          placeholder="Select or type a company"
+          [ngModel]="companyName()"
+          (ngModelChange)="companyName.set($event)"
+          list="company-options"
         />
+        <datalist id="company-options">
+          @for (company of companies(); track company.id) {
+            <option [value]="company.name"></option>
+          }
+        </datalist>
       </section>
 
       @if (loading()) {
-        <p class="loading">Loading sections…</p>
+        <p class="loading">Loading sections...</p>
       } @else {
         <section class="page-section module-section" aria-labelledby="module-selection-title">
           <div class="selector-card">
@@ -256,16 +259,37 @@
         </section>
       }
 
-      <div class="page-footer">
-        <button
-          type="button"
-          class="btn-primary"
-          [disabled]="!canContinue()"
-          (click)="sendForm()"
-        >
-          Send form
-        </button>
-      </div>
+      @if (successMessage()) {
+        <p class="feedback success-text">{{ successMessage() }}</p>
+      }
+
+      @if (errorMessage()) {
+        <p class="feedback error-text">{{ errorMessage() }}</p>
+      }
+
+      @if (createdLink()) {
+        <div class="link-preview">
+          <p>Generated link</p>
+          <code>{{ createdLink() }}</code>
+          <div class="link-actions">
+            <button type="button" class="btn-secondary" (click)="copyLink()">Copy link</button>
+            <button type="button" class="btn-primary" (click)="openLink()">Open onboarding</button>
+          </div>
+        </div>
+      }
+
+      @if (!createdLink()) {
+        <div class="page-footer">
+          <button
+            type="button"
+            class="btn-primary"
+            [disabled]="!canCreate()"
+            (click)="createLink()"
+          >
+            Create Link
+          </button>
+        </div>
+      }
     </div>
   </section>
 </div>
