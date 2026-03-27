@@ -115,6 +115,8 @@
     - [25.11. Performance Considerations](#2511-performance-considerations)
     - [25.12. Security Considerations](#2512-security-considerations)
     - [Appendix A: System Configuration and Optimization Report](#appendix-a-system-configuration-and-optimization-report)
+  - [26. Demo Video](#26-demo-video)
+
     
 ## 1. Introduction
 
@@ -2213,3 +2215,9 @@ Based on the benchmark results, regression analysis, and optimization derivation
 This configuration provides a balanced level of parallelism while maintaining manageable memory usage and minimizing database contention.
 
 Future deployments may refine this configuration as additional production data becomes available, but the analytical model provides a strong initial guideline for system tuning.
+
+## 26.Demo Video
+
+The following video demonstrates the application execution as required, showing the system running and the IDE.
+
+▶️ Demo: [link](https://drive.google.com/file/d/11NpnOOebpEBunGlq0J-5xIeZmRQvYbDP/view?usp=sharing)
