@@ -1,18 +1,61 @@
-<div class="form-shell">
-  <header class="form-header">
-    <h1>Choose how you want to complete your onboarding</h1>
-    <div class="subtitle"> <p>You have two options to provide your onboarding information:</p> <p> <strong>Option 1: Fill in a Template (Recommended for bulk input)</strong><br /> You can download a pre-formatted Excel template (.xlsx) and fill in all the required onboarding information for each section. Once completed, simply upload the file to the platform. This option is ideal if you prefer to organize everything at once or work offline. </p> <p> <strong>Option 2: Fill in Manually</strong><br /> Alternatively, you can enter the information directly on our platform by completing each section step by step. This option is better if you prefer a guided, in-app experience. </p> </div>
-  </header>
+<div class="input-container">
+  <svg
+    class="background-svg"
+    xmlns="http://www.w3.org/2000/svg"
+    viewBox="-296 -51 884 873"
+    fill="none"
+    aria-hidden="true"
+    preserveAspectRatio="xMidYMid meet"
+  >
+    <g clip-path="url(#clip0_input_bg)">
+      <path
+        d="M587.5 655.697V821.5C344.053 821.233 146.773 626.402 146.5 386H314.405C314.678 534.803 436.775 655.431 587.5 655.697Z"
+        stroke="#d6c5fb"
+      ></path>
+      <path
+        d="M-127.596 385.5C-127.596 534.533 -5.3938 655.43 145.5 655.697V821.5C-98.116 821.233 -295.5 626.132 -295.5 385.5C-295.5 144.704 -97.8459 -50.5 146 -50.5C389.677 -50.5 587.226 144.433 587.5 385H419.595C419.322 236.032 296.893 115.303 146 115.303C-5.06229 115.303 -127.596 236.302 -127.596 385.5Z"
+        stroke="#d6c5fb"
+      ></path>
+    </g>
+    <defs>
+      <clipPath id="clip0_input_bg">
+        <rect
+          width="884"
+          height="873"
+          fill="white"
+          transform="translate(-296 -51)"
+        ></rect>
+      </clipPath>
+    </defs>
+  </svg>
 
-  <section class="form-section">
-    <div class="method-grid">
-      <button type="button" class="btn btn-primary method-btn" (click)="choose('upload')">
-        Download template & upload file
-      </button>
+  <section class="content">
+    <div class="input-panel">
+      <header class="input-header">
+        <h1>Choose how you want to complete your onboarding</h1>
+      </header>
 
-      <button type="button" class="btn btn-primary method-btn" (click)="choose('manual')">
-        Fill in the platform
-      </button>
+      <section class="method-grid">
+          <article class="method-option">
+            <h2>Upload a <span class="accent">file</span></h2>
+            <p>
+              Download a Excel template (.xlsx) and upload it to the platform.
+            </p>
+            <button type="button" class="start-btn method-btn" (click)="choose('upload')">
+              Continue with option one
+            </button>
+          </article>
+
+          <article class="method-option">
+            <h2>Fill in <span class="accent">Manually</span></h2>
+            <p>
+              Enter the information directly on the platform, section by section.
+            </p>
+            <button type="button" class="details-btn method-btn" (click)="choose('manual')">
+              Continue with option two
+            </button>
+          </article>
+      </section>
     </div>
   </section>
 </div>

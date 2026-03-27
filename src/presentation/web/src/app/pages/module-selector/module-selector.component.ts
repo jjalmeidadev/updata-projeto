@@ -1,6 +1,16 @@
-import { Component, OnInit, computed, inject, signal } from '@angular/core';
+import {
+  Component,
+  ElementRef,
+  HostListener,
+  OnInit,
+  computed,
+  inject,
+  signal,
+} from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
+import { AuthService } from '@auth0/auth0-angular';
+import { map } from 'rxjs/operators';
 import { QuestionService, SECTION_LABELS } from '../../services/question.service';
 import { Question } from '../../models/question.model';
 
@@ -14,13 +24,78 @@ import { Question } from '../../models/question.model';
 export class ModuleSelectorComponent implements OnInit {
   private readonly questionService = inject(QuestionService);
   private readonly router = inject(Router);
+  private readonly auth = inject(AuthService);
+  private readonly elRef = inject(ElementRef<HTMLElement>);
+
+  profileMenuOpen = false;
+
+  readonly userEmail$ = this.auth.user$.pipe(map(user => user?.email ?? ''));
+
+  readonly userInitials$ = this.auth.user$.pipe(
+    map(user => {
+      const fullName = (user?.name ?? '').trim();
+
+      if (fullName) {
+        const parts = fullName.split(/\s+/).filter(Boolean);
+        return parts.slice(0, 2).map(part => part[0]?.toUpperCase() ?? '').join('');
+      }
+
+      const email = (user?.email ?? '').trim();
+      if (!email) return 'U';
+
+      const emailName = email.split('@')[0];
+      const chunks = emailName.split(/[._-]+/).filter(Boolean);
+
+      if (chunks.length >= 2) {
+        return (chunks[0][0] + chunks[1][0]).toUpperCase();
+      }
+
+      return emailName.slice(0, 2).toUpperCase();
+    })
+  );
 
   readonly loading = signal(true);
   readonly sections = signal<string[]>([]);
   readonly selectedSections = signal<Set<string>>(new Set());
+  readonly recipientEmail = signal('');
   readonly sectionLabels = SECTION_LABELS;
 
   readonly canContinue = computed(() => this.selectedSections().size > 0);
+
+  readonly groupedSections = computed(() => {
+    const all = this.sections();
+
+    const building = all.filter(
+      (s) => s === 'building-setup' || s === 'residential-details'
+    );
+    const company = all.filter((s) => s === 'company-details');
+    const amenities = all.filter((s) => s.startsWith('amenity-'));
+
+    const used = new Set<string>([
+      ...building,
+      ...company,
+      ...amenities,
+    ]);
+
+    const permitsToRequestManagement = all.filter((s) => !used.has(s));
+
+    return {
+      building,
+      company,
+      amenities,
+      permitsToRequestManagement,
+    };
+  });
+
+  getSectionLabel(sectionId: string): string {
+    const rawLabel = this.sectionLabels[sectionId] ?? sectionId;
+
+    if (sectionId.startsWith('amenity-')) {
+      return rawLabel.replace(/^amenit(?:y|ies)\s+/i, '');
+    }
+
+    return rawLabel;
+  }
 
   ngOnInit(): void {
     this.questionService.getQuestions().subscribe({
@@ -63,7 +138,12 @@ export class ModuleSelectorComponent implements OnInit {
     this.selectedSections.set(new Set());
   }
 
-  continueToForm(): void {
+  onRecipientEmailInput(event: Event): void {
+    const value = (event.target as HTMLInputElement).value;
+    this.recipientEmail.set(value);
+  }
+
+  sendForm(): void {
     if (!this.canContinue()) return;
 
     localStorage.setItem(
@@ -71,7 +151,33 @@ export class ModuleSelectorComponent implements OnInit {
       JSON.stringify(Array.from(this.selectedSections()))
     );
 
-    this.router.navigate(['/input-method']);
+    this.router.navigate(['/home']);
+  }
+
+  goHome(): void {
+    this.router.navigate(['/home']);
+  }
+
+  toggleProfileMenu(event: MouseEvent): void {
+    event.stopPropagation();
+    this.profileMenuOpen = !this.profileMenuOpen;
+  }
+
+  @HostListener('document:click', ['$event'])
+  onDocumentClick(event: MouseEvent): void {
+    const target = event.target as Node | null;
+    if (target && !this.elRef.nativeElement.contains(target)) {
+      this.profileMenuOpen = false;
+    }
+  }
+
+  logout(): void {
+    this.profileMenuOpen = false;
+    this.auth.logout({
+      logoutParams: {
+        returnTo: window.location.origin + '/login',
+      },
+    });
   }
 
   private readSavedSelection(): string[] {

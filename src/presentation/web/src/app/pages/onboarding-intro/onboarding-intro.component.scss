@@ -1,0 +1,92 @@
+.intro-container {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  background-color: #ffffff;
+  font-family: 'Inter', sans-serif;
+  position: relative;
+  overflow: hidden;
+  color: #363640;
+}
+
+.background-svg {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  display: block;
+  width: min(100%, 850px);
+  max-width: 100%;
+  height: auto;
+  z-index: 1;
+  opacity: 0.6;
+  pointer-events: none;
+}
+
+.content {
+  flex: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 2rem 4rem;
+  z-index: 2;
+}
+
+.intro-panel {
+  width: 100%;
+  max-width: 920px;
+  padding: 0;
+  text-align: left;
+}
+
+.intro-header {
+  margin-bottom: 1.5rem;
+}
+
+.intro-header h1 {
+  font-size: 1.8rem;
+  margin: 0 0 0.9rem 0;
+  font-weight: 600;
+  color: #111827;
+  letter-spacing: -0.02em;
+}
+
+.intro-text {
+  margin: 0 0 0.5rem 0;
+  font-size: 0.9rem;
+  color: #4b5563;
+  line-height: 1.6;
+  max-width: 640px;
+}
+
+.intro-text--secondary {
+  color: #6b7280;
+}
+
+.intro-actions {
+  margin-top: 1.25rem;
+}
+
+.start-btn {
+  border-radius: 6px;
+  padding: 0.7rem 1.4rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  border: none;
+  transition: background-color 0.18s ease, color 0.18s ease;
+  font-family: 'Inter', sans-serif;
+  white-space: nowrap;
+  background: #d6c5fb;
+  color: #363640;
+  border: 1px solid #d6c5fb;
+}
+
+.start-btn:hover {
+  background: #c4b3f0;
+}
+
+@media (max-width: 900px) {
+  .content {
+    padding: 1.75rem 1rem 2.5rem;
+  }
+}
