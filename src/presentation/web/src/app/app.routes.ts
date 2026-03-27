@@ -13,22 +13,20 @@ import { OnboardingIntroComponent } from './pages/onboarding-intro/onboarding-in
 export const routes: Routes = [
   { path: '', redirectTo: '/login', pathMatch: 'full' },
   { path: 'login', component: LoginComponent },
-  { path: 'onboarding-intro', component: OnboardingIntroComponent, canActivate: [authGuardFn] },
+  { path: 'onboarding-intro', component: OnboardingIntroComponent },
   { path: 'signup', component: SignupComponent },
   { path: 'home', component: HomeComponent, canActivate: [authGuardFn] },
   {
     path: 'form',
     component: OnboardingFormComponent,
-    canActivate: [authGuardFn],
     data: { routeAnimation: 'form' },
   },
-  { path: 'upload', component: UploadComponent, canActivate: [authGuardFn] },
-  { path: 'review', component: ReviewComponentsComponent, canActivate: [authGuardFn] },
+  { path: 'upload', component: UploadComponent },
+  { path: 'review', component: ReviewComponentsComponent },
   { path: 'module-selector', component: ModuleSelectorComponent, canActivate: [authGuardFn] },
   {
     path: 'input-method',
     component: InputMethodComponent,
-    canActivate: [authGuardFn],
     data: { routeAnimation: 'inputMethod' },
   },
   { path: '**', redirectTo: '/login' }
