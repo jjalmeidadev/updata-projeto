@@ -327,6 +327,10 @@ export class OnboardingFormComponent implements OnInit {
       return;
     }
 
+    sessionStorage.removeItem(REVIEW_STATE_KEY);
+    sessionStorage.removeItem(REVIEW_CORRECTIONS_KEY);
+    sessionStorage.removeItem(REVIEW_FORM_DRAFT_KEY);
+    sessionStorage.removeItem(REVIEW_SECTION_INDEX_KEY);
     this.completeSubmission();
   }
 

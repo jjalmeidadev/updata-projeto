@@ -147,6 +147,27 @@ export class ReviewComponentsComponent implements OnInit {
     this.issues.set(loadedIssues);
     this.source.set(loadedSource);
 
+    if (loadedIssues.length === 0) {
+      const linkToken = this.route.snapshot.paramMap.get('linkToken');
+      const queryParams = {
+        fromReview: true,
+        fromUpload: loadedSource === 'template',
+        autoSubmit: true,
+      };
+      const state = {
+        reviewSource: loadedSource,
+        autoSubmit: true,
+      };
+
+      if (!linkToken) {
+        this.router.navigate(['/form'], { queryParams, state });
+        return;
+      }
+
+      this.router.navigate(['/onboarding', linkToken, 'form'], { queryParams, state });
+      return;
+    }
+
     const firstInvalidSectionIndex = this.groupedSections().findIndex(
       (group: ReviewSectionGroup) => group.invalidCount > 0
     );
