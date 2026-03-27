@@ -10,8 +10,8 @@ export const appConfig: ApplicationConfig = {
     provideRouter(routes),
     provideHttpClient(withInterceptors([authHttpInterceptorFn])),
     provideAuth0({
-      domain: 'dev-6imaiajbfe843lz7.us.auth0.com',
-      clientId: 'zbxc9LxumO8vWmoyqglAVCv4PTiRwdKB',
+      domain: 'dev-e8hme66hgt4cf75n.us.auth0.com',
+      clientId: 'UdMuqErwkmF1lmBbHZz77ejJAhCt4dur',
       authorizationParams: {
         redirect_uri: window.location.origin + '/login',
         audience: 'https://api.updata.com',
