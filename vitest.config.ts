@@ -19,6 +19,10 @@ export default defineConfig({
         replacement: resolveFromRoot("./src/presentation/web/node_modules/@angular/common/fesm2022/common.mjs"),
       },
       {
+        find: /^@angular\/compiler$/,
+        replacement: resolveFromRoot("./src/presentation/web/node_modules/@angular/compiler/fesm2022/compiler.mjs"),
+      },
+      {
         find: /^@angular\/common\/http$/,
         replacement: resolveFromRoot("./src/presentation/web/node_modules/@angular/common/fesm2022/http.mjs"),
       },

@@ -14,7 +14,8 @@ console.log("DB_USER:", env.DB_USER)
 console.log("DB_DATABASE:", env.DB_DATABASE)
 console.log("DB_SSL:", env.DB_SSL)
 
-const argvFlat = process.argv.join(" ").replace(/\\/g, "/")
+const processSafe = (globalThis as { process?: { argv?: string[] } }).process
+const argvFlat = Array.isArray(processSafe?.argv) ? processSafe.argv.join(" ").replace(/\\/g, "/") : ""
 const isUploadWorkerProcess = argvFlat.includes("upload-worker")
 const isBenchmarkThroughputProcess = argvFlat.includes("benchmark-throughput")
 

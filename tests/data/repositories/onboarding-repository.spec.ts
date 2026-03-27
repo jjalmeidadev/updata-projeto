@@ -306,29 +306,19 @@ describe("onboarding-repository", () => {
         },
       ])
 
-      expect(mockPool.query).toHaveBeenCalledTimes(2)
-      expect(mockPool.query).toHaveBeenNthCalledWith(
-        1,
+      expect(mockPool.query).toHaveBeenCalledTimes(1)
+      expect(mockPool.query).toHaveBeenCalledWith(
         expect.stringContaining("INSERT INTO equiem.onboarding_payload"),
         [
           "batch-1",
-          1,
-          "building",
-          JSON.stringify({ external_id: "b-1", name: "Tower A" }),
-          true,
-          JSON.stringify([]),
-        ]
-      )
-      expect(mockPool.query).toHaveBeenNthCalledWith(
-        2,
-        expect.stringContaining("INSERT INTO equiem.onboarding_payload"),
-        [
-          "batch-1",
-          2,
-          "company",
-          JSON.stringify({ external_id: "c-1", name: "Acme" }),
-          false,
-          JSON.stringify(["Missing field"]),
+          [1, 2],
+          ["building", "company"],
+          [
+            JSON.stringify({ external_id: "b-1", name: "Tower A" }),
+            JSON.stringify({ external_id: "c-1", name: "Acme" }),
+          ],
+          [true, false],
+          [JSON.stringify([]), JSON.stringify(["Missing field"])],
         ]
       )
     })

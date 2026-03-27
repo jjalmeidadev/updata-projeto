@@ -32,7 +32,7 @@ describe('app.config', () => {
     expect(provideHttpClient).toHaveBeenCalled();
     expect(provideAuth0).toHaveBeenCalledWith(
       expect.objectContaining({
-        domain: 'dev-6imaiajbfe843lz7.us.auth0.com',
+        domain: 'dev-e8hme66hgt4cf75n.us.auth0.com',
         authorizationParams: expect.objectContaining({
           redirect_uri: 'http://localhost:4200/login',
         }),

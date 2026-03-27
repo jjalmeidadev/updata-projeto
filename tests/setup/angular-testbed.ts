@@ -1,3 +1,5 @@
+await import("@angular/compiler")
+
 // Initialize Angular testing platform only for browser-like test environments.
 if (typeof window !== "undefined") {
   const angularTesting = await import("@angular/core/testing")

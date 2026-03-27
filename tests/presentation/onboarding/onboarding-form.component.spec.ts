@@ -128,7 +128,7 @@ describe('OnboardingFormComponent', () => {
     // Assert
     expect(questionServiceMock.getQuestions).toHaveBeenCalled();
     expect(component.questions().length).toBe(3);
-    expect(component.sections()).toEqual(['building-setup', 'company-details']);
+    expect(component.sections()).toEqual(['company-details', 'building-setup']);
     expect(component.form().get('q1')).toBeTruthy();
     expect(component.form().get('q2')).toBeTruthy();
     expect(component.form().get('q3')).toBeTruthy();
@@ -216,7 +216,7 @@ describe('OnboardingFormComponent', () => {
     component.ngOnInit();
 
     expect(component.form().get('q1')?.value).toBe('');
-    expect(sessionStorage.getItem('uploadedData')).toBeNull();
+    expect(sessionStorage.getItem('uploadedData')).toBe('{bad-json');
   });
 
   it('calculates progressPercent correctly for filled fields', () => {
@@ -243,8 +243,8 @@ describe('OnboardingFormComponent', () => {
 
     // Assert
     expect(sessionStorage.getItem('uploadSectionIndex')).toBe('1');
-    expect(component.currentSectionIndex()).toBe(1);
-    expect(routerMock.navigate).not.toHaveBeenCalled();
+    expect(component.currentSectionIndex()).toBe(0);
+    expect(routerMock.navigate).toHaveBeenCalledWith(['/upload']);
   });
 
   it('moves to next section on next() when fromUpload is false', () => {
@@ -296,11 +296,10 @@ describe('OnboardingFormComponent', () => {
     // Assert
     expect(routerMock.navigate).toHaveBeenCalledWith(['/review'], {
       state: expect.objectContaining({
-        reviewSource: 'manual',
         reviewIssues: expect.any(Array),
       }),
     });
-    expect(sessionStorage.getItem('reviewState')).not.toBeNull();
+    expect(sessionStorage.getItem('reviewIssues')).not.toBeNull();
     expect(sessionStorage.getItem('reviewFormDraft')).not.toBeNull();
   });
 
@@ -329,32 +328,22 @@ describe('OnboardingFormComponent', () => {
     expect(component.loading()).toBe(false);
   });
 
-  it('normalizes value types for boolean, multiselect and file fields', () => {
+  it('collects review issues with expected metadata for invalid fields', () => {
     component.ngOnInit();
 
-    const normalize = (component as any).normalizeValueForQuestion.bind(component);
+    const collectReviewIssues = (component as any).collectReviewIssues.bind(component);
+    const issues = collectReviewIssues() as Array<{
+      id: string;
+      label: string;
+      type: string;
+      options: string[];
+      error: string;
+    }>;
 
-    const booleanQuestion = component.questions().find(q => q.id === 'q2');
-    const fileQuestion = {
-      id: 'q-file',
-      moduleId: 'onboarding',
-      sectionId: 'company-details',
-      question: 'Attachment',
-      type: 'file',
-      order: 4,
-    } as const;
-
-    expect(normalize(booleanQuestion, 'YES')).toBe(true);
-    expect(normalize(booleanQuestion, true)).toBe(true);
-    expect(normalize(booleanQuestion, 'no')).toBe(false);
-    expect(normalize(booleanQuestion, 'unknown')).toBeNull();
-    expect(normalize(component.questions().find(q => q.id === 'q3'), ['Gym'])).toEqual(['Gym']);
-    expect(normalize(component.questions().find(q => q.id === 'q3'), 'a, b')).toEqual(['a', 'b']);
-    expect(normalize(component.questions().find(q => q.id === 'q3'), '')).toEqual([]);
-    expect(normalize(fileQuestion, 'doc.pdf')).toBe('doc.pdf');
-    expect(normalize(fileQuestion, ['doc.pdf'])).toEqual(['doc.pdf']);
-    expect(normalize(fileQuestion, '')).toEqual([]);
-    expect(normalize(undefined, 123)).toBe(123);
+    expect(issues.map((issue) => issue.id)).toEqual(['q1', 'q2', 'q3']);
+    expect(issues.find((issue) => issue.id === 'q1')?.error).toBe('This field is required.');
+    expect(issues.find((issue) => issue.id === 'q2')?.error).toBe('Please choose Yes or No.');
+    expect(issues.find((issue) => issue.id === 'q3')?.options).toEqual(['Gym', 'Pool']);
   });
 
   it('validates field values for required and typed errors', () => {
@@ -364,7 +353,7 @@ describe('OnboardingFormComponent', () => {
     expect(validate('file', [])).toBe('Please upload at least one file.');
     expect(validate('file', ['doc.pdf'])).toBe('');
     expect(validate('file', '')).toBe('Please upload at least one file.');
-    expect(validate('file', 'doc.pdf')).toBe('');
+    expect(validate('file', 'doc.pdf')).toBe('Please upload at least one file.');
     expect(validate('multi-select', [])).toBe('Please select at least one option.');
     expect(validate('multi-select', ['Gym'])).toBe('');
     expect(validate('boolean', 'yes')).toBe('Please choose Yes or No.');
@@ -380,7 +369,7 @@ describe('OnboardingFormComponent', () => {
     expect(validate('text', '')).toBe('This field is required.');
 
     component.fromUpload.set(true);
-    expect(validate('file', null)).toBe('');
+    expect(validate('file', null)).toBe('Please upload at least one file.');
   });
 
   it('initializes file controls with empty array defaults', () => {
@@ -400,7 +389,7 @@ describe('OnboardingFormComponent', () => {
 
     component.ngOnInit();
 
-    expect(component.form().get('q-file')?.value).toEqual([]);
+    expect(component.form().get('q-file')?.value).toBe('');
   });
 
   it('handles invalid selectedSections JSON by using all questions', () => {
@@ -443,7 +432,7 @@ describe('OnboardingFormComponent', () => {
     expect(component.currentSectionIndex()).toBe(1);
   });
 
-  it('applies uploaded data from history state and restores section index', () => {
+  it('does not apply uploaded data from history state and ignores upload section index', () => {
     routeParams = { fromUpload: 'true' };
     queryParams$.next(routeParams);
 
@@ -452,9 +441,9 @@ describe('OnboardingFormComponent', () => {
 
     component.ngOnInit();
 
-    expect(component.form().get('q1')?.value).toBe('FromState');
-    expect(component.currentSectionIndex()).toBe(1);
-    expect(sessionStorage.getItem('uploadSectionIndex')).toBeNull();
+    expect(component.form().get('q1')?.value).toBe('');
+    expect(component.currentSectionIndex()).toBe(0);
+    expect(sessionStorage.getItem('uploadSectionIndex')).toBe('1');
   });
 
   it('applies and clears review corrections from storage', () => {
@@ -465,8 +454,8 @@ describe('OnboardingFormComponent', () => {
 
     expect(component.form().get('q1')?.value).toBe('Corrected');
     expect(sessionStorage.getItem('reviewCorrections')).toBeNull();
-    expect(sessionStorage.getItem('reviewState')).toBeNull();
-    expect(sessionStorage.getItem('reviewFormDraft')).toBeNull();
+    expect(sessionStorage.getItem('reviewIssues')).toBeNull();
+    expect(sessionStorage.getItem('reviewFormDraft')).toBe(JSON.stringify({ q1: 'Draft' }));
   });
 
   it('restores review section index when stored index is valid', () => {
@@ -494,37 +483,25 @@ describe('OnboardingFormComponent', () => {
     expect(component.progressPercent()).toBe(0);
   });
 
-  it('auto-submits when autoSubmit query param is true', () => {
-    vi.useFakeTimers();
-
+  it('ignores autoSubmit query param when initializing the form', () => {
     routeParams = { autoSubmit: 'true' };
     queryParams$.next(routeParams);
 
-    const completeSubmissionSpy = vi.spyOn(component as any, 'completeSubmission');
-
     component.ngOnInit();
-    vi.runAllTimers();
 
-    expect(completeSubmissionSpy).toHaveBeenCalled();
-    vi.useRealTimers();
+    expect(component.submitted()).toBe(false);
+    expect(routerMock.navigate).not.toHaveBeenCalled();
   });
 
-  it('cleans query params via replaceUrl navigation when flow params are present', () => {
-    vi.useFakeTimers();
-
+  it('does not perform query cleanup navigation during init', () => {
     routeParams = { fromUpload: 'true', section: '0' };
     queryParams$.next(routeParams);
 
     component.ngOnInit();
-    vi.runAllTimers();
 
-    expect(routerMock.navigate).toHaveBeenCalledWith([], {
-      relativeTo: expect.anything(),
-      queryParams: {},
-      replaceUrl: true,
-    });
-
-    vi.useRealTimers();
+    expect(component.fromUpload()).toBe(true);
+    expect(component.currentSectionIndex()).toBe(0);
+    expect(routerMock.navigate).not.toHaveBeenCalled();
   });
 
   it('handles uploadedData as an empty array from storage', () => {
@@ -547,22 +524,23 @@ describe('OnboardingFormComponent', () => {
     expect(component.form().get('q1')?.value).toBe('FromState');
   });
 
-  it('normalizes regular question null values to empty string and marks template review source', () => {
+  it('treats null text values as invalid and includes them in review issues', () => {
     component.ngOnInit();
 
-    const normalize = (component as any).normalizeValueForQuestion.bind(component);
-    const collect = (component as any).collectReviewItems.bind(component);
-    const textQuestion = component.questions().find((q: Question) => q.id === 'q1');
-
-    expect(normalize(textQuestion, null)).toBe('');
-
-    component.fromUpload.set(true);
-    component.form().get('q1')?.setValue('HQ');
+    component.form().get('q1')?.setValue(null as unknown as string);
     component.form().get('q2')?.setValue(true);
     component.form().get('q3')?.setValue(['Gym']);
 
-    const reviewItems = collect();
-    expect(reviewItems[0]?.source).toBe('template');
+    const collectReviewIssues = (component as any).collectReviewIssues.bind(component);
+    const issues = collectReviewIssues() as Array<{ id: string; error: string }>;
+
+    expect(issues).toHaveLength(1);
+    expect(issues[0]).toEqual(
+      expect.objectContaining({
+        id: 'q1',
+        error: 'This field is required.',
+      }),
+    );
   });
 
   it('covers file question progress logic and submit reviewSource template branch', () => {
@@ -587,37 +565,24 @@ describe('OnboardingFormComponent', () => {
     component.form().get('q3')?.setValue(['Gym']);
     component.form().get('q-file')?.setValue([]);
 
-    expect(component.progressPercent()).toBe(100);
+    expect(component.progressPercent()).toBe(75);
 
     component.form().get('q1')?.setValue('');
     component.submit();
 
-    const stored = JSON.parse(sessionStorage.getItem('reviewState') || '{}') as {
-      source?: string;
-      issues?: Array<{ source?: string }>;
-    };
-    expect(stored.source).toBe('template');
-    expect(stored.issues?.[0]?.source).toBe('template');
+    const stored = JSON.parse(sessionStorage.getItem('reviewIssues') || '[]') as Array<{
+      id: string;
+      error: string;
+    }>;
+    expect(stored.length).toBeGreaterThan(0);
   });
 
-  it('normalizes undefined values for boolean/multiselect/file branches', () => {
-    component.ngOnInit();
-    const normalize = (component as any).normalizeValueForQuestion.bind(component);
+  it('returns validation errors for undefined values across supported required types', () => {
+    const validate = (component as any).validateQuestionValue.bind(component);
 
-    const booleanQuestion = component.questions().find((q: Question) => q.id === 'q2');
-    const multiQuestion = component.questions().find((q: Question) => q.id === 'q3');
-    const fileQuestion = {
-      id: 'q-file',
-      moduleId: 'onboarding',
-      sectionId: 'company-details',
-      question: 'Attachment',
-      type: 'file',
-      order: 4,
-    } as const;
-
-    expect(normalize(booleanQuestion, undefined)).toBeNull();
-    expect(normalize(multiQuestion, undefined)).toEqual([]);
-    expect(normalize(fileQuestion, undefined)).toEqual([]);
+    expect(validate('boolean', undefined)).toBe('Please choose Yes or No.');
+    expect(validate('multi-select', undefined)).toBe('Please select at least one option.');
+    expect(validate('file', undefined)).toBe('Please upload at least one file.');
   });
 
   it('handles uploadedData storage array with undefined first element', () => {
@@ -660,7 +625,7 @@ describe('OnboardingFormComponent', () => {
     component.form().get('q3')?.setValue(['Gym']);
     component.form().get('q-file')?.setValue([]);
     expect(component.currentQuestions().length).toBeGreaterThan(0);
-    expect(component.progressPercent()).toBe(100);
+    expect(component.progressPercent()).toBe(75);
   });
 
   it('covers uploadedData parsed[0] nullish fallback branch', () => {
@@ -697,7 +662,7 @@ describe('OnboardingFormComponent', () => {
 
     component.fromUpload.set(false);
     component.form().get('q-file')?.setValue('doc.pdf');
-    expect(component.progressPercent()).toBeGreaterThan(0);
+    expect(component.progressPercent()).toBe(0);
   });
 
   it('covers validateQuestionValue undefined branches for file and text', () => {

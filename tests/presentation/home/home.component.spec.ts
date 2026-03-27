@@ -156,12 +156,11 @@ describe('HomeComponent', () => {
     expect(component.profileMenuOpen).toBe(true);
   });
 
-  it('logs company details in viewDetails()', () => {
-    const logSpy = vi.spyOn(console, 'log').mockImplementation(() => undefined);
-
+  it('stores selected company and navigates in viewDetails()', () => {
     component.viewDetails({ name: 'Company Z', progress: 0, started: false });
 
-    expect(logSpy).toHaveBeenCalledWith('Viewing details for', 'Company Z');
+    expect(sessionStorage.getItem('onboardingCompany')).toBe('Company Z');
+    expect(routerMock.navigate).toHaveBeenCalledWith(['/module-selector']);
   });
 
   it('covers optional-chain fallback when initials segment is empty', async () => {

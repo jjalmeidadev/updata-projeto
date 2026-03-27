@@ -1,5 +1,6 @@
 import { TestBed } from '@angular/core/testing';
 import { Router } from '@angular/router';
+import { AuthService } from '@auth0/auth0-angular';
 import { of, throwError } from 'rxjs';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
@@ -48,6 +49,7 @@ describe('ModuleSelectorComponent', () => {
       providers: [
         { provide: Router, useValue: routerMock },
         { provide: QuestionService, useValue: questionServiceMock },
+        { provide: AuthService, useValue: { user$: of({ email: 'user@test.com', name: 'Test User' }), logout: vi.fn() } },
       ],
     }).compileComponents();
 
@@ -85,22 +87,22 @@ describe('ModuleSelectorComponent', () => {
     expect(component.isSelected('building-setup')).toBe(true);
   });
 
-  it('persists selection and navigates on continueToForm()', () => {
+  it('persists selection and navigates on sendForm()', () => {
     component.ngOnInit();
     component.clearAll();
     component.toggleSection('company-details');
 
-    component.continueToForm();
+    component.sendForm();
 
     expect(localStorage.getItem('selectedSections')).toBe(JSON.stringify(['company-details']));
-    expect(routerMock.navigate).toHaveBeenCalledWith(['/input-method']);
+    expect(routerMock.navigate).toHaveBeenCalledWith(['/home']);
   });
 
-  it('does not navigate on continueToForm() when nothing is selected', () => {
+  it('does not navigate on sendForm() when nothing is selected', () => {
     component.ngOnInit();
     component.clearAll();
 
-    component.continueToForm();
+    component.sendForm();
 
     expect(routerMock.navigate).not.toHaveBeenCalled();
   });

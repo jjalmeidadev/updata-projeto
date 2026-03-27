@@ -20,6 +20,7 @@ describe('app.routes', () => {
     vi.doMock('../../../src/presentation/web/src/app/pages/module-selector/module-selector.component', () => ({ ModuleSelectorComponent: class {} }))
     vi.doMock('../../../src/presentation/web/src/app/pages/review/review-components', () => ({ ReviewComponentsComponent: class {} }))
     vi.doMock('../../../src/presentation/web/src/app/pages/input-method/input-method.component', () => ({ InputMethodComponent: class {} }))
+    vi.doMock('../../../src/presentation/web/src/app/pages/onboarding-intro/onboarding-intro.component', () => ({ OnboardingIntroComponent: class {} }))
 
     const { routes } = await import('../../../src/presentation/web/src/app/app.routes.ts')
 
@@ -27,6 +28,7 @@ describe('app.routes', () => {
     expect(paths).toEqual([
       '',
       'login',
+      'onboarding-intro',
       'signup',
       'home',
       'form',
