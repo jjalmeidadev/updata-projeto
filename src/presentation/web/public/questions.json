@@ -66,8 +66,7 @@
   "id": "q8",
   "moduleId": "onboarding",
   "sectionId": "company-details",
-  "question": "Company email domain(s)",
-  "description": "Everything after the @ symbol in the email address.",
+  "question": "Company email domain",
   "type": "text",
   "order": 8
 },
