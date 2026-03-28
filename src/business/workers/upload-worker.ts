@@ -1,5 +1,5 @@
 import dotenv from "dotenv"
-import { ReceiveMessageCommand, DeleteMessageCommand } from "@aws-sdk/client-sqs"
+import { ReceiveMessageCommand, DeleteMessageCommand, type ReceiveMessageCommandOutput } from "@aws-sdk/client-sqs"
 import { GetObjectCommand } from "@aws-sdk/client-s3"
 import { s3Client, sqsClient } from "../../config/aws-clients.ts"
 import { parseUploadFile } from "../services/upload-file-parser-service.ts"
@@ -245,19 +245,30 @@ export async function pollQueue(maxCycles = Number.POSITIVE_INFINITY): Promise<v
   }
 
   console.log(`[WORKER] Starting SQS long polling on ${queueUrl}`)
+  console.log("[WORKER] Entering poll loop...")
 
   let cycle = 0
 
   while (cycle < maxCycles) {
     cycle += 1
+    console.log(`[WORKER] Poll cycle ${cycle}...`)
     try {
+      console.log("[WORKER] Creating ReceiveMessageCommand...")
       const command = new ReceiveMessageCommand({
         QueueUrl: queueUrl,
         MaxNumberOfMessages: workerBatchSize,
         WaitTimeSeconds: 20
       })
 
-      const response = await sqsClient.send(command)
+      console.log("[WORKER] Sending command to SQS...")
+      let response: ReceiveMessageCommandOutput | undefined
+      try {
+        response = await sqsClient.send(command)
+      } catch (sqsError) {
+        console.error("[WORKER] SQS error:", sqsError)
+        throw sqsError
+      }
+      console.log(`[WORKER] Received response: ${response.Messages?.length || 0} messages`)
       const messages = response.Messages || []
 
       if (messages.length === 0) {
@@ -308,7 +319,12 @@ export async function pollQueue(maxCycles = Number.POSITIVE_INFINITY): Promise<v
   }
 }
 
-if (process.env.NODE_ENV !== "test") {
+// Only start polling if explicitly running as worker and not in test mode
+const isTestEnvironment = process.env.NODE_ENV === "test" || process.env.VITEST === "true"
+const isWorkerProcess = process.argv.some((arg) => arg.includes("upload-worker"))
+
+if (!isTestEnvironment && isWorkerProcess) {
+  console.log("[WORKER] Starting upload worker process...")
   pollQueue().catch((error) => {
     console.error("[WORKER] Fatal error", error)
     process.exit(1)
