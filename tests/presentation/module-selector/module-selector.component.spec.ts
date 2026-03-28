@@ -5,6 +5,7 @@ import { of, throwError } from 'rxjs';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { ModuleSelectorComponent } from '../../../src/presentation/web/src/app/pages/module-selector/module-selector.component';
+import { OnboardingInstanceService } from '../../../src/presentation/web/src/app/services/onboarding-instance.service';
 import { QuestionService } from '../../../src/presentation/web/src/app/services/question.service';
 
 async function resolveAngularResources(): Promise<void> {
@@ -30,6 +31,11 @@ describe('ModuleSelectorComponent', () => {
     getSections: vi.fn(),
   };
 
+  const onboardingServiceMock = {
+    listCompanies: vi.fn(),
+    createInstance: vi.fn(),
+  };
+
   const mockQuestions = [
     { id: 'q1', sectionId: 'building-setup', order: 1 },
     { id: 'q2', sectionId: 'company-details', order: 2 },
@@ -41,6 +47,7 @@ describe('ModuleSelectorComponent', () => {
 
     questionServiceMock.getQuestions.mockReturnValue(of(mockQuestions));
     questionServiceMock.getSections.mockReturnValue(['building-setup', 'company-details']);
+    onboardingServiceMock.listCompanies.mockReturnValue(of([]));
 
     await resolveAngularResources();
 
@@ -49,6 +56,7 @@ describe('ModuleSelectorComponent', () => {
       providers: [
         { provide: Router, useValue: routerMock },
         { provide: QuestionService, useValue: questionServiceMock },
+        { provide: OnboardingInstanceService, useValue: onboardingServiceMock },
         { provide: AuthService, useValue: { user$: of({ email: 'user@test.com', name: 'Test User' }), logout: vi.fn() } },
       ],
     }).compileComponents();
@@ -87,22 +95,22 @@ describe('ModuleSelectorComponent', () => {
     expect(component.isSelected('building-setup')).toBe(true);
   });
 
-  it('persists selection and navigates on sendForm()', () => {
+  it('persists selection and navigates on continueLegacyFlow()', () => {
     component.ngOnInit();
     component.clearAll();
     component.toggleSection('company-details');
 
-    component.sendForm();
+    component.continueLegacyFlow();
 
     expect(localStorage.getItem('selectedSections')).toBe(JSON.stringify(['company-details']));
-    expect(routerMock.navigate).toHaveBeenCalledWith(['/home']);
+    expect(routerMock.navigate).toHaveBeenCalledWith(['/input-method']);
   });
 
-  it('does not navigate on sendForm() when nothing is selected', () => {
+  it('does not navigate on continueLegacyFlow() when nothing is selected', () => {
     component.ngOnInit();
     component.clearAll();
 
-    component.sendForm();
+    component.continueLegacyFlow();
 
     expect(routerMock.navigate).not.toHaveBeenCalled();
   });
@@ -122,9 +130,9 @@ describe('ModuleSelectorComponent', () => {
     expect(Array.from(component.selectedSections())).toEqual(['building-setup', 'company-details']);
 
     component.clearAll();
-    expect(component.canContinue()).toBe(false);
+    expect(component.canContinueLegacy()).toBe(false);
     component.selectAll();
-    expect(component.canContinue()).toBe(true);
+    expect(component.canContinueLegacy()).toBe(true);
 
     localStorage.setItem('selectedSections', JSON.stringify({ foo: 'bar' }));
     component.ngOnInit();

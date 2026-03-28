@@ -36,6 +36,10 @@ describe('app.routes', () => {
       'review',
       'module-selector',
       'input-method',
+      'onboarding/:linkToken',
+      'onboarding/:linkToken/form',
+      'onboarding/:linkToken/upload',
+      'onboarding/:linkToken/review',
       '**',
     ]);
 
