@@ -226,63 +226,46 @@ Follow the steps below to set up and run the application on your local machine. 
 
 Both services must be running for the system to work correctly.
 
-1. Clone the repository (via HTTPS)
+1. **Clone the repository (via HTTPS)**
 
     ```
     git clone https://git.inteli.edu.br/graduacao/2026-1a/t17/g05.git
 
     cd g05
     ```
-2. Install dependencies
+2. **Open a terminal and navigate to the project root:**
+   ```sh
+   cd C:/Users/Inteli/Documents/Github/M5/g05
+   ```
 
-    ```
-    npm install
-    ```
+3. **Start the backend (API) in one terminal:**
+   ```sh
+   npm run dev
+   ```
+   This will start the API at http://localhost:3000.
 
-3. Install and run the Angular Application
+4. **Open a second terminal and start the frontend (Angular):**
+   ```sh
+   cd src/presentation/web
+   npm start
+   ```
+   This will start the Angular app at http://localhost:4200.
 
-    Navigate to the frontend directory.
+5. **(Required) Open a third terminal in the project root and start the worker:**
+   ```sh
+   npm run worker:upload
+   ```
+   This runs the background worker needed for processing uploads.
 
-        cd src/presentation/web
-    
+**Note:**
+- All three processes (backend, frontend, and worker) must be running for the system to work correctly.
+- If you encounter issues, check that Node.js and Angular CLI are installed, and that ports 3000 and 4200 are available.
 
-    Install Angular project dependencies globally.
+### Running the Database
 
-        npm install -g @angular/cli
-
-    Start the Angular development server.
-
-        ng serve
-
-4. Run the application
-
-    ```
-    npm start
-    ```
-
-5. Open the application
-
-    After running the server, open your browser and go to:
-
-        http://localhost:3000
-
-    The application should now be running locally.
-
-6. Troubleshooting
-
-    If you encounter issues during setup:
-
-    - Ensure Node.js (v18+) is installed. Verify the installation:
-
-            node -v
-
-    - Ensure Angular CLI is installed. Verify the installation:
-
-            ng version
-
-    - Verify that the .env file exists in the backend directory
-    - Check that ports 3000 is available
-
+- Install PostgreSQL and create a database (e.g., equiem_db).
+- Run 01_create_database.sql to create the schema.
+- Run 02_initial_data.sql to insert initial data.
 
 ## 🗃 Release History
 
