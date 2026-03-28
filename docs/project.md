@@ -564,6 +564,12 @@ This section documents the main features implemented during the sprint 4, includ
 - **Automated Deployment on Render**  
   The application was deployed on Render using optimized Docker images (`Dockerfile.prod`), streamlining the CI/CD process and improving delivery times.
 
+  Link do deploy: https://g05-frontend.onrender.com
+
+Start of Equiem Flow: https://g05-frontend.onrender.com/login
+
+Start of Builder Administrator Flow: https://g05-frontend.onrender.com/onboarding-intro
+
 ### User Interface and Experience Improvements
 
 - **Onboarding Flow Choice Screen**  

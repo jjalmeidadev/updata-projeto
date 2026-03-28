@@ -1,60 +1,60 @@
-# Data Dictionary - Banco de Dados Equiem
+# Data Dictionary - Equiem Database
 
-**Data de criação:** 27 de março de 2026  
-**Versão:** 1.0  
-**Schema:** `equiem`  
-**Banco:** PostgreSQL 13+
+**Created:** March 27, 2026
+**Version:** 1.0
+**Schema:** `equiem`
+**Database:** PostgreSQL 13+
 
 ---
 
-## Índice
+## Table of Contents
 
-1. [Tabelas de Configuração](#tabelas-de-configuração)
-2. [Tabelas de Hierarquia & Espaço](#tabelas-de-hierarquia--espaço)
-3. [Tabelas de Usuário & Autenticação](#tabelas-de-usuário--autenticação)
-4. [Tabelas de Recurso](#tabelas-de-recurso)
-5. [Tabelas de Booking](#tabelas-de-booking)
-6. [Tabelas de Processamento (Onboarding)](#tabelas-de-processamento-onboarding)
-7. [Tabelas de Jobs Assíncronos](#tabelas-de-jobs-assíncronos)
+1. [Configuration Tables](#configuration-tables)
+2. [Hierarchy & Space Tables](#hierarchy--space-tables)
+3. [User & Authentication Tables](#user--authentication-tables)
+4. [Resource Tables](#resource-tables)
+5. [Booking Tables](#booking-tables)
+6. [Processing Tables (Onboarding)](#processing-tables-onboarding)
+7. [Async Job Tables](#async-job-tables)
 8. [ENUMS](#enums)
-9. [Índices & Performance](#índices--performance)
-10. [Estratégia de Versionamento](#estratégia-de-versionamento)
+9. [Indexes & Performance](#indexes--performance)
+10. [Versioning Strategy](#versioning-strategy)
 
 ---
 
-## Tabelas de Configuração
+## Configuration Tables
 
 ### `company`
 
-Representa uma empresa cadastrada no sistema.
+Represents a company registered in the system.
 
-| Campo | Tipo | Nullable | Default | Descrição |
-|-------|------|----------|---------|-----------|
-| id | UUID | ✘ | uuid_v4() | ID único da empresa |
-| domain | VARCHAR(255) | ✘ | - | Domínio de email (ex: `empresa.com`) |
-| name | VARCHAR(255) | ✘ | - | Nome da empresa |
-| status | customer_status_enum | ✘ | 'ACTIVE' | Status da conta (`ACTIVE`, `INACTIVE`, `SUSPENDED`) |
-| metadata | JSONB | ✔ | NULL | Metadados customizados |
-| created_at | TIMESTAMP | ✘ | NOW() | Data de criação |
-| updated_at | TIMESTAMP | ✘ | NOW() | Data de última atualização |
+| Field | Type | Nullable | Default | Description |
+|-------|------|----------|---------|-------------|
+| id | UUID | ✘ | uuid_v4() | Unique company ID |
+| domain | VARCHAR(255) | ✘ | - | Email domain (e.g., `company.com`) |
+| name | VARCHAR(255) | ✘ | - | Company name |
+| status | customer_status_enum | ✘ | 'ACTIVE' | Account status (`ACTIVE`, `INACTIVE`, `SUSPENDED`) |
+| metadata | JSONB | ✔ | NULL | Custom metadata |
+| created_at | TIMESTAMP | ✘ | NOW() | Creation date |
+| updated_at | TIMESTAMP | ✘ | NOW() | Last update date |
 
-**Restrições:**
+**Constraints:**
 - PRIMARY KEY: `id`
 - UNIQUE: `domain`
-- FK: Nenhuma (tabela raiz)
+- FK: None (root table)
 
-**Índices:**
-- `idx_company_domain` (para login por domínio)
-- `idx_company_status` (para filtros de ativação)
+**Indexes:**
+- `idx_company_domain` (for login by domain)
+- `idx_company_status` (for activation filters)
 
-**Exemplo:**
+**Example:**
 ```json
 {
   "id": "550e8400-e29b-41d4-a716-446655440000",
-  "domain": "empresa.com",
-  "name": "Empresa XYZ",
+  "domain": "company.com",
+  "name": "XYZ Company",
   "status": "ACTIVE",
-  "metadata": { "phone": "+55 11 98765-4321", "industry": "Tech" },
+  "metadata": { "phone": "+1 555 987-6543", "industry": "Tech" },
   "created_at": "2026-03-01T10:00:00Z",
   "updated_at": "2026-03-27T15:30:00Z"
 }
@@ -64,38 +64,38 @@ Representa uma empresa cadastrada no sistema.
 
 ### `customer`
 
-Cliente específico dentro de uma empresa (ex: filial, regional).
+Specific customer within a company (e.g., branch, regional office).
 
-| Campo | Tipo | Nullable | Default | Descrição |
-|-------|------|----------|---------|-----------|
-| id | UUID | ✘ | uuid_v4() | ID único do cliente |
-| company_id | UUID | ✘ | - | ID da empresa (FK) |
-| name | VARCHAR(255) | ✘ | - | Nome do cliente |
+| Field | Type | Nullable | Default | Description |
+|-------|------|----------|---------|-------------|
+| id | UUID | ✘ | uuid_v4() | Unique customer ID |
+| company_id | UUID | ✘ | - | Company ID (FK) |
+| name | VARCHAR(255) | ✘ | - | Customer name |
 | status | customer_status_enum | ✘ | 'ACTIVE' | Status (`ACTIVE`, `INACTIVE`) |
-| created_at | TIMESTAMP | ✘ | NOW() | Data de criação |
-| updated_at | TIMESTAMP | ✘ | NOW() | Data de última atualização |
+| created_at | TIMESTAMP | ✘ | NOW() | Creation date |
+| updated_at | TIMESTAMP | ✘ | NOW() | Last update date |
 
-**Restrições:**
+**Constraints:**
 - PRIMARY KEY: `id`
 - FK: `company_id` → `company.id` (ON DELETE CASCADE)
 
-**Índices:**
-- `idx_customer_company_id` (para listar clientes por empresa)
+**Indexes:**
+- `idx_customer_company_id` (to list customers by company)
 
 ---
 
 ### `role`
 
-Tipo de permissão no sistema (ex: Admin, User, Manager).
+Permission type in the system (e.g., Admin, User, Manager).
 
-| Campo | Tipo | Nullable | Default | Descrição |
-|-------|------|----------|---------|-----------|
-| id | UUID | ✘ | uuid_v4() | ID único do role |
-| name | VARCHAR(100) | ✘ | - | Nome do role (ex: `ADMIN`, `USER`) |
-| scope | role_scope_enum | ✘ | - | Escopo (`SYSTEM`, `CUSTOMER`, `SITE`) |
-| permissions | JSONB | ✔ | NULL | Array de permissões (ex: `["read:user", "write:booking"]`) |
+| Field | Type | Nullable | Default | Description |
+|-------|------|----------|---------|-------------|
+| id | UUID | ✘ | uuid_v4() | Unique role ID |
+| name | VARCHAR(100) | ✘ | - | Role name (e.g., `ADMIN`, `USER`) |
+| scope | role_scope_enum | ✘ | - | Scope (`SYSTEM`, `CUSTOMER`, `SITE`) |
+| permissions | JSONB | ✔ | NULL | Permissions array (e.g., `["read:user", "write:booking"]`) |
 
-**Restrições:**
+**Constraints:**
 - PRIMARY KEY: `id`
 - UNIQUE: `name`
 
@@ -103,15 +103,15 @@ Tipo de permissão no sistema (ex: Admin, User, Manager).
 
 ### `group`
 
-Agrupamento de usuários para fins organizacionais.
+User grouping for organizational purposes.
 
-| Campo | Tipo | Nullable | Default | Descrição |
-|-------|------|----------|---------|-----------|
-| id | UUID | ✘ | uuid_v4() | ID único do grupo |
-| name | VARCHAR(255) | ✘ | - | Nome do grupo (ex: `Equipe Comercial`) |
-| company_id | UUID | ✘ | - | ID da empresa (FK) |
+| Field | Type | Nullable | Default | Description |
+|-------|------|----------|---------|-------------|
+| id | UUID | ✘ | uuid_v4() | Unique group ID |
+| name | VARCHAR(255) | ✘ | - | Group name (e.g., `Sales Team`) |
+| company_id | UUID | ✘ | - | Company ID (FK) |
 
-**Restrições:**
+**Constraints:**
 - PRIMARY KEY: `id`
 - FK: `company_id` → `company.id` (ON DELETE CASCADE)
 
@@ -119,67 +119,67 @@ Agrupamento de usuários para fins organizacionais.
 
 ### `interest`
 
-Centro de interesse ou interesse do usuário (ex: esportes, networking).
+User interest or interest center (e.g., sports, networking).
 
-| Campo | Tipo | Nullable | Default | Descrição |
-|-------|------|----------|---------|-----------|
-| id | UUID | ✘ | uuid_v4() | ID único do interesse |
-| name | VARCHAR(100) | ✘ | - | Nome do interesse |
+| Field | Type | Nullable | Default | Description |
+|-------|------|----------|---------|-------------|
+| id | UUID | ✘ | uuid_v4() | Unique interest ID |
+| name | VARCHAR(100) | ✘ | - | Interest name |
 
 ---
 
 ### `apartment`
 
-Apartamento ou unidade (ex: sala de reunião, workspace).
+Apartment or unit (e.g., meeting room, workspace).
 
-| Campo | Tipo | Nullable | Default | Descrição |
-|-------|------|----------|---------|-----------|
-| id | UUID | ✘ | uuid_v4() | ID único |
-| name | VARCHAR(100) | ✘ | - | Nome do imóvel |
-| space_id | UUID | ✘ | - | ID do espaço onde está (FK) |
-| capacity | INTEGER | ✔ | NULL | Capacidade de pessoas |
+| Field | Type | Nullable | Default | Description |
+|-------|------|----------|---------|-------------|
+| id | UUID | ✘ | uuid_v4() | Unique ID |
+| name | VARCHAR(100) | ✘ | - | Property name |
+| space_id | UUID | ✘ | - | Space ID where it is located (FK) |
+| capacity | INTEGER | ✔ | NULL | People capacity |
 
-**Restrições:**
+**Constraints:**
 - PRIMARY KEY: `id`
 - FK: `space_id` → `space.id` (ON DELETE CASCADE)
 
 ---
 
-## Tabelas de Hierarquia & Espaço
+## Hierarchy & Space Tables
 
 ### `site`
 
-Local físico (ex: conjunto de edifícios em um bairro).
+Physical location (e.g., group of buildings in a neighborhood).
 
-| Campo | Tipo | Nullable | Default | Descrição |
-|-------|------|----------|---------|-----------|
-| id | UUID | ✘ | uuid_v4() | ID único do site |
-| customer_id | UUID | ✘ | - | ID do cliente (FK) |
-| name | VARCHAR(255) | ✘ | - | Nome do site |
-| type | site_type_enum | ✘ | - | Tipo (`OFFICE`, `RESIDENTIAL`, `COMMERCIAL`) |
-| created_at | TIMESTAMP | ✘ | NOW() | Data de criação |
-| updated_at | TIMESTAMP | ✘ | NOW() | Data de última atualização |
+| Field | Type | Nullable | Default | Description |
+|-------|------|----------|---------|-------------|
+| id | UUID | ✘ | uuid_v4() | Unique site ID |
+| customer_id | UUID | ✘ | - | Customer ID (FK) |
+| name | VARCHAR(255) | ✘ | - | Site name |
+| type | site_type_enum | ✘ | - | Type (`OFFICE`, `RESIDENTIAL`, `COMMERCIAL`) |
+| created_at | TIMESTAMP | ✘ | NOW() | Creation date |
+| updated_at | TIMESTAMP | ✘ | NOW() | Last update date |
 
-**Restrições:**
+**Constraints:**
 - PRIMARY KEY: `id`
 - FK: `customer_id` → `customer.id` (ON DELETE CASCADE)
 
-**Índices:**
-- `idx_site_customer_id` (para listar sites por cliente)
+**Indexes:**
+- `idx_site_customer_id` (to list sites by customer)
 
 ---
 
 ### `building`
 
-Edifício dentro de um site.
+Building within a site.
 
-| Campo | Tipo | Nullable | Default | Descrição |
-|-------|------|----------|---------|-----------|
-| id | UUID | ✘ | uuid_v4() | ID único do edifício |
-| site_id | UUID | ✘ | - | ID do site (FK) |
-| name | VARCHAR(100) | ✘ | - | Nome do edifício |
+| Field | Type | Nullable | Default | Description |
+|-------|------|----------|---------|-------------|
+| id | UUID | ✘ | uuid_v4() | Unique building ID |
+| site_id | UUID | ✘ | - | Site ID (FK) |
+| name | VARCHAR(100) | ✘ | - | Building name |
 
-**Restrições:**
+**Constraints:**
 - PRIMARY KEY: `id`
 - FK: `site_id` → `site.id` (ON DELETE CASCADE)
 
@@ -187,15 +187,15 @@ Edifício dentro de um site.
 
 ### `space`
 
-Espaço dentro de um edifício (ex: andar, departamento).
+Space within a building (e.g., floor, department).
 
-| Campo | Tipo | Nullable | Default | Descrição |
-|-------|------|----------|---------|-----------|
-| id | UUID | ✘ | uuid_v4() | ID único do espaço |
-| building_id | UUID | ✘ | - | ID do edifício (FK) |
-| name | VARCHAR(100) | ✘ | - | Nome do espaço |
+| Field | Type | Nullable | Default | Description |
+|-------|------|----------|---------|-------------|
+| id | UUID | ✘ | uuid_v4() | Unique space ID |
+| building_id | UUID | ✘ | - | Building ID (FK) |
+| name | VARCHAR(100) | ✘ | - | Space name |
 
-**Restrições:**
+**Constraints:**
 - PRIMARY KEY: `id`
 - FK: `building_id` → `building.id` (ON DELETE CASCADE)
 
@@ -203,65 +203,65 @@ Espaço dentro de um edifício (ex: andar, departamento).
 
 ### `level`
 
-Nível de hierarquia personalizado.
+Custom hierarchy level.
 
-| Campo | Tipo | Nullable | Default | Descrição |
-|-------|------|----------|---------|-----------|
-| id | UUID | ✘ | uuid_v4() | ID único |
-| space_id | UUID | ✘ | - | ID do espaço (FK) |
-| name | VARCHAR(100) | ✘ | - | Nome do nível |
+| Field | Type | Nullable | Default | Description |
+|-------|------|----------|---------|-------------|
+| id | UUID | ✘ | uuid_v4() | Unique ID |
+| space_id | UUID | ✘ | - | Space ID (FK) |
+| name | VARCHAR(100) | ✘ | - | Level name |
 
-**Restrições:**
+**Constraints:**
 - PRIMARY KEY: `id`
 - FK: `space_id` → `space.id` (ON DELETE CASCADE)
 
 ---
 
-## Tabelas de Usuário & Autenticação
+## User & Authentication Tables
 
 ### `user`
 
-Usuário do sistema.
+System user.
 
-| Campo | Tipo | Nullable | Default | Descrição |
-|-------|------|----------|---------|-----------|
-| id | UUID | ✘ | uuid_v4() | ID único do usuário |
-| auth0_id | VARCHAR(255) | ✔ | NULL | ID externo Auth0 para autenticação |
-| email | VARCHAR(255) | ✘ | - | Email do usuário |
-| name | VARCHAR(255) | ✘ | - | Nome completo |
-| type | user_type_enum | ✘ | 'USER' | Tipo (`USER`, `ADMIN`, `SYSTEM`) |
+| Field | Type | Nullable | Default | Description |
+|-------|------|----------|---------|-------------|
+| id | UUID | ✘ | uuid_v4() | Unique user ID |
+| auth0_id | VARCHAR(255) | ✔ | NULL | External Auth0 ID for authentication |
+| email | VARCHAR(255) | ✘ | - | User email |
+| name | VARCHAR(255) | ✘ | - | Full name |
+| type | user_type_enum | ✘ | 'USER' | Type (`USER`, `ADMIN`, `SYSTEM`) |
 | status | user_status_enum | ✘ | 'PENDING' | Status (`PENDING`, `ACTIVE`, `INACTIVE`) |
-| company_id | UUID | ✔ | NULL | ID da empresa (FK, pode ser NULL para admins) |
-| approval_status | user_approval_enum | ✘ | 'PENDING' | Aprovação (`PENDING`, `APPROVED`, `REJECTED`) |
-| created_at | TIMESTAMP | ✘ | NOW() | Data de criação |
-| updated_at | TIMESTAMP | ✘ | NOW() | Data de última atualização |
+| company_id | UUID | ✔ | NULL | Company ID (FK, can be NULL for admins) |
+| approval_status | user_approval_enum | ✘ | 'PENDING' | Approval (`PENDING`, `APPROVED`, `REJECTED`) |
+| created_at | TIMESTAMP | ✘ | NOW() | Creation date |
+| updated_at | TIMESTAMP | ✘ | NOW() | Last update date |
 
-**Restrições:**
+**Constraints:**
 - PRIMARY KEY: `id`
 - UNIQUE: `email`, `auth0_id`
 - FK: `company_id` → `company.id` (ON DELETE SET NULL)
 
-**Índices:**
-- `idx_user_email` (para login)
-- `idx_user_company_id` (para filtros por empresa)
-- `idx_user_status` (para filtros de status)
+**Indexes:**
+- `idx_user_email` (for login)
+- `idx_user_company_id` (for company filters)
+- `idx_user_status` (for status filters)
 
 ---
 
 ### `site_profile`
 
-Perfil de usuário específico por site (rôles e permissões locais).
+User profile specific to a site (local roles and permissions).
 
-| Campo | Tipo | Nullable | Default | Descrição |
-|-------|------|----------|---------|-----------|
-| id | UUID | ✘ | uuid_v4() | ID único |
-| user_id | UUID | ✘ | - | ID do usuário (FK) |
-| site_id | UUID | ✘ | - | ID do site (FK) |
-| role_id | UUID | ✘ | - | ID do role (FK) |
+| Field | Type | Nullable | Default | Description |
+|-------|------|----------|---------|-------------|
+| id | UUID | ✘ | uuid_v4() | Unique ID |
+| user_id | UUID | ✘ | - | User ID (FK) |
+| site_id | UUID | ✘ | - | Site ID (FK) |
+| role_id | UUID | ✘ | - | Role ID (FK) |
 
-**Restrições:**
+**Constraints:**
 - PRIMARY KEY: `id`
-- UNIQUE: `(user_id, site_id)` (usuário tem um role por site)
+- UNIQUE: `(user_id, site_id)` (user has one role per site)
 - FK: `user_id` → `user.id` (ON DELETE CASCADE)
 - FK: `site_id` → `site.id` (ON DELETE CASCADE)
 - FK: `role_id` → `role.id` (ON DELETE CASCADE)
@@ -270,125 +270,125 @@ Perfil de usuário específico por site (rôles e permissões locais).
 
 ### `user_role`
 
-Relação many-to-many: usuário pode ter múltiplos roles.
+Many-to-many relationship: a user can have multiple roles.
 
-| Campo | Tipo | Nullable | Default | Descrição |
-|-------|------|----------|---------|-----------|
-| user_id | UUID | ✘ | - | ID do usuário (FK) |
-| role_id | UUID | ✘ | - | ID do role (FK) |
+| Field | Type | Nullable | Default | Description |
+|-------|------|----------|---------|-------------|
+| user_id | UUID | ✘ | - | User ID (FK) |
+| role_id | UUID | ✘ | - | Role ID (FK) |
 
-**Restrições:**
+**Constraints:**
 - PRIMARY KEY: `(user_id, role_id)`
 - FK: `user_id` → `user.id` (ON DELETE CASCADE)
 - FK: `role_id` → `role.id` (ON DELETE CASCADE)
 
 ---
 
-## Tabelas de Recurso
+## Resource Tables
 
 ### `bookable_resource`
 
-Recurso que pode ser reservado (ex: sala de reunião, parking).
+Resource that can be booked (e.g., meeting room, parking).
 
-| Campo | Tipo | Nullable | Default | Descrição |
-|-------|------|----------|---------|-----------|
-| id | UUID | ✘ | uuid_v4() | ID único |
-| site_id | UUID | ✘ | - | ID do site (FK) |
-| name | VARCHAR(255) | ✘ | - | Nome do recurso |
-| type | VARCHAR(100) | ✘ | - | Tipo (ex: `MEETING_ROOM`, `PARKING`) |
-| capacity | INTEGER | ✔ | NULL | Capacidade (pessoas ou unidades) |
+| Field | Type | Nullable | Default | Description |
+|-------|------|----------|---------|-------------|
+| id | UUID | ✘ | uuid_v4() | Unique ID |
+| site_id | UUID | ✘ | - | Site ID (FK) |
+| name | VARCHAR(255) | ✘ | - | Resource name |
+| type | VARCHAR(100) | ✘ | - | Type (e.g., `MEETING_ROOM`, `PARKING`) |
+| capacity | INTEGER | ✔ | NULL | Capacity (people or units) |
 | status | resource_status_enum | ✘ | 'ACTIVE' | Status (`ACTIVE`, `INACTIVE`, `MAINTENANCE`) |
-| metadata | JSONB | ✔ | NULL | Equipamentos, amenidades, etc. |
-| created_at | TIMESTAMP | ✘ | NOW() | Data de criação |
-| updated_at | TIMESTAMP | ✘ | NOW() | Data de última atualização |
+| metadata | JSONB | ✔ | NULL | Equipment, amenities, etc. |
+| created_at | TIMESTAMP | ✘ | NOW() | Creation date |
+| updated_at | TIMESTAMP | ✘ | NOW() | Last update date |
 
-**Restrições:**
+**Constraints:**
 - PRIMARY KEY: `id`
 - FK: `site_id` → `site.id` (ON DELETE CASCADE)
 
-**Índices:**
-- `idx_resource_site_id` (para listar recursos por site)
-- `idx_resource_status` (para filtros de disponibilidade)
+**Indexes:**
+- `idx_resource_site_id` (to list resources by site)
+- `idx_resource_status` (for availability filters)
 
 ---
 
-## Tabelas de Booking
+## Booking Tables
 
 ### `booking`
 
-Reserva de um recurso por um usuário em um período.
+Reservation of a resource by a user for a given period.
 
-| Campo | Tipo | Nullable | Default | Descrição |
-|-------|------|----------|---------|-----------|
-| id | UUID | ✘ | uuid_v4() | ID único da reserva |
-| user_id | UUID | ✘ | - | ID do usuário (FK) |
-| resource_id | UUID | ✘ | - | ID do recurso (FK) |
-| start_date | TIMESTAMP | ✘ | - | Início da reserva |
-| end_date | TIMESTAMP | ✘ | - | Fim da reserva |
+| Field | Type | Nullable | Default | Description |
+|-------|------|----------|---------|-------------|
+| id | UUID | ✘ | uuid_v4() | Unique booking ID |
+| user_id | UUID | ✘ | - | User ID (FK) |
+| resource_id | UUID | ✘ | - | Resource ID (FK) |
+| start_date | TIMESTAMP | ✘ | - | Booking start |
+| end_date | TIMESTAMP | ✘ | - | Booking end |
 | status | booking_status_enum | ✘ | 'CONFIRMED' | Status (`PENDING`, `CONFIRMED`, `CANCELLED`) |
-| notes | TEXT | ✔ | NULL | Observações adicionais |
-| created_at | TIMESTAMP | ✘ | NOW() | Data de criação |
-| updated_at | TIMESTAMP | ✘ | NOW() | Data de última atualização |
+| notes | TEXT | ✔ | NULL | Additional notes |
+| created_at | TIMESTAMP | ✘ | NOW() | Creation date |
+| updated_at | TIMESTAMP | ✘ | NOW() | Last update date |
 
-**Restrições:**
+**Constraints:**
 - PRIMARY KEY: `id`
 - FK: `user_id` → `user.id` (ON DELETE CASCADE)
 - FK: `resource_id` → `bookable_resource.id` (ON DELETE CASCADE)
 - CHECK: `end_date > start_date`
 
-**Índices:**
-- `idx_booking_user_id` (para listar reservas do usuário)
-- `idx_booking_resource_id` (para listar reservas do recurso)
-- `idx_booking_status` (para filtros de status)
-- `idx_booking_start_date` (para calendários)
+**Indexes:**
+- `idx_booking_user_id` (to list user bookings)
+- `idx_booking_resource_id` (to list resource bookings)
+- `idx_booking_status` (for status filters)
+- `idx_booking_start_date` (for calendars)
 
 ---
 
-## Tabelas de Processamento (Onboarding)
+## Processing Tables (Onboarding)
 
-Estas tabelas gerenciam o pipeline de importação de usuários via CSV/XLSX.
+These tables manage the user import pipeline via CSV/XLSX.
 
 ### `onboarding_batch`
 
-Lote de arquivo enviado para processamento.
+File batch submitted for processing.
 
-| Campo | Tipo | Nullable | Default | Descrição |
-|-------|------|----------|---------|-----------|
-| id | UUID | ✘ | uuid_v4() | ID único do lote |
-| trace_id | VARCHAR(36) | ✘ | - | ID correlacional da requisição (para rastreamento) |
-| company_id | UUID | ✘ | - | ID da empresa que enviou (FK) |
-| source | VARCHAR(50) | ✘ | - | Origem (`COMMON`, `EQUIEM`) |
-| file_name | VARCHAR(255) | ✘ | - | Nome original do arquivo |
-| s3_key | VARCHAR(500) | ✘ | - | Caminho no S3 |
+| Field | Type | Nullable | Default | Description |
+|-------|------|----------|---------|-------------|
+| id | UUID | ✘ | uuid_v4() | Unique batch ID |
+| trace_id | VARCHAR(36) | ✘ | - | Correlational request ID (for tracing) |
+| company_id | UUID | ✘ | - | ID of the company that submitted (FK) |
+| source | VARCHAR(50) | ✘ | - | Origin (`COMMON`, `EQUIEM`) |
+| file_name | VARCHAR(255) | ✘ | - | Original file name |
+| s3_key | VARCHAR(500) | ✘ | - | Path in S3 |
 | status | VARCHAR(50) | ✘ | 'PENDING' | Status (`PENDING`, `PROCESSING`, `COMPLETED`, `FAILED`) |
-| total_rows | INTEGER | ✔ | NULL | Total de linhas lidas |
-| valid_rows | INTEGER | ✔ | NULL | Linhas válidas após processamento |
-| invalid_rows | INTEGER | ✔ | NULL | Linhas com erro |
-| created_at | TIMESTAMP | ✘ | NOW() | Data de criação |
-| updated_at | TIMESTAMP | ✘ | NOW() | Data de última atualização |
-| completed_at | TIMESTAMP | ✔ | NULL | Data de conclusão do processamento |
+| total_rows | INTEGER | ✔ | NULL | Total rows read |
+| valid_rows | INTEGER | ✔ | NULL | Valid rows after processing |
+| invalid_rows | INTEGER | ✔ | NULL | Rows with errors |
+| created_at | TIMESTAMP | ✘ | NOW() | Creation date |
+| updated_at | TIMESTAMP | ✘ | NOW() | Last update date |
+| completed_at | TIMESTAMP | ✔ | NULL | Processing completion date |
 
-**Restrições:**
+**Constraints:**
 - PRIMARY KEY: `id`
 - FK: `company_id` → `company.id` (ON DELETE CASCADE)
-- UNIQUE: `trace_id` (cada requisição tem um trace único)
+- UNIQUE: `trace_id` (each request has a unique trace)
 - NOT NULL: `trace_id`, `company_id`, `source`, `file_name`, `s3_key`, `status`
 
-**Índices:**
-- `idx_onboarding_batch_trace_id` (para rastreamento)
-- `idx_onboarding_batch_status` (para filtros de processamento)
-- `idx_onboarding_batch_company_id` (para listar lotes por empresa)
-- `idx_onboarding_batch_created_at` (para histórico)
+**Indexes:**
+- `idx_onboarding_batch_trace_id` (for tracing)
+- `idx_onboarding_batch_status` (for processing filters)
+- `idx_onboarding_batch_company_id` (to list batches by company)
+- `idx_onboarding_batch_created_at` (for history)
 
-**Exemplo:**
+**Example:**
 ```json
 {
   "id": "660e8400-e29b-41d4-a716-446655440001",
   "trace_id": "req-2026-03-27-001-abc123",
   "company_id": "550e8400-e29b-41d4-a716-446655440000",
   "source": "COMMON",
-  "file_name": "usuarios_margo.csv",
-  "s3_key": "uploads/2026/03/27/usuarios_margo.csv",
+  "file_name": "users_margo.csv",
+  "s3_key": "uploads/2026/03/27/users_margo.csv",
   "status": "PROCESSING",
   "total_rows": 150,
   "valid_rows": 145,
@@ -403,35 +403,35 @@ Lote de arquivo enviado para processamento.
 
 ### `onboarding_payload`
 
-Linha individual do arquivo (um usuário a ser criado).
+Individual row from the file (one user to be created).
 
-| Campo | Tipo | Nullable | Default | Descrição |
-|-------|------|----------|---------|-----------|
-| id | UUID | ✘ | uuid_v4() | ID único |
-| batch_id | UUID | ✘ | - | ID do lote (FK) |
-| row_number | INTEGER | ✘ | - | Número da linha no arquivo original |
-| entity_type | VARCHAR(50) | ✘ | - | Tipo (`USER`, `RESOURCE`, etc.) |
-| raw_data | JSONB | ✘ | - | Dados brutos da linha (antes de mapear) |
-| is_valid | BOOLEAN | ✘ | true | Linha passou validação |
-| validation_errors | JSONB | ✔ | NULL | Array de erros encontrados |
+| Field | Type | Nullable | Default | Description |
+|-------|------|----------|---------|-------------|
+| id | UUID | ✘ | uuid_v4() | Unique ID |
+| batch_id | UUID | ✘ | - | Batch ID (FK) |
+| row_number | INTEGER | ✘ | - | Row number in the original file |
+| entity_type | VARCHAR(50) | ✘ | - | Type (`USER`, `RESOURCE`, etc.) |
+| raw_data | JSONB | ✘ | - | Raw row data (before mapping) |
+| is_valid | BOOLEAN | ✘ | true | Row passed validation |
+| validation_errors | JSONB | ✔ | NULL | Array of errors found |
 | validation_severity | VARCHAR(20) | ✔ | NULL | `critical`, `minor`, `none` |
-| validation_score | NUMERIC(5,2) | ✔ | 100 | Score de validação (0-100%) |
-| processed | BOOLEAN | ✘ | false | Linha foi processada para DB |
-| created_at | TIMESTAMP | ✘ | NOW() | Data de criação |
-| updated_at | TIMESTAMP | ✘ | NOW() | Data de última atualização |
+| validation_score | NUMERIC(5,2) | ✔ | 100 | Validation score (0-100%) |
+| processed | BOOLEAN | ✘ | false | Row was processed to DB |
+| created_at | TIMESTAMP | ✘ | NOW() | Creation date |
+| updated_at | TIMESTAMP | ✘ | NOW() | Last update date |
 
-**Restrições:**
+**Constraints:**
 - PRIMARY KEY: `id`
 - FK: `batch_id` → `onboarding_batch.id` (ON DELETE CASCADE)
-- UNIQUE: `(batch_id, row_number)` (cada linha é única no lote)
+- UNIQUE: `(batch_id, row_number)` (each row is unique within a batch)
 - NOT NULL: `batch_id`, `row_number`, `entity_type`, `raw_data`
 
-**Índices:**
-- `idx_onboarding_payload_batch_id` (para listar payloads por lote)
-- `idx_onboarding_payload_entity_type` (para filtros de tipo)
-- `idx_onboarding_payload_is_valid` (para processados vs com erro)
+**Indexes:**
+- `idx_onboarding_payload_batch_id` (to list payloads by batch)
+- `idx_onboarding_payload_entity_type` (for type filters)
+- `idx_onboarding_payload_is_valid` (for processed vs error rows)
 
-**Exemplo com erro:**
+**Example with error:**
 ```json
 {
   "id": "770e8400-e29b-41d4-a716-446655440002",
@@ -439,8 +439,8 @@ Linha individual do arquivo (um usuário a ser criado).
   "row_number": 42,
   "entity_type": "USER",
   "raw_data": {
-    "email": "joao@empresa.com",
-    "name": "João Silva",
+    "email": "john@company.com",
+    "name": "John Smith",
     "type": "USER",
     "company_id": "550e8400-e29b-41d4-a716-446655440000"
   },
@@ -448,7 +448,7 @@ Linha individual do arquivo (um usuário a ser criado).
   "validation_errors": [
     {
       "field": "email",
-      "message": "Email em domínio não autorizado",
+      "message": "Email from unauthorized domain",
       "severity": "warning"
     }
   ],
@@ -464,93 +464,93 @@ Linha individual do arquivo (um usuário a ser criado).
 
 ### `onboarding_mapping`
 
-Mapeamento final entre dado importado e usuário criado.
+Final mapping between imported data and created user.
 
-| Campo | Tipo | Nullable | Default | Descrição |
-|-------|------|----------|---------|-----------|
-| id | UUID | ✘ | uuid_v4() | ID único |
-| payload_id | UUID | ✘ | - | ID do payload (FK) |
-| entity_type | VARCHAR(50) | ✘ | - | Tipo da entidade criada |
-| internal_id | UUID | ✔ | NULL | ID interno gerado (ex: user.id) |
-| external_id | VARCHAR(255) | ✔ | NULL | ID externo (ex: Equiem person_id) |
+| Field | Type | Nullable | Default | Description |
+|-------|------|----------|---------|-------------|
+| id | UUID | ✘ | uuid_v4() | Unique ID |
+| payload_id | UUID | ✘ | - | Payload ID (FK) |
+| entity_type | VARCHAR(50) | ✘ | - | Created entity type |
+| internal_id | UUID | ✔ | NULL | Generated internal ID (e.g., user.id) |
+| external_id | VARCHAR(255) | ✔ | NULL | External ID (e.g., Equiem person_id) |
 | mapping_status | VARCHAR(50) | ✘ | 'PENDING' | Status (`PENDING`, `MAPPED`, `FAILED`) |
-| error_message | TEXT | ✔ | NULL | Mensagem de erro se falhou |
-| created_at | TIMESTAMP | ✘ | NOW() | Data de criação |
-| updated_at | TIMESTAMP | ✘ | NOW() | Data de última atualização |
+| error_message | TEXT | ✔ | NULL | Error message if failed |
+| created_at | TIMESTAMP | ✘ | NOW() | Creation date |
+| updated_at | TIMESTAMP | ✘ | NOW() | Last update date |
 
-**Restrições:**
+**Constraints:**
 - PRIMARY KEY: `id`
 - FK: `payload_id` → `onboarding_payload.id` (ON DELETE CASCADE)
-- UNIQUE: `payload_id` (cada payload mapeia para 1 entidade)
+- UNIQUE: `payload_id` (each payload maps to 1 entity)
 
-**Índices:**
-- `idx_onboarding_mapping_payload_id` (para listar mapeamentos)
-- `idx_onboarding_mapping_internal_id` (para validar duplicatas)
-- `idx_onboarding_mapping_entity_external` (para sincronização com Equiem)
+**Indexes:**
+- `idx_onboarding_mapping_payload_id` (to list mappings)
+- `idx_onboarding_mapping_internal_id` (to validate duplicates)
+- `idx_onboarding_mapping_entity_external` (for Equiem sync)
 
 ---
 
-## Tabelas de Jobs Assíncronos
+## Async Job Tables
 
-Estas tabelas rastreiam processamento de lotes e chunks para SQS.
+These tables track batch and chunk processing for SQS.
 
 ### `processing_job`
 
-Job de processamento de um lote inteiro.
+Processing job for an entire batch.
 
-| Campo | Tipo | Nullable | Default | Descrição |
-|-------|------|----------|---------|-----------|
-| id | UUID | ✘ | uuid_v4() | ID único |
-| batch_id | UUID | ✘ | - | ID do lote (FK) |
-| job_type | VARCHAR(50) | ✘ | - | Tipo (`STAGE_1_UPLOAD`, `STAGE_2_CHUNK`) |
+| Field | Type | Nullable | Default | Description |
+|-------|------|----------|---------|-------------|
+| id | UUID | ✘ | uuid_v4() | Unique ID |
+| batch_id | UUID | ✘ | - | Batch ID (FK) |
+| job_type | VARCHAR(50) | ✘ | - | Type (`STAGE_1_UPLOAD`, `STAGE_2_CHUNK`) |
 | status | VARCHAR(50) | ✘ | 'PENDING' | Status (`PENDING`, `IN_PROGRESS`, `COMPLETED`, `FAILED`) |
-| message_id | VARCHAR(255) | ✔ | NULL | ID da mensagem no SQS |
-| error_message | TEXT | ✔ | NULL | Erro se falhou |
-| retry_count | INTEGER | ✘ | 0 | Número de tentativas |
-| max_retries | INTEGER | ✘ | 3 | Máximo de tentativas |
-| started_at | TIMESTAMP | ✔ | NULL | Início do processamento |
-| completed_at | TIMESTAMP | ✔ | NULL | Fim do processamento |
-| created_at | TIMESTAMP | ✘ | NOW() | Data de criação |
-| updated_at | TIMESTAMP | ✘ | NOW() | Data de última atualização |
+| message_id | VARCHAR(255) | ✔ | NULL | SQS message ID |
+| error_message | TEXT | ✔ | NULL | Error if failed |
+| retry_count | INTEGER | ✘ | 0 | Number of attempts |
+| max_retries | INTEGER | ✘ | 3 | Maximum attempts |
+| started_at | TIMESTAMP | ✔ | NULL | Processing start |
+| completed_at | TIMESTAMP | ✔ | NULL | Processing end |
+| created_at | TIMESTAMP | ✘ | NOW() | Creation date |
+| updated_at | TIMESTAMP | ✘ | NOW() | Last update date |
 
-**Restrições:**
+**Constraints:**
 - PRIMARY KEY: `id`
 - FK: `batch_id` → `onboarding_batch.id` (ON DELETE CASCADE)
 
-**Índices:**
-- `idx_processing_job_batch_id` (para listar jobs por lote)
-- `idx_processing_job_status` (para filtros de status)
+**Indexes:**
+- `idx_processing_job_batch_id` (to list jobs by batch)
+- `idx_processing_job_status` (for status filters)
 
 ---
 
 ### `processing_chunk`
 
-Chunk (fatia) de processamento dentro de um job Stage 2.
+Processing chunk (slice) within a Stage 2 job.
 
-| Campo | Tipo | Nullable | Default | Descrição |
-|-------|------|----------|---------|-----------|
-| id | UUID | ✘ | uuid_v4() | ID único |
-| batch_id | UUID | ✘ | - | ID do lote (FK) |
-| chunk_index | INTEGER | ✘ | - | Índice do chunk (0, 1, 2, ...) |
-| offset | INTEGER | ✘ | - | Posição inicial no payload |
-| size | INTEGER | ✘ | - | Tamanho do chunk (quantidade de registros) |
+| Field | Type | Nullable | Default | Description |
+|-------|------|----------|---------|-------------|
+| id | UUID | ✘ | uuid_v4() | Unique ID |
+| batch_id | UUID | ✘ | - | Batch ID (FK) |
+| chunk_index | INTEGER | ✘ | - | Chunk index (0, 1, 2, ...) |
+| offset | INTEGER | ✘ | - | Start position in payload |
+| size | INTEGER | ✘ | - | Chunk size (number of records) |
 | status | VARCHAR(50) | ✘ | 'PENDING' | Status (`PENDING`, `IN_PROGRESS`, `COMPLETED`, `FAILED`) |
-| retries | INTEGER | ✘ | 0 | Número de tentativas |
-| error | TEXT | ✔ | NULL | Mensagem de erro |
-| started_at | TIMESTAMP | ✔ | NULL | Início do processamento |
-| finished_at | TIMESTAMP | ✔ | NULL | Fim do processamento |
-| updated_at | TIMESTAMP | ✘ | NOW() | Data de última atualização |
+| retries | INTEGER | ✘ | 0 | Number of attempts |
+| error | TEXT | ✔ | NULL | Error message |
+| started_at | TIMESTAMP | ✔ | NULL | Processing start |
+| finished_at | TIMESTAMP | ✔ | NULL | Processing end |
+| updated_at | TIMESTAMP | ✘ | NOW() | Last update date |
 
-**Restrições:**
+**Constraints:**
 - PRIMARY KEY: `id`
 - FK: `batch_id` → `onboarding_batch.id` (ON DELETE CASCADE)
-- UNIQUE: `(batch_id, chunk_index)` (um chunk por índice por lote)
+- UNIQUE: `(batch_id, chunk_index)` (one chunk per index per batch)
 
-**Índices:**
-- `idx_processing_chunk_batch_status` (para filtros por lote/status)
-- `idx_processing_chunk_status` (para job scheduler)
+**Indexes:**
+- `idx_processing_chunk_batch_status` (for batch/status filters)
+- `idx_processing_chunk_status` (for job scheduler)
 
-**Exemplo:**
+**Example:**
 ```json
 {
   "id": "880e8400-e29b-41d4-a716-446655440003",
@@ -571,38 +571,38 @@ Chunk (fatia) de processamento dentro de um job Stage 2.
 
 ### `processing_log`
 
-Log detalhado de cada operação durante processamento.
+Detailed log of each operation during processing.
 
-| Campo | Tipo | Nullable | Default | Descrição |
-|-------|------|----------|---------|-----------|
-| id | UUID | ✘ | uuid_v4() | ID único |
-| trace_id | VARCHAR(36) | ✘ | - | ID correlacional (de onboarding_batch) |
-| batch_id | UUID | ✔ | NULL | ID do lote (FK) |
-| level | VARCHAR(20) | ✘ | - | Nível (`DEBUG`, `INFO`, `WARN`, `ERROR`) |
-| message | TEXT | ✘ | - | Mensagem de log |
-| context | JSONB | ✔ | NULL | Contexto adicional (ex: valores testados) |
-| created_at | TIMESTAMP | ✘ | NOW() | Data do log |
+| Field | Type | Nullable | Default | Description |
+|-------|------|----------|---------|-------------|
+| id | UUID | ✘ | uuid_v4() | Unique ID |
+| trace_id | VARCHAR(36) | ✘ | - | Correlational ID (from onboarding_batch) |
+| batch_id | UUID | ✔ | NULL | Batch ID (FK) |
+| level | VARCHAR(20) | ✘ | - | Level (`DEBUG`, `INFO`, `WARN`, `ERROR`) |
+| message | TEXT | ✘ | - | Log message |
+| context | JSONB | ✔ | NULL | Additional context (e.g., tested values) |
+| created_at | TIMESTAMP | ✘ | NOW() | Log date |
 
-**Restrições:**
+**Constraints:**
 - PRIMARY KEY: `id`
 - FK: `batch_id` → `onboarding_batch.id` (ON DELETE SET NULL)
 
-**Índices:**
-- `idx_processing_log_trace_id` (para auditar uma requisição)
-- `idx_processing_log_batch_id` (para logs por lote)
+**Indexes:**
+- `idx_processing_log_trace_id` (to audit a request)
+- `idx_processing_log_batch_id` (for logs by batch)
 
-**Exemplo:**
+**Example:**
 ```json
 {
   "id": "990e8400-e29b-41d4-a716-446655440004",
   "trace_id": "req-2026-03-27-001-abc123",
   "batch_id": "660e8400-e29b-41d4-a716-446655440001",
   "level": "WARN",
-  "message": "Parser encontrou 5 linhas com erro. Retornando array vazio para fallback.",
+  "message": "Parser found 5 rows with errors. Returning empty array for fallback.",
   "context": {
-    "fileName": "usuarios_margo.csv",
+    "fileName": "users_margo.csv",
     "errorType": "MalformedCSV",
-    "linhasComErro": [1, 3, 7]
+    "rowsWithError": [1, 3, 7]
   },
   "created_at": "2026-03-27T10:00:16Z"
 }
@@ -612,112 +612,112 @@ Log detalhado de cada operação durante processamento.
 
 ## ENUMS
 
-Tipos de dados enumerados no banco.
+Enumerated data types in the database.
 
 ### `customer_status_enum`
 ```
-'ACTIVE'    → Cliente está ativo
-'INACTIVE'  → Cliente desativado
-'SUSPENDED' → Cliente suspenso por falta de pagamento
+'ACTIVE'    → Customer is active
+'INACTIVE'  → Customer deactivated
+'SUSPENDED' → Customer suspended due to non-payment
 ```
 
 ### `site_type_enum`
 ```
-'OFFICE'      → Escritório comercial
-'RESIDENTIAL' → Residencial
-'COMMERCIAL'  → Comercial misto
+'OFFICE'      → Commercial office
+'RESIDENTIAL' → Residential
+'COMMERCIAL'  → Mixed commercial
 ```
 
 ### `ownership_type_enum`
 ```
-'OWNED'   → Propriedade própria
-'LEASED'  → Imóvel alugado
-'SHARED'  → Imóvel compartilhado
+'OWNED'   → Owned property
+'LEASED'  → Leased property
+'SHARED'  → Shared property
 ```
 
 ### `user_status_enum`
 ```
-'PENDING'  → Aguardando aprovação
-'ACTIVE'   → Usuário ativo no sistema
-'INACTIVE' → Usuário desativado
+'PENDING'  → Awaiting approval
+'ACTIVE'   → Active user in the system
+'INACTIVE' → Deactivated user
 ```
 
 ### `user_type_enum`
 ```
-'USER'   → Usuário comum
-'ADMIN'  → Administrador
-'SYSTEM' → Sistema/robô
+'USER'   → Regular user
+'ADMIN'  → Administrator
+'SYSTEM' → System/bot
 ```
 
 ### `booking_status_enum`
 ```
-'PENDING'    → Aguardando confirmação
-'CONFIRMED'  → Confirmada
-'CANCELLED'  → Cancelada
+'PENDING'    → Awaiting confirmation
+'CONFIRMED'  → Confirmed
+'CANCELLED'  → Cancelled
 ```
 
 ### `resource_status_enum`
 ```
-'ACTIVE'       → Recurso disponível
-'INACTIVE'     → Recurso desativado
-'MAINTENANCE'  → Em manutenção
+'ACTIVE'       → Resource available
+'INACTIVE'     → Resource deactivated
+'MAINTENANCE'  → Under maintenance
 ```
 
 ### `user_approval_enum`
 ```
-'PENDING'   → Aguardando aprovação
-'APPROVED'  → Aprovado
-'REJECTED'  → Rejeitado
+'PENDING'   → Awaiting approval
+'APPROVED'  → Approved
+'REJECTED'  → Rejected
 ```
 
 ### `role_scope_enum`
 ```
-'SYSTEM'   → Válido em todo o sistema
-'CUSTOMER' → Válido para um cliente
-'SITE'     → Válido para um site específico
+'SYSTEM'   → Valid across the entire system
+'CUSTOMER' → Valid for a customer
+'SITE'     → Valid for a specific site
 ```
 
 ---
 
-## Índices & Performance
+## Indexes & Performance
 
-### Índices de Busca Frequente
+### Frequent Search Indexes
 
-| Índice | Tabela | Coluna(s) | Caso de Uso |
-|--------|--------|-----------|------------|
-| `idx_company_domain` | company | domain | Login por domínio de email |
-| `idx_user_email` | user | email | Busca de usuário por email |
-| `idx_user_company_id` | user | company_id | Listar usuários da empresa |
-| `idx_site_customer_id` | site | customer_id | Listar sites de um cliente |
-| `idx_resource_site_id` | bookable_resource | site_id | Listar recursos de um site |
-| `idx_resource_status` | bookable_resource | status | Filtrar recursos ativos |
-| `idx_booking_user_id` | booking | user_id | Histórico de reservas do usuário |
-| `idx_booking_resource_id` | booking | resource_id | Verificar disponibilidade |
-| `idx_booking_start_date` | booking | start_date | Calendário de reservas |
+| Index | Table | Column(s) | Use Case |
+|-------|-------|-----------|----------|
+| `idx_company_domain` | company | domain | Login by email domain |
+| `idx_user_email` | user | email | User search by email |
+| `idx_user_company_id` | user | company_id | List users by company |
+| `idx_site_customer_id` | site | customer_id | List sites by customer |
+| `idx_resource_site_id` | bookable_resource | site_id | List resources by site |
+| `idx_resource_status` | bookable_resource | status | Filter active resources |
+| `idx_booking_user_id` | booking | user_id | User booking history |
+| `idx_booking_resource_id` | booking | resource_id | Check availability |
+| `idx_booking_start_date` | booking | start_date | Booking calendar |
 
-### Índices de Processamento (Onboarding)
+### Processing Indexes (Onboarding)
 
-| Índice | Tabela | Coluna(s) | Propósito |
-|--------|--------|-----------|-----------|
-| `idx_onboarding_batch_trace_id` | onboarding_batch | trace_id | Rastreamento correlacional |
-| `idx_onboarding_batch_status` | onboarding_batch | status | Job scheduler (achar PENDING) |
-| `idx_onboarding_batch_created_at` | onboarding_batch | created_at | Histórico de uploads |
-| `idx_onboarding_payload_batch_id` | onboarding_payload | batch_id | Listar payloads de um lote |
-| `idx_onboarding_payload_is_valid` | onboarding_payload | is_valid | Retentativas (re-processar inválidos) |
-| `idx_onboarding_mapping_internal_id` | onboarding_mapping | internal_id | Validar duplicatas |
-| `idx_onboarding_mapping_entity_external` | onboarding_mapping | external_id | Sincronização com Equiem |
+| Index | Table | Column(s) | Purpose |
+|-------|-------|-----------|---------|
+| `idx_onboarding_batch_trace_id` | onboarding_batch | trace_id | Correlational tracing |
+| `idx_onboarding_batch_status` | onboarding_batch | status | Job scheduler (find PENDING) |
+| `idx_onboarding_batch_created_at` | onboarding_batch | created_at | Upload history |
+| `idx_onboarding_payload_batch_id` | onboarding_payload | batch_id | List payloads by batch |
+| `idx_onboarding_payload_is_valid` | onboarding_payload | is_valid | Retries (reprocess invalid) |
+| `idx_onboarding_mapping_internal_id` | onboarding_mapping | internal_id | Validate duplicates |
+| `idx_onboarding_mapping_entity_external` | onboarding_mapping | external_id | Equiem sync |
 | `idx_processing_job_status` | processing_job | status | Worker polling |
-| `idx_processing_chunk_batch_status` | processing_chunk | batch_id, status | Monitorar chunks em paralelo |
-| `idx_processing_chunk_status` | processing_chunk | status | Encontrar chunks para processar |
+| `idx_processing_chunk_batch_status` | processing_chunk | batch_id, status | Monitor parallel chunks |
+| `idx_processing_chunk_status` | processing_chunk | status | Find chunks to process |
 
-### Dicas de Performance
+### Performance Tips
 
-1. **Sempre usar trace_id em queries** de auditoria para correlacionar fluxo completo
+1. **Always use trace_id in queries** for auditing to correlate the full flow:
    ```sql
    SELECT * FROM equiem.processing_log WHERE trace_id = 'req-2026-03-27-001-abc123';
    ```
 
-2. **Batching em processamento paralelo**
+2. **Batching in parallel processing:**
    ```sql
    SELECT * FROM equiem.processing_chunk 
    WHERE status = 'PENDING' AND batch_id = $1 
@@ -725,53 +725,49 @@ Tipos de dados enumerados no banco.
    LIMIT 3;
    ```
 
-3. **Archive históricos antigos** (chunks completed há > 30 dias) para manter índices ágeis
+3. **Archive old history** (chunks completed more than 30 days ago) to keep indexes lean.
 
-4. **Monitor de tamanho de JSONB** em `onboarding_payload.raw_data` e `onboarding_payload.validation_errors` (pode crescer rapidamente em lotes grandes)
+4. **Monitor JSONB size** in `onboarding_payload.raw_data` and `onboarding_payload.validation_errors` (can grow quickly in large batches).
 
 ---
 
-## Estratégia de Versionamento
+## Versioning Strategy
 
 ### Script Naming Convention
 
 ```
-01_create_database.sql    → Criação inicial do schema
-02_initial_data.sql       → Dados de bootstrap (roles, grupos básicos)
-03_rollback.sql           → Script de reversão (completo)
-04_migration_V2.sql       → (Futuro) Mudanças na V2
+01_create_database.sql    → Initial schema creation
+02_initial_data.sql       → Bootstrap data (roles, basic groups)
+03_rollback.sql           → Rollback script (complete)
+04_migration_V2.sql       → (Future) V2 changes
 ...
 ```
 
 ### Changelog
 
-Manter arquivo `database-modif.md` com histórico:
+Maintain a `database-modif.md` file with history:
 
 ```markdown
-## Sprint 3 (27 de março de 2026)
+## Sprint 3 (March 27, 2026)
 
-- ✅ Added: `processing_chunk` table para paralelização de chunks
-- ✅ Added: 13 indices de performance
-- ✅ Modified: `onboarding_batch` com NOT NULL constraints (source, status, trace_id, file_name, s3_key)
-- ✅ Modified: `onboarding_payload` com UNIQUE(batch_id, row_number)
-- ✅ Created: `03_rollback.sql` para reverter todas as mudanças
+- ✅ Added: `processing_chunk` table for chunk parallelization
+- ✅ Added: 13 performance indexes
+- ✅ Modified: `onboarding_batch` with NOT NULL constraints (source, status, trace_id, file_name, s3_key)
+- ✅ Modified: `onboarding_payload` with UNIQUE(batch_id, row_number)
+- ✅ Created: `03_rollback.sql` to revert all changes
 
-## Sprint 4 (Previsto)
+## Sprint 4 (Planned)
 
-- TODO: Arquivar chunks completados (partition strategy)
-- TODO: Add column `company_id` a tabelas de análise para multi-tenancy
+- TODO: Archive completed chunks (partition strategy)
+- TODO: Add `company_id` column to analytics tables for multi-tenancy
 ```
 
 ### Rollback Procedure
 
-Em caso de erro em produção:
-1. Backup do banco atual: `pg_dump -d equiem > backup-2026-03-27.sql`
-2. Executar rollback: `psql -d equiem -f 03_rollback.sql`
-3. Restaurar dados (se necessário): Recover de backup anterior
-4. Comunicar cause root ao time
+In case of production error:
+1. Backup current database: `pg_dump -d equiem > backup-2026-03-27.sql`
+2. Run rollback: `psql -d equiem -f 03_rollback.sql`
+3. Restore data (if needed): Recover from previous backup
+4. Communicate root cause to the team
 
 ---
-
-**Documento criado:** 27 de março de 2026  
-**Próxima revisão:** Ao fim de cada Sprint  
-**Responsável:** Tech Lead / Database Owner
