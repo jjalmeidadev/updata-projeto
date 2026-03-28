@@ -50,4 +50,31 @@ const pool = new Pool({
   max: poolMax,
 })
 
+// Add error handlers to prevent silent crashes
+pool.on("error", (error) => {
+  console.error("[DATABASE] Pool error:", error)
+  process.exit(1)
+})
+
+pool.on("connect", () => {
+  console.log("[DATABASE] Pool connection established")
+})
+
+pool.on("remove", () => {
+  console.log("[DATABASE] Pool connection removed")
+})
+
+// Test connection on startup for worker processes
+if (isUploadWorkerProcess) {
+  console.log("[DATABASE] Testing pool connection for worker...")
+  pool.query("SELECT 1", (error) => {
+    if (error) {
+      console.error("[DATABASE] Connection test failed:", error)
+      process.exit(1)
+    } else {
+      console.log("[DATABASE] Connection test passed ✓")
+    }
+  })
+}
+
 export default pool
