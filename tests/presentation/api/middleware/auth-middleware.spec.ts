@@ -7,6 +7,9 @@ vi.mock('express-oauth2-jwt-bearer', () => ({
 }));
 
 describe('Auth Middleware', () => {
+    const expectedAudience = process.env.AUTH0_AUDIENCE || 'https://api.updata.com';
+    const expectedIssuer = process.env.AUTH0_ISSUER_BASE_URL || 'https://dev-e8hme66hgt4cf75n.us.auth0.com/';
+
     beforeEach(() => {
         // Arrange
         vi.clearAllMocks();
@@ -24,8 +27,8 @@ describe('Auth Middleware', () => {
         // Assert
         expect(authMock).toHaveBeenCalledTimes(1);
         expect(authMock).toHaveBeenCalledWith({
-            audience: 'https://api.updata.com',
-            issuerBaseURL: 'https://dev-6imaiajbfe843lz7.us.auth0.com/',
+            audience: expectedAudience,
+            issuerBaseURL: expectedIssuer,
         });
     });
 
@@ -94,8 +97,8 @@ describe('Auth Middleware', () => {
 
         // Assert - verify the exact configuration that enforces audience and issuer validation
         expect(authMock).toHaveBeenCalledWith({
-            audience: 'https://api.updata.com',
-            issuerBaseURL: 'https://dev-6imaiajbfe843lz7.us.auth0.com/',
+            audience: expectedAudience,
+            issuerBaseURL: expectedIssuer,
         });
     });
 

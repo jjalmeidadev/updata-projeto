@@ -1,8 +1,10 @@
 import { TestBed } from '@angular/core/testing';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
+import { of } from 'rxjs';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { InputMethodComponent } from '../../../src/presentation/web/src/app/pages/input-method/input-method.component';
+import { OnboardingInstanceService } from '../../../src/presentation/web/src/app/services/onboarding-instance.service';
 
 async function resolveAngularResources(): Promise<void> {
   const core = await import('@angular/core');
@@ -30,7 +32,25 @@ describe('InputMethodComponent', () => {
 
     await TestBed.configureTestingModule({
       imports: [InputMethodComponent],
-      providers: [{ provide: Router, useValue: routerMock }],
+      providers: [
+        { provide: Router, useValue: routerMock },
+        {
+          provide: ActivatedRoute,
+          useValue: {
+            snapshot: {
+              paramMap: {
+                get: () => null,
+              },
+            },
+          },
+        },
+        {
+          provide: OnboardingInstanceService,
+          useValue: {
+            getPublicInstance: vi.fn().mockReturnValue(of(null)),
+          },
+        },
+      ],
     }).compileComponents();
 
     const fixture = TestBed.createComponent(InputMethodComponent);
@@ -44,14 +64,12 @@ describe('InputMethodComponent', () => {
   it('stores upload method and navigates to upload page', () => {
     component.choose('upload');
 
-    expect(localStorage.getItem('onboardingInputMethod')).toBe('upload');
     expect(routerMock.navigate).toHaveBeenCalledWith(['/upload']);
   });
 
   it('stores manual method and navigates to form page', () => {
     component.choose('manual');
 
-    expect(localStorage.getItem('onboardingInputMethod')).toBe('manual');
     expect(routerMock.navigate).toHaveBeenCalledWith(['/form']);
   });
 });

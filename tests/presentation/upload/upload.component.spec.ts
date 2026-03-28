@@ -1,11 +1,12 @@
 import { TestBed } from '@angular/core/testing';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { of, throwError } from 'rxjs';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import ExcelJS from 'exceljs';
 
 import { UploadComponent } from '../../../src/presentation/web/src/app/pages/upload/upload.component';
 import { QuestionService } from '../../../src/presentation/web/src/app/services/question.service';
+import { OnboardingInstanceService } from '../../../src/presentation/web/src/app/services/onboarding-instance.service';
 
 async function resolveAngularResources(): Promise<void> {
   const core = await import('@angular/core');
@@ -76,6 +77,22 @@ describe('UploadComponent', () => {
       providers: [
         { provide: Router, useValue: routerMock },
         { provide: QuestionService, useValue: questionServiceMock },
+        {
+          provide: ActivatedRoute,
+          useValue: {
+            snapshot: {
+              paramMap: {
+                get: () => null,
+              },
+            },
+          },
+        },
+        {
+          provide: OnboardingInstanceService,
+          useValue: {
+            getPublicInstance: vi.fn().mockReturnValue(of(null)),
+          },
+        },
       ],
     }).compileComponents();
 
@@ -772,9 +789,12 @@ describe('UploadComponent', () => {
     ] as any);
 
     questionServiceMock.getSections.mockReset();
-    questionServiceMock.getSections
-      .mockReturnValueOnce(['known'])
-      .mockReturnValueOnce(['missing-section-label']);
+    questionServiceMock.getSections.mockImplementation((questions: Array<{ sectionId: string }>) => {
+      if (questions.some((q) => q.sectionId === 'missing-section-label')) {
+        return ['missing-section-label'];
+      }
+      return ['known'];
+    });
     questionServiceMock.getQuestionsBySection.mockImplementation(
       (_questions: unknown[], sectionId: string) => {
         if (sectionId === 'missing-section-label') {
@@ -798,6 +818,13 @@ describe('UploadComponent', () => {
       await component.downloadTemplate();
       expect(clickMock).toHaveBeenCalled();
     } finally {
+      questionServiceMock.getSections.mockReset();
+      questionServiceMock.getSections.mockReturnValue(['building-setup', 'company-details']);
+      questionServiceMock.getQuestionsBySection.mockReset();
+      questionServiceMock.getQuestionsBySection.mockImplementation(
+        (questions: Array<{ sectionId: string }>, sectionId: string) =>
+          questions.filter((q) => q.sectionId === sectionId),
+      );
       createElementSpy.mockRestore();
       (URL as any).createObjectURL = previousCreateObjectURL;
       (URL as any).revokeObjectURL = previousRevokeObjectURL;

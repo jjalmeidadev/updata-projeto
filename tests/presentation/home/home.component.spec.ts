@@ -6,6 +6,7 @@ import { firstValueFrom } from 'rxjs';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { HomeComponent } from '../../../src/presentation/web/src/app/pages/home/home.component';
+import { OnboardingInstanceService } from '../../../src/presentation/web/src/app/services/onboarding-instance.service';
 
 describe('HomeComponent', () => {
   let component: HomeComponent;
@@ -19,6 +20,11 @@ describe('HomeComponent', () => {
     logout: vi.fn(),
   };
 
+  const onboardingServiceMock = {
+    listInstances: vi.fn().mockReturnValue(of([])),
+    completeEquiemReview: vi.fn().mockReturnValue(of({})),
+  };
+
   beforeEach(() => {
     vi.clearAllMocks();
     localStorage.clear();
@@ -28,6 +34,7 @@ describe('HomeComponent', () => {
       providers: [
         { provide: Router, useValue: routerMock },
         { provide: AuthService, useValue: authMock },
+        { provide: OnboardingInstanceService, useValue: onboardingServiceMock },
       ],
     });
 
@@ -105,14 +112,8 @@ describe('HomeComponent', () => {
     expect(await firstValueFrom(leadingDotComponent.userInitials$)).toBe('.D');
   });
 
-  it('starts onboarding and navigates to module selector', () => {
-    const company = { name: 'Company X', progress: 0, started: false };
-
-    component.startOnboarding(company);
-
-    expect(company.started).toBe(true);
-    expect(company.progress).toBe(10);
-    expect(sessionStorage.getItem('onboardingCompany')).toBe('Company X');
+  it('navigates to module selector on createOnboarding()', () => {
+    component.createOnboarding();
     expect(routerMock.navigate).toHaveBeenCalledWith(['/module-selector']);
   });
 
@@ -156,11 +157,12 @@ describe('HomeComponent', () => {
     expect(component.profileMenuOpen).toBe(true);
   });
 
-  it('stores selected company and navigates in viewDetails()', () => {
-    component.viewDetails({ name: 'Company Z', progress: 0, started: false });
+  it('navigates to onboarding token in viewDetails() only for completed instances', () => {
+    component.viewDetails({ status: 'in_progress', linkToken: 'abc' } as any);
+    expect(routerMock.navigate).not.toHaveBeenCalled();
 
-    expect(sessionStorage.getItem('onboardingCompany')).toBe('Company Z');
-    expect(routerMock.navigate).toHaveBeenCalledWith(['/module-selector']);
+    component.viewDetails({ status: 'completed', linkToken: 'abc' } as any);
+    expect(routerMock.navigate).toHaveBeenCalledWith(['/onboarding', 'abc']);
   });
 
   it('covers optional-chain fallback when initials segment is empty', async () => {

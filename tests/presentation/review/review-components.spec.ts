@@ -1,5 +1,5 @@
 import { TestBed } from '@angular/core/testing';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { ReviewComponentsComponent } from '../../../src/presentation/web/src/app/pages/review/review-components';
@@ -31,7 +31,19 @@ describe('ReviewComponentsComponent', () => {
 
     await TestBed.configureTestingModule({
       imports: [ReviewComponentsComponent],
-      providers: [{ provide: Router, useValue: routerMock }],
+      providers: [
+        { provide: Router, useValue: routerMock },
+        {
+          provide: ActivatedRoute,
+          useValue: {
+            snapshot: {
+              paramMap: {
+                get: () => null,
+              },
+            },
+          },
+        },
+      ],
     }).compileComponents();
 
     const fixture = TestBed.createComponent(ReviewComponentsComponent);

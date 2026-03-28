@@ -3,7 +3,7 @@ import { Server } from "http"
 import { beforeEach, describe, expect, it, vi } from "vitest"
 
 vi.mock("../../../../src/business/services/user-service.js", () => ({
-  checkUser: vi.fn(),
+  resolveUserNavigation: vi.fn(),
 }))
 
 const authMiddlewareMock = vi.fn()
@@ -12,7 +12,7 @@ vi.mock("../../../../src/presentation/api/middleware/auth-middleware.js", () => 
   authMiddleware: (req: Request, res: Response, next: NextFunction) => authMiddlewareMock(req, res, next),
 }))
 
-import { checkUser } from "../../../../src/business/services/user-service.js"
+import { resolveUserNavigation } from "../../../../src/business/services/user-service.js"
 
 function startServer(router: express.Router): Promise<Server> {
   const app = express()
@@ -82,7 +82,7 @@ describe("auth-complete-flow integration", () => {
 
     expect(response.status).toBe(401)
     expect(response.body).toEqual({ error: "Unauthorized" })
-    expect(checkUser).not.toHaveBeenCalled()
+    expect(resolveUserNavigation).not.toHaveBeenCalled()
 
     await stopServer(server)
   })
@@ -113,7 +113,7 @@ describe("auth-complete-flow integration", () => {
 
     expect(response.status).toBe(401)
     expect(response.body).toEqual({ error: "Unauthorized" })
-    expect(checkUser).not.toHaveBeenCalled()
+    expect(resolveUserNavigation).not.toHaveBeenCalled()
 
     await stopServer(server)
   })
@@ -131,12 +131,8 @@ describe("auth-complete-flow integration", () => {
       next()
     })
 
-    vi.mocked(checkUser).mockResolvedValue({
-      user_id: "1",
-      user_name: "Internal User",
-      user_email: "internal@getequiem.com",
-      auth0_id: "auth0|internal",
-      company_id: null,
+    vi.mocked(resolveUserNavigation).mockResolvedValue({
+      outcome: "monitoring",
     })
 
     const { default: userRoutes } = await import("../../../../src/presentation/api/routes/user-routes.js")
@@ -149,7 +145,7 @@ describe("auth-complete-flow integration", () => {
 
     expect(response.status).toBe(200)
     expect(response.body).toEqual({ next: "/monitoring", traceId: "trace-internal" })
-    expect(checkUser).toHaveBeenCalledWith(
+    expect(resolveUserNavigation).toHaveBeenCalledWith(
       {
         sub: "auth0|internal",
         name: "Internal User",
@@ -173,12 +169,9 @@ describe("auth-complete-flow integration", () => {
       next()
     })
 
-    vi.mocked(checkUser).mockResolvedValue({
-      user_id: "2",
-      user_name: "Company User",
-      user_email: "owner@client.com",
-      auth0_id: "auth0|company",
-      company_id: "77",
+    vi.mocked(resolveUserNavigation).mockResolvedValue({
+      outcome: "company",
+      companyId: "77",
     })
 
     const { default: userRoutes } = await import("../../../../src/presentation/api/routes/user-routes.js")
@@ -191,7 +184,7 @@ describe("auth-complete-flow integration", () => {
 
     expect(response.status).toBe(200)
     expect(response.body).toEqual({ next: "/company/77", traceId: "trace-company" })
-    expect(checkUser).toHaveBeenCalledWith(
+    expect(resolveUserNavigation).toHaveBeenCalledWith(
       {
         sub: "auth0|company",
         name: undefined,
@@ -224,7 +217,7 @@ describe("auth-complete-flow integration", () => {
 
     expect(response.status).toBe(401)
     expect(response.body).toEqual({ error: "Invalid token payload", traceId: "trace-no-sub" })
-    expect(checkUser).not.toHaveBeenCalled()
+    expect(resolveUserNavigation).not.toHaveBeenCalled()
 
     await stopServer(server)
   })
@@ -241,7 +234,7 @@ describe("auth-complete-flow integration", () => {
       next()
     })
 
-    vi.mocked(checkUser).mockResolvedValue(null as never)
+    vi.mocked(resolveUserNavigation).mockResolvedValue({ outcome: "not_found" })
 
     const { default: userRoutes } = await import("../../../../src/presentation/api/routes/user-routes.js")
     const server = await startServer(userRoutes)
@@ -269,12 +262,8 @@ describe("auth-complete-flow integration", () => {
       next()
     })
 
-    vi.mocked(checkUser).mockResolvedValue({
-      user_id: "3",
-      user_name: "No Company",
-      user_email: "user@unknown.com",
-      auth0_id: "auth0|no-company",
-      company_id: null,
+    vi.mocked(resolveUserNavigation).mockResolvedValue({
+      outcome: "unregistered",
     })
 
     const { default: userRoutes } = await import("../../../../src/presentation/api/routes/user-routes.js")
@@ -303,7 +292,7 @@ describe("auth-complete-flow integration", () => {
       next()
     })
 
-    vi.mocked(checkUser).mockRejectedValue(new Error("database unavailable"))
+    vi.mocked(resolveUserNavigation).mockRejectedValue(new Error("database unavailable"))
 
     const { default: userRoutes } = await import("../../../../src/presentation/api/routes/user-routes.js")
     const server = await startServer(userRoutes)
