@@ -44,6 +44,7 @@
 
 ---
 
+
 ## 1. Sprint 1 Analysis
 
 This section presents an analysis of Sprint 1 execution based on observable effects on workflow and delivery.
@@ -474,44 +475,50 @@ This section evaluates the execution of Sprint 4, focusing on feature developmen
 
 ## 6. Cost Analysis and Effort Estimation
 
-This section presents the financial assessment for the development of the Equiem Onboarding MVP. The calculation considers a 10-week development cycle and maps all costs related to human resources, cloud infrastructure, and third-party tools necessary to build and deploy the solution.
+This section presents the financial assessment for the development of the Equiem Onboarding MVP under an Australian market scenario. Rather than applying a direct BRL-to-AUD currency conversion, the estimate was adapted to reflect local labor and operational conditions in Australia, especially for entry-level technology professionals and cloud-based MVP deployment.
 
 ### 6.1. Effort and Labor Scope
 
-The team is composed of entry-level professionals (Interns/Juniors). The effort estimation is based on a 10-week development cycle, with an average dedication of 16 hours per sprint per member. The "Technical Hourly Rate" is established at R$ 20,00/h, reflecting the current market average for tech interns/juniors in São Paulo.
+The team is composed of entry-level professionals (Interns/Juniors). The effort estimation is based on a 10-week development cycle, with an average dedication of 16 hours per sprint per member.
+
+For the Australian scenario, the Technical Hourly Rate was adjusted to **A$ 35.00/h**. This value is consistent with an entry-level/junior technology context in Australia, positioning the project above the national minimum wage and below the average market level of full software engineers, which makes it suitable for an MVP developed by interns/juniors.
 
 | Role | Headcount | Hours/Sprint per Person | Total Hours (10 weeks) | Hourly Rate | Total Cost |
 | :--- | :---: | :---: | :---: | :---: | :--- |
-| Front-end Developer | 2 | 16 | 160 | R$ 20,00 | R$ 3.200,00 |
-| Back-end Developer | 2 | 16 | 160 | R$ 20,00 | R$ 3.200,00 |
-| Cloud/DevOps Architect | 1 | 16 | 80 | R$ 20,00 | R$ 1.600,00 |
-| QA / Tester | 1 | 16 | 80 | R$ 20,00 | R$ 1.600,00 |
-| Designer | 1 | 16 | 80 | R$ 20,00 | R$ 1.600,00 |
-| **Total Labor** | **7** | **-** | **560** | **-** | **R$ 11.200,00** |
+| Front-end Developer | 2 | 16 | 160 | A$ 35.00 | A$ 5,600.00 |
+| Back-end Developer | 2 | 16 | 160 | A$ 35.00 | A$ 5,600.00 |
+| Cloud/DevOps Architect | 1 | 16 | 80 | A$ 35.00 | A$ 2,800.00 |
+| QA / Tester | 1 | 16 | 80 | A$ 35.00 | A$ 2,800.00 |
+| Designer | 1 | 16 | 80 | A$ 35.00 | A$ 2,800.00 |
+| **Total Labor** | **7** | **-** | **560** | **-** | **A$ 19,600.00** |
 
 ### 6.2. Infrastructure and Tools
 
-The infrastructure costs reflect the required environments to support the proposed deployment architecture, which utilizes AWS services and Auth0. Costs are projected for the duration of the MVP development and testing phase (approx. 2.5 months).
+The infrastructure costs reflect the environments required to support the proposed deployment architecture, using AWS services and Auth0 during the MVP development and testing phase (approximately 2.5 months).
+
+For this Australian version, infrastructure was also adapted to a local operating scenario. EC2 hosting was estimated based on Sydney-region equivalent pricing, while Auth0 was converted to AUD. RDS and SQS were maintained as conservative MVP-level estimates suitable for a small-scale onboarding platform in development/testing.
 
 | Resource / Tool | Component Responsibility | Estimated Monthly Cost | Total Cost (2.5 months) |
 | :--- | :--- | :---: | :---: |
-| **AWS EC2 (t3.small)** | Frontend hosting | R$ 90,00 | R$ 225,00 |
-| **AWS EC2 (t3.small)** | Backend API hosting | R$ 90,00 | R$ 225,00 |
-| **AWS EC2 (t3.small)** | Worker Processing Layer | R$ 90,00 | R$ 225,00 |
-| **Amazon RDS (PostgreSQL)** | Managed Database | R$ 150,00 | R$ 375,00 |
-| **Amazon SQS** | Messaging & Job Queues | R$ 5,00 | R$ 12,50 |
-| **Auth0** | Authentication Service (B2C Essentials) | R$ 180,00 | R$ 450,00 |
-| **GitHub / GitLab** | CI/CD and Version Control | R$ 0,00 (Free) | R$ 0,00 |
-| **Total Infrastructure** | - | **R$ 605,00** | **R$ 1.512.50** |
+| **AWS EC2 (t3.small)** | Frontend hosting | A$ 27.88 | A$ 69.70 |
+| **AWS EC2 (t3.small)** | Backend API hosting | A$ 27.88 | A$ 69.70 |
+| **AWS EC2 (t3.small)** | Worker Processing Layer | A$ 27.88 | A$ 69.70 |
+| **Amazon RDS (PostgreSQL)** | Managed Database | A$ 40.00 | A$ 100.00 |
+| **Amazon SQS** | Messaging & Job Queues | A$ 1.00 | A$ 2.50 |
+| **Auth0** | Authentication Service (B2C Essentials) | A$ 50.64 | A$ 126.60 |
+| **GitHub / GitLab** | CI/CD and Version Control | A$ 0.00 (Free) | A$ 0.00 |
+| **Total Infrastructure** | - | **A$ 175.28** | **A$ 438.20** |
 
 ### 6.3. Financial Summary
 
-The table below consolidates the total estimated production cost for the development of the Equiem onboarding MVP, including a symbolic tax rate of 6% to simulate the basic tax burden.
+The table below consolidates the total estimated production cost for the development of the Equiem onboarding MVP in the Australian scenario, including a symbolic tax rate of 6% to simulate a basic tax burden.
 
 | Cost Category | Total Estimated Value |
 | :--- | :--- |
-| Total Labor Cost | R$ 11.200,00 |
-| Total Infrastructure & Tools Cost | R$ 1.512,50 |
-| **Subtotal (Production Cost)** | **R$ 12.712,50** |
-| Tax Burden (6%) | R$ 762,75 |
-| **Total Project Cost (MVP)** | **R$ 13.475,25** |
+| Total Labor Cost | A$ 19,600.00 |
+| Total Infrastructure & Tools Cost | A$ 438.20 |
+| **Subtotal (Production Cost)** | **A$ 20,038.20** |
+| Tax Burden (6%) | A$ 1,202.29 |
+| **Total Project Cost (MVP)** | **A$ 21,240.49** |
+
+
