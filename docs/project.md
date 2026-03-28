@@ -41,6 +41,7 @@
     - [Delivered in this sprint:](#delivered-in-this-sprint-3)
   - [Post-MVP Enhancements (Nice-to-Have)](#post-mvp-enhancements-nice-to-have)
   - [12.1 Feature Development Progress and Deviations](#121-feature-development-progress-and-deviations)
+  - [12.2 Feature Development Sprint 4](#122-feature-development-sprint-4)
   - [13. MVP Canvas](#13-mvp-canvas)
     - [13.1. MVP Proposal](#131-mvp-proposal)
     - [13.2. Segmented Personas](#132-segmented-personas)
@@ -115,7 +116,6 @@
     - [25.11. Performance Considerations](#2511-performance-considerations)
     - [25.12. Security Considerations](#2512-security-considerations)
     - [Appendix A: System Configuration and Optimization Report](#appendix-a-system-configuration-and-optimization-report)
-  - [26. Demo Video](#26-demo-video)
 
     
 ## 1. Introduction
@@ -545,6 +545,127 @@ To run the application, use **two terminals**: one for backend and one for front
 4. **Important note**
    - The frontend uses proxy configuration (`proxy.conf.json`) for `/api` requests.
    - If backend is not running, frontend requests like `/api/users` will fail with `ECONNREFUSED`.
+
+### 12.1.1 Demo Video
+
+The following video demonstrates the application execution as required, showing the system running and the IDE.
+
+Demo (Sprint 3): [link](https://youtu.be/MNbhEwv95AE)
+
+## 12.2 Feature Development Sprint 4
+
+This section documents the main features implemented during the sprint 4, including improvements, new screens, and integrations, as well as any deviations from the original plan.
+
+### Integration and Deployment
+
+- **Database on Supabase**  
+  The backend was migrated to use Supabase as the main database, providing greater scalability and easier management of onboarding data.
+
+- **Automated Deployment on Render**  
+  The application was deployed on Render using optimized Docker images (`Dockerfile.prod`), streamlining the CI/CD process and improving delivery times.
+
+### User Interface and Experience Improvements
+
+- **Onboarding Flow Choice Screen**  
+  Added an explanatory screen where users can choose between uploading a complete CSV file or filling out the onboarding form manually, making the process clearer and more accessible.
+
+<div align="center">
+<sub>FIGURE X – New screen with onboarding intro</sub><br>
+  <img src="assets/onboarding-intro.png" width="100%" alt="Screen for onboarding intro"><br>
+  <sup>Source: Material produced by the authors, 2026.</sup>
+</div>
+
+<div align="center">
+<sub>FIGURE X – Screen explaining the two available ways of sending the data</sub><br>
+  <img src="assets/selection-fill-form.png" width="100%" alt="Screen for selection of how you will send the data"><br>
+  <sup>Source: Material produced by the authors, 2026.</sup>
+</div>
+
+- **XLSX Template Download**  
+  Introduced a button for downloading a XLSX template, guiding users on the correct data format and reducing input errors.
+
+<div align="center">
+<sub>FIGURE X – Button for dowloading the template of the XLSX file</sub><br>
+  <img src="assets/download-template.png" width="100%" alt="Button for dowloading the template of the XLSX file"><br>
+  <sup>Source: Material produced by the authors, 2026.</sup>
+</div>
+
+<div align="center">
+<sub>FIGURE X – Template of the XLSX file containing different tabs for different sections</sub><br>
+  <img src="assets/xlsx-template.png" width="100%" alt="Template of the XLSX file"><br>
+  <sup>Source: Material produced by the authors, 2026.</sup>
+</div>
+
+
+- **Detailed Error Screen and Correction**  
+  Implemented an error screen that shows exactly which fields are incorrect in the uploaded XLSX. Users can correct errors directly through this interface, making the adjustment process faster and more intuitive.
+
+<div align="center">
+<sub>FIGURE X – Review Data Screen</sub><br>
+  <img src="assets/review.png" width="100%" alt="Review data screen"><br>
+  <sup>Source: Material produced by the authors, 2026.</sup>
+</div>
+
+<div align="center">
+<sub>FIGURE X – Errors in the forms</sub><br>
+  <img src="assets/error-screen.png" width="100%" alt="Errors forms"><br>
+  <sup>Source: Material produced by the authors, 2026.</sup>
+</div>
+
+- **General UI Enhancements**  
+  Refined the user interface across several screens, improving navigation, responsiveness, and the display of feedback and status messages.
+
+### New Functionalities
+
+- **Create New Onboarding**  
+  Previously, the system only listed existing onboardings for Equiem. Now, users can create a new onboarding directly from the interface.
+
+<div align="center">
+<sub>FIGURE X – Create new onboarding button</sub><br>
+  <img src="assets/create-onboarding.png" width="100%" alt="Create new onboarding button"><br>
+  <sup>Source: Material produced by the authors, 2026.</sup>
+</div>
+
+<div align="center">
+<sub>FIGURE X – Configure new onboarding</sub><br>
+  <img src="assets/create-onboarding.png" width="100%" alt="Configure new onboarding"><br>
+  <sup>Source: Material produced by the authors, 2026.</sup>
+</div>
+
+### Feature-to-File Traceability (New Features)
+
+- **Supabase Integration**  
+  - src/data/database/index-table.ts  
+  - src/data/repositories/onboarding-repository.ts  
+  - src/data/repositories/user-repository.ts
+
+- **Render Deploy & Docker**  
+  - Dockerfile.prod (backend and frontend)
+  - docker-compose.prod.yml
+
+- **Onboarding Flow Choice Screen**  
+  - src/presentation/web/src/app/pages/upload/upload.component.html  
+  - src/presentation/web/src/app/pages/upload/upload.component.ts
+
+- **CSV Template Download**  
+  - src/presentation/web/src/app/pages/upload/upload.component.html  
+  - src/presentation/web/public/template.csv (if applicable)
+
+- **Detailed Error Screen**  
+  - src/presentation/web/src/app/pages/upload/upload.component.ts  
+  - src/presentation/web/src/app/pages/upload/upload.component.html
+
+- **Create New Onboarding**  
+  - src/presentation/web/src/app/pages/onboarding-create/onboarding-create.component.ts (new)  
+  - src/presentation/web/src/app/pages/onboarding-create/onboarding-create.component.html (new)  
+  - src/business/services/onboarding-instance-service.ts  
+  - src/data/repositories/onboarding-instance-repository.ts
+
+### 12.2.1 Demo Video
+
+The following video demonstrates the application execution as required, showing the system running and the IDE.
+
+Demo (Sprint 4): [link](https://drive.google.com/file/d/11NpnOOebpEBunGlq0J-5xIeZmRQvYbDP/view?usp=sharing)
 
 ## 13. MVP Canvas
 
@@ -2215,9 +2336,3 @@ Based on the benchmark results, regression analysis, and optimization derivation
 This configuration provides a balanced level of parallelism while maintaining manageable memory usage and minimizing database contention.
 
 Future deployments may refine this configuration as additional production data becomes available, but the analytical model provides a strong initial guideline for system tuning.
-
-## 26.Demo Video
-
-The following video demonstrates the application execution as required, showing the system running and the IDE.
-
-▶️ Demo: [link](https://drive.google.com/file/d/11NpnOOebpEBunGlq0J-5xIeZmRQvYbDP/view?usp=sharing)
