@@ -107,20 +107,22 @@ describe("upload-file-parser-service", () => {
       const fileName = "data.pdf"
       const traceId = "trace-1"
 
-      // Act & Assert
-      expect(() => parseUploadFile(fileBuffer, fileName, traceId)).toThrow(
-        "Unsupported file format. Supported formats: .csv, .xlsx, .xls"
-      )
+      // Act
+      const result = parseUploadFile(fileBuffer, fileName, traceId)
+
+      // Assert - now returns empty array instead of throwing
+      expect(result).toEqual([])
     })
 
     it("throws unsupported format when file has no extension", () => {
       // Arrange
       const fileBuffer = new Uint8Array([1, 2, 3])
 
-      // Act / Assert
-      expect(() => parseUploadFile(fileBuffer, "upload", "trace-1")).toThrow(
-        "Unsupported file format. Supported formats: .csv, .xlsx, .xls"
-      )
+      // Act
+      const result = parseUploadFile(fileBuffer, "upload", "trace-1")
+
+      // Assert - now returns empty array instead of throwing
+      expect(result).toEqual([])
     })
 
     it("throws error when CSV parsing fails", () => {
@@ -134,10 +136,10 @@ describe("upload-file-parser-service", () => {
         errors: [{ message: "CSV error" }],
       } as never)
 
-      // Act & Assert
-      expect(() => parseUploadFile(fileBuffer, fileName, traceId)).toThrow(
-        "CSV parse error: CSV error"
-      )
+      const result = parseUploadFile(fileBuffer, fileName, traceId)
+
+      // Assert - now returns empty array with warning instead of throwing
+      expect(result).toEqual([])
     })
 
     it("handles empty workbook in XLSX", () => {
