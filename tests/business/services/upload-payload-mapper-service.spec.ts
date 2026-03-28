@@ -124,9 +124,7 @@ describe("upload-payload-mapper-service", () => {
 
       // Assert
       expect(records[0].isValid).toBe(false)
-      expect(records[0].validationErrors).toContain(
-        "Missing required field: external_id"
-      )
+      expect(records[0].validationErrors.some(e => e.field === "external_id")).toBe(true)
     })
 
     it("marks user record invalid when user_email is missing", () => {
@@ -139,9 +137,7 @@ describe("upload-payload-mapper-service", () => {
 
       // Assert
       expect(records[0].isValid).toBe(false)
-      expect(records[0].validationErrors).toContain(
-        "Missing required field: user_email"
-      )
+      expect(records[0].validationErrors.some(e => e.field === "email")).toBe(true)
     })
 
     it("maps multiple rows with correct row numbers", () => {
@@ -191,7 +187,9 @@ describe("upload-payload-mapper-service", () => {
           rowNumber: 1,
           entityType: "building",
           isValid: true,
+          validationSeverity: "none",
           validationErrors: [],
+          validationScore: 100,
           rawData: { name: "Tower A" },
           normalizedData: { external_id: "b1", name: "Tower A" },
         },
@@ -199,7 +197,9 @@ describe("upload-payload-mapper-service", () => {
           rowNumber: 2,
           entityType: "building",
           isValid: false,
-          validationErrors: ["Missing external_id"],
+          validationSeverity: "critical",
+          validationErrors: [{ field: "external_id", message: "Missing external_id", severity: "error" }],
+          validationScore: 0,
           rawData: { name: "Tower B" },
           normalizedData: { name: "Tower B" },
         },
@@ -221,7 +221,9 @@ describe("upload-payload-mapper-service", () => {
           rowNumber: 1,
           entityType: "building",
           isValid: true,
+          validationSeverity: "none",
           validationErrors: [],
+          validationScore: 100,
           rawData: {},
           normalizedData: { external_id: "b1", name: "Tower A" },
         },
@@ -249,7 +251,9 @@ describe("upload-payload-mapper-service", () => {
           rowNumber: 1,
           entityType: "building",
           isValid: true,
+          validationSeverity: "none",
           validationErrors: [],
+          validationScore: 100,
           rawData: {},
           normalizedData: {
             external_id: "ext-123",
@@ -274,7 +278,9 @@ describe("upload-payload-mapper-service", () => {
           rowNumber: 1,
           entityType: "building",
           isValid: true,
+          validationSeverity: "none",
           validationErrors: [],
+          validationScore: 100,
           rawData: {},
           normalizedData: { external_id: "b1", title: "Secondary Title" },
         },
@@ -295,7 +301,9 @@ describe("upload-payload-mapper-service", () => {
           rowNumber: 1,
           entityType: "building",
           isValid: true,
+          validationSeverity: "none",
           validationErrors: [],
+          validationScore: 100,
           rawData: {},
           normalizedData: { external_id: 1234, name: "Tower A" },
         },
@@ -324,7 +332,9 @@ describe("upload-payload-mapper-service", () => {
           rowNumber: 1,
           entityType: "building",
           isValid: true,
+          validationSeverity: "none",
           validationErrors: [],
+          validationScore: 100,
           rawData: {},
           normalizedData,
         },
