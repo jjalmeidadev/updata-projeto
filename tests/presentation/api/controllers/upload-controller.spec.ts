@@ -3,10 +3,10 @@ import type { Request, Response } from "express"
 import { handleUpload } from "../../../../src/presentation/api/controllers/upload-controller.js"
 
 vi.mock("../../../../src/business/services/upload-service.js", () => ({
-  mapRowsToEntities: vi.fn(),
+  processUploadFile: vi.fn(),
 }))
 
-import { mapRowsToEntities } from "../../../../src/business/services/upload-service.js"
+import { processUploadFile } from "../../../../src/business/services/upload-service.js"
 
 function mockRes(): Response {
   const res = {} as Response
@@ -18,77 +18,88 @@ function mockRes(): Response {
 
 describe("upload-controller", () => {
   beforeEach(() => {
-    vi.mocked(mapRowsToEntities).mockReset()
+    vi.mocked(processUploadFile).mockReset()
   })
 
   describe("handleUpload", () => {
-    it("retorna 400 quando body.rows está ausente", async () => {
-      const req = { body: {}, headers: {} } as Request
+    it("returns 400 when file is missing", async () => {
+      const req = { headers: {}, file: undefined } as unknown as Request
       const res = mockRes()
 
       await handleUpload(req, res)
 
       expect(res.status).toHaveBeenCalledWith(400)
       expect(res.json).toHaveBeenCalledWith(
-        expect.objectContaining({ error: "Missing rows payload" })
+        expect.objectContaining({ error: "Missing upload file" })
       )
-      expect(mapRowsToEntities).not.toHaveBeenCalled()
+      expect(vi.mocked(processUploadFile)).not.toHaveBeenCalled()
     })
 
-    it("retorna 400 quando rows não é array", async () => {
-      const req = { body: { rows: "not-an-array" }, headers: {} } as Request
+    it("calls service and returns redirect payload", async () => {
+      const file = {
+        originalname: "data.csv",
+        buffer: Buffer.from("csv,data"),
+      }
+
+      const req = { headers: { "x-debug-trace-id": "trace-123" }, file: file as any } as unknown as Request
       const res = mockRes()
+
+      vi.mocked(processUploadFile).mockResolvedValue({
+        s3Key: "uploads/trace-123/data.csv",
+        fileName: "data.csv",
+      })
 
       await handleUpload(req, res)
 
-      expect(res.status).toHaveBeenCalledWith(400)
-      expect(mapRowsToEntities).not.toHaveBeenCalled()
-    })
-
-    it("retorna 400 quando rows é array vazio", async () => {
-      const req = { body: { rows: [] }, headers: {} } as Request
-      const res = mockRes()
-
-      await handleUpload(req, res)
-
-      expect(res.status).toHaveBeenCalledWith(400)
-      expect(mapRowsToEntities).not.toHaveBeenCalled()
-    })
-
-    it("retorna 200 com redirect, data e traceId quando payload é válido", async () => {
-      const rows = [{ Name: "Tower A" }]
-      const entities = [
-        { fields: { name: "Tower A" } },
-      ]
-      vi.mocked(mapRowsToEntities).mockReturnValue(entities as never)
-
-      const req = { body: { rows }, headers: { "x-debug-trace-id": "trace-1" } } as Request
-      const res = mockRes()
-
-      await handleUpload(req, res)
-
-      expect(mapRowsToEntities).toHaveBeenCalledWith(rows, "trace-1")
-      expect(res.status).not.toHaveBeenCalled()
+      expect(vi.mocked(processUploadFile)).toHaveBeenCalledWith(file, "trace-123")
       expect(res.json).toHaveBeenCalledWith({
         redirect: "/form",
-        data: [{ name: "Tower A" }],
-        traceId: "trace-1",
+        s3Key: "uploads/trace-123/data.csv",
+        fileName: "data.csv",
+        traceId: "trace-123",
       })
     })
 
-    it("retorna 500 quando mapRowsToEntities lança", async () => {
-      vi.mocked(mapRowsToEntities).mockImplementation(() => {
-        throw new Error("No rows received")
+    it("generates traceId when header is missing", async () => {
+      const file = {
+        originalname: "data.csv",
+        buffer: Buffer.from("csv,data"),
+      }
+
+      const req = { headers: {}, file: file as any } as unknown as Request
+      const res = mockRes()
+
+      vi.mocked(processUploadFile).mockResolvedValue({
+        s3Key: "uploads/server-1/data.csv",
+        fileName: "data.csv",
       })
 
-      const req = { body: { rows: [{ x: 1 }] }, headers: {} } as Request
+      await handleUpload(req, res)
+
+      const traceId = (vi.mocked(processUploadFile).mock.calls[0] || [])[1]
+      expect(traceId).toEqual(expect.stringMatching(/^server-\d+$/))
+      expect(res.setHeader).toHaveBeenCalledWith("x-debug-trace-id", traceId)
+    })
+
+    it("returns 500 when service throws", async () => {
+      const file = {
+        originalname: "data.csv",
+        buffer: Buffer.from("csv,data"),
+      }
+
+      const req = { headers: { "x-debug-trace-id": "trace-error" }, file: file as any } as unknown as Request
       const res = mockRes()
+
+      vi.mocked(processUploadFile).mockRejectedValue(new Error("service failed"))
 
       await handleUpload(req, res)
 
       expect(res.status).toHaveBeenCalledWith(500)
       expect(res.json).toHaveBeenCalledWith(
-        expect.objectContaining({ error: "Error processing upload" })
+        expect.objectContaining({
+          error: "Error processing upload",
+          traceId: "trace-error",
+        })
       )
     })
   })

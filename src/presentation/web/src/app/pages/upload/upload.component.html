@@ -1,103 +1,130 @@
-<div class="form-shell">
-  <!-- Header -->
-  <header class="form-header">
-    <h1>Upload Data</h1>
+<div class="page-container">
+  <svg
+    class="background-svg"
+    xmlns="http://www.w3.org/2000/svg"
+    width="588"
+    height="822"
+    viewBox="0 0 588 822"
+    fill="none"
+    aria-hidden="true"
+  >
+    <g clip-path="url(#clip0_upload_bg)">
+      <path
+        d="M587.5 655.697V821.5C344.053 821.233 146.773 626.402 146.5 386H314.405C314.678 534.803 436.775 655.431 587.5 655.697Z"
+        stroke="#4D4D56"
+      ></path>
+      <path
+        d="M-127.596 385.5C-127.596 534.533 -5.3938 655.43 145.5 655.697V821.5C-98.116 821.233 -295.5 626.132 -295.5 385.5C-295.5 144.704 -97.8459 -50.5 146 -50.5C389.677 -50.5 587.226 144.433 587.5 385H419.595C419.322 236.032 296.893 115.303 146 115.303C-5.06229 115.303 -127.596 236.302 -127.596 385.5Z"
+        stroke="#4D4D56"
+      ></path>
+    </g>
+    <defs>
+      <clipPath id="clip0_upload_bg">
+        <rect width="884" height="873" fill="white" transform="translate(-296 -51)"></rect>
+      </clipPath>
+    </defs>
+  </svg>
 
-    @if (!loading()) {
-      <div class="progress-bar-container">
-        <div class="progress-bar" [style.width.%]="progressPercent()">
-          {{ progressPercent() }}%
+  <section class="content">
+    @if (loading()) {
+      <p class="loading">Loading sections…</p>
+    } @else {
+      <div class="page-panel page-panel--split">
+        <header class="page-header-block">
+          <h1 class="page-title">Upload your Onboarding Data</h1>
+        </header>
+
+        <div class="split-layout">
+          <div class="nav-stack">
+            <aside class="nav-column" aria-label="Upload information">
+              <h2 class="nav-column-title">About this step</h2>
+              <div class="upload-side-body">
+                <p class="upload-side-lead">
+                  Use a CSV or Excel file that matches the template for your selected sections.
+                </p>
+                <ul class="upload-side-list">
+                  <li>Download the template to see every field and validation hint.</li>
+                  <li>Fill the spreadsheet offline, then upload it here.</li>
+                  <li>You can still complete fields manually in the form if you prefer.</li>
+                </ul>
+              </div>
+            </aside>
+          </div>
+
+          <main class="form-column">
+            <section class="form-section">
+              <div class="section-header">
+                <h2 class="section-title">Import Onboarding Data</h2>
+                <button class="template-btn btn btn-secondary" type="button" (click)="downloadTemplate()">
+                  Download template
+                </button>
+              </div>
+
+              <div class="upload-area">
+                <div class="upload-box" (click)="triggerFileInput()" [class.disabled]="uploading()">
+                  <input
+                    type="file"
+                    id="fileInput"
+                    accept=".csv,.xlsx,.xls"
+                    (change)="onFileSelect($event)"
+                    hidden
+                  />
+
+                  @if (uploading()) {
+                    <div class="upload-icon uploading">
+                      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          stroke-width="2"
+                          d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
+                        />
+                      </svg>
+                    </div>
+                    <p class="upload-text">Processing {{ fileName() }}...</p>
+                  } @else {
+                    <div class="upload-icon">
+                      <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path
+                          stroke-linecap="round"
+                          stroke-linejoin="round"
+                          stroke-width="2"
+                          d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"
+                        />
+                      </svg>
+                    </div>
+                    <p class="upload-text">Drop your file here or click to upload</p>
+                  }
+                </div>
+
+                @if (fileName() && !uploading()) {
+                  <p class="selected-file">✓ Selected: {{ fileName() }}</p>
+                }
+
+                @if (errorMessage()) {
+                  <p class="error-message">{{ errorMessage() }}</p>
+                }
+
+                @if (successMessage()) {
+                  <p class="success-message">{{ successMessage() }}</p>
+                }
+
+                <div class="manual-option">
+                  <span class="or-text">or</span>
+                  <button class="manual-link" type="button" (click)="goToManualForm()">
+                    Manually fill the required fields
+                  </button>
+                </div>
+              </div>
+
+              <div class="form-nav">
+                <span class="form-nav-spacer"></span>
+                <button class="btn btn-primary" type="submit" (click)="onSubmit()">Submit Data</button>
+              </div>
+            </section>
+          </main>
         </div>
       </div>
-      <p class="progress-label">Section {{ currentSectionIndex() + 1 }} of {{ sections().length }}</p>
     }
-  </header>
-
-  @if (loading()) {
-    <p class="loading">Loading sections…</p>
-  } @else {
-    <!-- Section nav tabs -->
-    <nav class="section-tabs" aria-label="Form sections">
-      @for (section of sections(); track section; let i = $index) {
-        <button
-          class="tab-btn"
-          [class.active]="i === currentSectionIndex()"
-          [class.visited]="i < currentSectionIndex()"
-          [class.completed]="completedSections().has(i)"
-          (click)="goToSection(i)"
-          type="button">
-          {{ sectionLabels[section] ?? section }}
-          @if (completedSections().has(i)) {
-            <span class="tab-check">✓</span>
-          }
-        </button>
-      }
-    </nav>
-
-    <!-- Upload Section -->
-    <section class="form-section">
-      <h2 class="section-title">{{ currentSectionLabel() }}</h2>
-
-      <!-- Upload Area -->
-      <div class="upload-area">
-        <div class="upload-box" (click)="triggerFileInput()" [class.disabled]="uploading()">
-          <input 
-            type="file" 
-            id="fileInput" 
-            accept=".csv,.xlsx,.xls"
-            (change)="onFileSelect($event)"
-            hidden
-          />
-          
-          @if (uploading()) {
-            <div class="upload-icon uploading">
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-              </svg>
-            </div>
-            <p class="upload-text">Processing {{ fileName() }}...</p>
-          } @else {
-            <div class="upload-icon">
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
-              </svg>
-            </div>
-            <p class="upload-text">Upload CSV or XLSX</p>
-            <p class="upload-subtext">{{ currentSectionQuestionsLength() }} fields to fill</p>
-          }
-        </div>
-
-        @if (fileName() && !uploading()) {
-          <p class="selected-file">✓ Selected: {{ fileName() }}</p>
-        }
-
-        @if (errorMessage()) {
-          <p class="error-message">{{ errorMessage() }}</p>
-        }
-
-        <!-- Manual Option -->
-        <div class="manual-option">
-          <span class="or-text">or</span>
-          <button class="manual-link" (click)="goToManualForm()">
-            Manually fill the required fields
-          </button>
-        </div>
-      </div>
-
-      <!-- Navigation -->
-      <div class="form-nav">
-        @if (!isFirstSection()) {
-          <button class="btn btn-secondary" type="button" (click)="previous()">← Previous</button>
-        } @else {
-          <span></span>
-        }
-
-        @if (!isLastSection()) {
-          <button class="btn btn-primary" type="button" (click)="next()">Next →</button>
-        } @else {
-          <button class="btn btn-secondary" type="button" (click)="next()" [disabled]="true">Done</button>
-        }
-      </div>
-    </section>
-  }
+  </section>
 </div>

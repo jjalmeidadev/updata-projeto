@@ -8,11 +8,18 @@ interface AuthPayload {
 }
 
 interface UserRecord {
-  user_id: number
+  user_id: string
   user_name: string
   user_email: string
   auth0_id: string
-  company_id: number | null
+  company_id: string | null
+}
+
+type UserNavigationOutcome = "monitoring" | "company" | "unregistered" | "not_found"
+
+interface UserNavigationResult {
+  outcome: UserNavigationOutcome
+  companyId?: string
 }
 
 // Ensures the authenticated user exists and is linked to a company when possible.
@@ -20,7 +27,7 @@ interface UserRecord {
 async function checkUser(
   payload: AuthPayload | undefined,
   traceId = "no-trace"
-): Promise<UserRecord> {
+): Promise<UserRecord | null> {
   console.log(`[FLOW][${traceId}] service:start`)
 
   // Payload comes from JWT middleware; without it we cannot identify the user.
@@ -63,10 +70,52 @@ async function checkUser(
     company_id: companyId || undefined
   }, traceId)
 
+  if (!newUser) {
+    console.log(`[FLOW][${traceId}] service:user_not_found_after_create`)
+    return null
+  }
+
   console.log(`[FLOW][${traceId}] service:user_created userId=${newUser.user_id}`)
 
   return newUser
 
 }
 
-export { checkUser }
+async function resolveUserNavigation(
+  payload: AuthPayload | undefined,
+  traceId = "no-trace"
+): Promise<UserNavigationResult> {
+  const user = await checkUser(payload, traceId)
+
+  if (!user) {
+    console.log(`[FLOW][${traceId}] service:navigation user_not_found`)
+    return {
+      outcome: "not_found",
+    }
+  }
+
+  const email = user.user_email || ""
+
+  if (email.endsWith("@getequiem.com")) {
+    console.log(`[FLOW][${traceId}] service:navigation next=/monitoring`)
+    return {
+      outcome: "monitoring",
+    }
+  }
+
+  if (user.company_id) {
+    console.log(`[FLOW][${traceId}] service:navigation next=/company/${user.company_id}`)
+    return {
+      outcome: "company",
+      companyId: user.company_id,
+    }
+  }
+
+  console.log(`[FLOW][${traceId}] service:navigation company_not_registered`)
+  return {
+    outcome: "unregistered",
+  }
+}
+
+export { checkUser, resolveUserNavigation }
+export type { AuthPayload, UserNavigationResult }

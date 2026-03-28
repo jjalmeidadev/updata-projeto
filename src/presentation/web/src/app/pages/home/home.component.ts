@@ -1,14 +1,10 @@
-import { Component, ElementRef, HostListener, inject } from '@angular/core';
+import { Component, ElementRef, HostListener, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { AuthService } from '@auth0/auth0-angular';
 import { map } from 'rxjs/operators';
-
-interface Company {
-  name: string;
-  progress: number;
-  started: boolean;
-}
+import { OnboardingInstance } from '../../models/onboarding-instance.model';
+import { OnboardingInstanceService } from '../../services/onboarding-instance.service';
 
 @Component({
   selector: 'app-home',
@@ -17,11 +13,16 @@ interface Company {
   templateUrl: './home.component.html',
   styleUrls: ['./home.component.css'],
 })
-export class HomeComponent {
+export class HomeComponent implements OnInit {
   private readonly auth = inject(AuthService);
   private readonly router = inject(Router);
+  private readonly onboardingService = inject(OnboardingInstanceService);
 
   profileMenuOpen = false;
+  loading = true;
+  errorMessage = '';
+  instances: OnboardingInstance[] = [];
+  feedbackMessage = '';
 
   readonly userEmail$ = this.auth.user$.pipe(
     map(user => user?.email ?? '')
@@ -52,26 +53,74 @@ export class HomeComponent {
 
   constructor(private readonly elRef: ElementRef<HTMLElement>) {}
 
-  companies: Company[] = [
-    { name: 'Company 1', progress: 35, started: true },
-    { name: 'Company 2', progress: 60, started: true },
-    { name: 'Company 3', progress: 15, started: true },
-    { name: 'Company 4', progress: 50, started: true },
-    { name: 'Company 5', progress: 0, started: false },
-  ];
+  ngOnInit(): void {
+    this.loadInstances();
+  }
 
-  startOnboarding(company: Company) {
-    company.started = true;
-    company.progress = 10;
-
-    localStorage.removeItem('selectedSections');
-    sessionStorage.setItem('onboardingCompany', company.name);
-
+  createOnboarding(): void {
     this.router.navigate(['/module-selector']);
   }
 
-  viewDetails(company: Company) {
-    console.log('Viewing details for', company.name);
+  openOnboarding(instance: OnboardingInstance): void {
+    this.router.navigate(['/onboarding', instance.linkToken]);
+  }
+
+  viewDetails(instance: OnboardingInstance): void {
+    if (instance.status !== 'completed') {
+      return;
+    }
+
+    this.router.navigate(['/onboarding', instance.linkToken]);
+  }
+
+  copyLink(instance: OnboardingInstance): void {
+    navigator.clipboard.writeText(instance.linkUrl).then(() => {
+      this.feedbackMessage = `Link copied for ${instance.companyName}.`;
+    });
+  }
+
+  completeReview(instance: OnboardingInstance): void {
+    this.onboardingService.completeEquiemReview(instance.linkToken).subscribe({
+      next: () => {
+        this.feedbackMessage = `Equiem review completed for ${instance.companyName}.`;
+        this.loadInstances();
+      },
+      error: () => {
+        this.feedbackMessage = 'Failed to complete the Equiem review.';
+      },
+    });
+  }
+
+  statusLabel(instance: OnboardingInstance): string {
+    if (instance.status === 'equiem_review') return 'Equiem review';
+    if (instance.status === 'in_progress') return 'In progress';
+    if (instance.status === 'completed') return 'Completed';
+    return 'Not started';
+  }
+
+  statusClass(instance: OnboardingInstance): string {
+    if (instance.status === 'completed') return 'status-completed';
+    if (instance.status === 'equiem_review') return 'status-review';
+    if (instance.status === 'in_progress') return 'status-started';
+    return 'status-not-started';
+  }
+
+  showContinue(instance: OnboardingInstance): boolean {
+    return instance.status === 'draft' || instance.status === 'in_progress';
+  }
+
+  private loadInstances(): void {
+    this.loading = true;
+    this.onboardingService.listInstances().subscribe({
+      next: (items: OnboardingInstance[]) => {
+        this.instances = items;
+        this.loading = false;
+      },
+      error: () => {
+        this.errorMessage = 'Failed to load onboarding instances.';
+        this.loading = false;
+      },
+    });
   }
 
   toggleProfileMenu(event: MouseEvent) {

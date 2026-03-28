@@ -1,11 +1,29 @@
-import { Component, OnInit, inject, signal, computed } from '@angular/core';
+import { Component, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Router } from '@angular/router';
-import { QuestionService, SECTION_LABELS } from '../../services/question.service';
-import { Question } from '../../models/question.model';
-import * as XLSX from 'xlsx';
+import { ActivatedRoute, Router } from '@angular/router';
+import { firstValueFrom } from 'rxjs';
+import { QuestionService } from '../../services/question.service';
+import { Question, QuestionType } from '../../models/question.model';
+import ExcelJS from 'exceljs';
+import { OnboardingInstance } from '../../models/onboarding-instance.model';
+import { OnboardingInstanceService } from '../../services/onboarding-instance.service';
 
-type SheetRow = Record<string, unknown>;
+type ReviewSource = 'manual' | 'template';
+
+interface ReviewIssue {
+  id: string;
+  label: string;
+  value: unknown;
+  type: QuestionType;
+  options?: string[];
+  error: string;
+  source: ReviewSource;
+  section?: string;
+  row?: number;
+}
+
+const REVIEW_STATE_KEY = 'reviewState';
+const UPLOADED_DATA_KEY = 'uploadedData';
 
 @Component({
   selector: 'app-upload',
@@ -16,199 +34,562 @@ type SheetRow = Record<string, unknown>;
 })
 export class UploadComponent implements OnInit {
   private readonly router = inject(Router);
+  private readonly route = inject(ActivatedRoute);
   private readonly questionService = inject(QuestionService);
+  private readonly onboardingService = inject(OnboardingInstanceService);
 
   readonly questions = signal<Question[]>([]);
-  readonly sections = signal<string[]>([]);
-  readonly currentSectionIndex = signal(0);
+  readonly instance = signal<OnboardingInstance | null>(null);
   readonly loading = signal(true);
   readonly uploading = signal(false);
   readonly fileName = signal<string | null>(null);
   readonly errorMessage = signal<string | null>(null);
-  readonly completedSections = signal<Set<number>>(new Set());
-
-  readonly sectionLabels = SECTION_LABELS;
-
-  readonly currentSection = computed(() => this.sections()[this.currentSectionIndex()]);
-  readonly currentSectionLabel = computed(() => this.sectionLabels[this.currentSection()] ?? this.currentSection());
-  readonly isFirstSection = computed(() => this.currentSectionIndex() === 0);
-  readonly isLastSection = computed(() => this.currentSectionIndex() === this.sections().length - 1);
-
-  readonly currentSectionQuestions = computed(() =>
-    this.questionService.getQuestionsBySection(this.questions(), this.currentSection())
-  );
-
-  readonly progressPercent = computed(() => {
-    const sections = this.sections();
-    if (sections.length === 0) return 0;
-    const completed = this.completedSections().size;
-    return Math.round((completed / sections.length) * 100);
-  });
-
-  readonly currentSectionQuestionsLength = computed(() => this.currentSectionQuestions().length);
+  readonly successMessage = signal<string | null>(null);
 
   ngOnInit(): void {
-    this.questionService.getQuestions().subscribe({
-      next: (allQuestions: Question[]) => {
-        const selected = this.getSelectedSections();
+    const linkToken = this.route.snapshot.paramMap.get('linkToken');
 
-        const filteredQuestions = selected.length
-          ? allQuestions.filter((q: Question) => selected.includes(q.sectionId))
-          : allQuestions;
+    if (!linkToken) {
+      this.loadQuestionsFromSelection();
+      return;
+    }
 
-        this.questions.set(filteredQuestions);
+    this.onboardingService.getPublicInstance(linkToken).subscribe({
+      next: (instance: OnboardingInstance) => {
+        this.instance.set(instance);
 
-        const filteredSections = this.questionService.getSections(filteredQuestions);
-        this.sections.set(filteredSections);
-
-        if (filteredSections.length === 0) {
-          this.loading.set(false);
-          return;
-        }
-
-        const storedIndex = sessionStorage.getItem('uploadSectionIndex');
-        if (storedIndex) {
-          const parsed = parseInt(storedIndex, 10);
-          if (!isNaN(parsed) && parsed >= 0 && parsed < filteredSections.length) {
-            this.currentSectionIndex.set(parsed);
-          } else {
-            this.currentSectionIndex.set(0);
-          }
-          sessionStorage.removeItem('uploadSectionIndex');
-        }
-
-        const completedStr = sessionStorage.getItem('completedSections');
-        if (completedStr) {
-          try {
-            const completed = JSON.parse(completedStr) as unknown;
-            if (Array.isArray(completed)) {
-              const valid = completed
-                .filter((v: unknown) => typeof v === 'number')
-                .filter((v: number) => v >= 0 && v < filteredSections.length);
-              this.completedSections.set(new Set(valid));
-            }
-          } catch {
-            this.completedSections.set(new Set());
-          }
-        }
-
+        this.questionService.getQuestions().subscribe({
+          next: (allQuestions: Question[]) => {
+            const selected = instance.selectedSections ?? [];
+            this.questions.set(this.buildOrderedQuestionsForScope(allQuestions, selected));
+            this.loading.set(false);
+          },
+          error: (err: unknown) => {
+            console.error('Failed to load questions:', err);
+            this.loading.set(false);
+          },
+        });
+      },
+      error: () => {
+        this.errorMessage.set('Failed to load onboarding instance.');
         this.loading.set(false);
       },
-      error: (err: unknown) => {
-        console.error('Failed to load questions:', err);
-        this.loading.set(false);
-      }
     });
   }
 
-  onFileSelect(event: Event): void {
+  async onFileSelect(event: Event): Promise<void> {
     const target = event.target as HTMLInputElement;
     const file = target.files?.[0];
+    const linkToken = this.route.snapshot.paramMap.get('linkToken');
 
     if (!file) {
       return;
     }
 
-    const validExtensions = ['.xlsx', '.xls', '.csv'];
+    const validExtensions = ['.xlsx', '.csv'];
     const fileExtension = file.name.toLowerCase().slice(file.name.lastIndexOf('.'));
 
     if (!validExtensions.includes(fileExtension)) {
-      this.errorMessage.set('Please upload a valid CSV or Excel file (.csv, .xlsx, .xls)');
+      this.errorMessage.set('Please upload a valid template file (.xlsx or .csv).');
+      target.value = '';
       return;
     }
 
     this.errorMessage.set(null);
+    this.successMessage.set(null);
     this.fileName.set(file.name);
     this.uploading.set(true);
 
-    const reader = new FileReader();
+    try {
+      const scopedQuestions = await this.resolveScopedQuestions();
+      this.questions.set(scopedQuestions);
 
-    reader.onload = async (e: ProgressEvent<FileReader>) => {
-      const result = e.target?.result;
+      const parsedValues =
+        fileExtension === '.csv'
+          ? await this.parseCsvFile(file)
+          : await this.parseExcelTemplate(file);
 
-      if (!result) {
-        this.errorMessage.set('Failed to read file');
-        this.uploading.set(false);
-        return;
-      }
+      const reviewItems = this.collectTemplateReviewItems(parsedValues);
 
-      try {
-        const data = new Uint8Array(result as ArrayBuffer);
-        const workbook = XLSX.read(data, { type: 'array' });
-        const sheet = workbook.Sheets[workbook.SheetNames[0]];
-        const rows = XLSX.utils.sheet_to_json(sheet) as SheetRow[];
+      sessionStorage.setItem(UPLOADED_DATA_KEY, JSON.stringify(parsedValues));
+      sessionStorage.setItem(
+        REVIEW_STATE_KEY,
+        JSON.stringify({
+          source: 'template',
+          issues: reviewItems,
+        })
+      );
 
-        if (rows.length === 0) {
-          this.errorMessage.set('The file appears to be empty');
-          this.uploading.set(false);
-          return;
-        }
-
-        const completed = new Set(this.completedSections());
-        completed.add(this.currentSectionIndex());
-        this.completedSections.set(completed);
-        sessionStorage.setItem('completedSections', JSON.stringify(Array.from(completed)));
-
-        sessionStorage.setItem('uploadedData', JSON.stringify(rows));
-        sessionStorage.setItem('uploadedSection', this.currentSection());
-        sessionStorage.setItem('uploadSectionIndex', this.currentSectionIndex().toString());
-
-        this.router.navigate(['/form'], {
-          queryParams: { section: this.currentSectionIndex(), fromUpload: true }
-        });
-
-      } catch (error) {
-        console.error('Parse error:', error);
-        this.errorMessage.set('Failed to parse the file. Please check the format.');
-        this.uploading.set(false);
-      }
-    };
-
-    reader.onerror = () => {
-      this.errorMessage.set('Error reading file');
+      this.router.navigate(linkToken ? ['/onboarding', linkToken, 'review'] : ['/review'], {
+        state: {
+          reviewSource: 'template',
+          reviewIssues: reviewItems,
+        },
+      });
+      return;
+    } catch (error) {
+      console.error('Upload error:', error);
+      this.errorMessage.set(
+        error instanceof Error ? error.message : 'Failed to process the uploaded file.'
+      );
+    } finally {
       this.uploading.set(false);
-    };
-
-    reader.readAsArrayBuffer(file);
-  }
-
-  goToManualForm(): void {
-    sessionStorage.setItem('uploadSectionIndex', this.currentSectionIndex().toString());
-    this.router.navigate(['/form'], {
-      queryParams: { section: this.currentSectionIndex(), isManual: true }
-    });
-  }
-
-  goToSection(index: number): void {
-    if (index >= 0 && index < this.sections().length) {
-      this.currentSectionIndex.set(index);
-      this.resetUploadState();
+      target.value = '';
     }
-  }
-
-  next(): void {
-    if (!this.isLastSection()) {
-      this.currentSectionIndex.update((i: number) => i + 1);
-      this.resetUploadState();
-    }
-  }
-
-  previous(): void {
-    if (!this.isFirstSection()) {
-      this.currentSectionIndex.update((i: number) => i - 1);
-      this.resetUploadState();
-    }
-  }
-
-  private resetUploadState(): void {
-    this.fileName.set(null);
-    this.errorMessage.set(null);
-    this.uploading.set(false);
   }
 
   triggerFileInput(): void {
     const input = document.getElementById('fileInput') as HTMLInputElement;
     input?.click();
+  }
+
+  goToManualForm(): void {
+    const linkToken = this.route.snapshot.paramMap.get('linkToken');
+    this.router.navigate(linkToken ? ['/onboarding', linkToken, 'form'] : ['/form']);
+  }
+
+  async downloadTemplate(): Promise<void> {
+    const questions = this.questions();
+
+    if (questions.length === 0) {
+      this.errorMessage.set('No sections available to generate template.');
+      return;
+    }
+
+    const workbook = new ExcelJS.Workbook();
+    const usedSheetNames = new Set<string>();
+
+    const sectionLabels = this.questionService.getSections(questions).reduce(
+      (acc, section) => ({
+        ...acc,
+        [section]: section.replace(/-/g, ' ').replace(/\b\w/g, (l: string) => l.toUpperCase()),
+      }),
+      {} as Record<string, string>
+    );
+
+    const sections = this.questionService.getSections(questions);
+
+    for (const sectionId of sections) {
+      const sectionQuestions = this.questionService
+        .getQuestionsBySection(questions, sectionId)
+        .sort((a: Question, b: Question) => a.order - b.order);
+
+      const sectionLabel = sectionLabels[sectionId] ?? sectionId;
+      const baseName = this.sheetName(sectionLabel);
+      const uniqueName = this.uniqueSheetName(baseName, usedSheetNames);
+      const ws = workbook.addWorksheet(uniqueName, { views: [{ state: 'frozen', ySplit: 3 }] });
+
+      const colCount = Math.max(sectionQuestions.length, 1);
+
+      ws.mergeCells(1, 1, 1, colCount);
+
+      const title = ws.getCell(1, 1);
+      title.value = sectionLabel.toUpperCase();
+      title.font = { bold: true, color: { argb: 'FFFFFFFF' }, size: 14 };
+      title.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF2B2D42' } };
+      title.alignment = { horizontal: 'center', vertical: 'middle' };
+      ws.getRow(1).height = 28;
+
+      sectionQuestions.forEach((q: Question, i: number) => {
+        const c = i + 1;
+        const isBoolean = q.type === 'boolean';
+
+        ws.getCell(2, c).value = q.question;
+        ws.getCell(3, c).value = q.description ?? '';
+
+        ws.getColumn(c).width = Math.min(42, Math.max(20, Math.ceil((q.question?.length ?? 20) / 1.2)));
+
+        if (isBoolean) {
+          const cell = ws.getCell(4, c);
+          cell.dataValidation = {
+            type: 'list',
+            allowBlank: true,
+            formulae: ['"Yes,No"'],
+            showErrorMessage: true,
+            errorTitle: 'Invalid value',
+            error: 'Please select Yes or No.',
+          };
+        }
+      });
+
+      ;[2, 3, 4].forEach((r: number) => {
+        ws.getRow(r).eachCell({ includeEmpty: true }, (cell: any, col: number) => {
+          if (col > colCount) {
+            return;
+          }
+
+          cell.alignment = {
+            wrapText: true,
+            vertical: 'top',
+            horizontal: r === 2 ? 'center' : 'left',
+          };
+
+          cell.border = {
+            top: { style: 'thin', color: { argb: 'FFBDBDBD' } },
+            left: { style: 'thin', color: { argb: 'FFBDBDBD' } },
+            bottom: { style: 'thin', color: { argb: 'FFBDBDBD' } },
+            right: { style: 'thin', color: { argb: 'FFBDBDBD' } },
+          };
+        });
+      });
+
+      ws.getRow(2).font = { bold: true };
+      ws.getRow(2).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFBFE7E2' } };
+
+      ws.getRow(3).font = { italic: true, color: { argb: 'FF1F2937' } };
+      ws.getRow(3).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFF3F4F6' } };
+
+      ws.getRow(4).fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FFFFFFFF' } };
+
+      ws.autoFilter = { from: { row: 2, column: 1 }, to: { row: 2, column: colCount } };
+    }
+
+    const buffer = await workbook.xlsx.writeBuffer();
+    const blob = new Blob([buffer], {
+      type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    });
+
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `equiem-template-${new Date().toISOString().slice(0, 10)}.xlsx`;
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
+  onSubmit(): void {
+    this.goToManualForm();
+  }
+
+  /**
+   * Full question list for the current onboarding scope (module-selector sections or
+   * instance.selectedSections), in the same section order as the module selector.
+   * Used before parsing an upload so review lists every field — including empty modules.
+   */
+  private async resolveScopedQuestions(): Promise<Question[]> {
+    const allQuestions = await firstValueFrom(this.questionService.getQuestions());
+    const linkToken = this.route.snapshot.paramMap.get('linkToken');
+
+    let selectedSections: string[] = [];
+
+    if (linkToken) {
+      let instance = this.instance();
+      if (!instance) {
+        instance = await firstValueFrom(this.onboardingService.getPublicInstance(linkToken));
+        this.instance.set(instance);
+      }
+      selectedSections = instance?.selectedSections ?? [];
+    } else {
+      selectedSections = this.getSelectedSections();
+    }
+
+    return this.buildOrderedQuestionsForScope(allQuestions, selectedSections);
+  }
+
+  private buildOrderedQuestionsForScope(
+    allQuestions: Question[],
+    selectedSections: string[]
+  ): Question[] {
+    const filtered =
+      selectedSections.length > 0
+        ? allQuestions.filter((q: Question) => selectedSections.includes(q.sectionId))
+        : allQuestions;
+
+    const sectionIds = this.questionService.getSections(filtered);
+    const orderedSectionIds = this.reorderSectionsLikeModuleSelector(sectionIds);
+
+    const ordered: Question[] = [];
+    for (const sectionId of orderedSectionIds) {
+      ordered.push(
+        ...this.questionService
+          .getQuestionsBySection(filtered, sectionId)
+          .sort((a: Question, b: Question) => a.order - b.order)
+      );
+    }
+
+    return ordered;
+  }
+
+  private reorderSectionsLikeModuleSelector(sectionIds: string[]): string[] {
+    const building = sectionIds.filter(
+      (s) => s === 'building-setup' || s === 'residential-details'
+    );
+    const company = sectionIds.filter((s) => s === 'company-details');
+    const amenities = sectionIds.filter((s) => s.startsWith('amenity-'));
+    const used = new Set<string>([...building, ...company, ...amenities]);
+    const permitsToRequestManagement = sectionIds.filter((s) => !used.has(s));
+    return [...company, ...building, ...amenities, ...permitsToRequestManagement];
+  }
+
+  private loadQuestionsFromSelection(): void {
+    this.questionService.getQuestions().subscribe({
+      next: (allQuestions: Question[]) => {
+        const selected = this.getSelectedSections();
+        this.questions.set(this.buildOrderedQuestionsForScope(allQuestions, selected));
+        this.loading.set(false);
+      },
+      error: (err: unknown) => {
+        console.error('Failed to load questions:', err);
+        this.loading.set(false);
+      },
+    });
+  }
+
+  private async parseExcelTemplate(file: File): Promise<Record<string, unknown>> {
+    const workbook = new ExcelJS.Workbook();
+    const arrayBuffer = await file.arrayBuffer();
+    await workbook.xlsx.load(arrayBuffer);
+
+    const values: Record<string, unknown> = {};
+
+    workbook.worksheets.forEach((worksheet: any) => {
+      const sectionQuestions = this.getQuestionsForWorksheet(worksheet.name);
+
+      if (sectionQuestions.length === 0) {
+        return;
+      }
+
+      const headerRow = worksheet.getRow(2);
+      const dataRow = worksheet.getRow(4);
+
+      const maxColumns = Math.max(headerRow.cellCount, dataRow.cellCount);
+
+      for (let col = 1; col <= maxColumns; col++) {
+        const header = this.cellToString(headerRow.getCell(col).value).trim();
+        if (!header) {
+          continue;
+        }
+
+        const question = sectionQuestions.find((q: Question) => {
+          const byQuestion = this.normalizeText(q.question) === this.normalizeText(header);
+          const byId = this.normalizeText(q.id) === this.normalizeText(header);
+          return byQuestion || byId;
+        });
+
+        if (!question) {
+          continue;
+        }
+
+        const rawValue = this.cellToString(dataRow.getCell(col).value);
+        values[question.id] = this.normalizeParsedValue(question.type, rawValue);
+      }
+    });
+
+    return values;
+  }
+
+  private async parseCsvFile(file: File): Promise<Record<string, unknown>> {
+    const text = await file.text();
+    const lines = text
+      .split(/\r?\n/)
+      .map((line: string) => line.trim())
+      .filter(Boolean);
+
+    if (lines.length < 2) {
+      return {};
+    }
+
+    const headers = lines[0].split(',').map((item: string) => item.trim());
+    const firstDataRow = lines[1].split(',').map((item: string) => item.trim());
+
+    const values: Record<string, unknown> = {};
+
+    headers.forEach((header: string, index: number) => {
+      const question = this.findQuestionByHeader(header);
+      if (!question) {
+        return;
+      }
+
+      values[question.id] = this.normalizeParsedValue(question.type, firstDataRow[index] ?? '');
+    });
+
+    return values;
+  }
+
+  private collectTemplateReviewItems(values: Record<string, unknown>): ReviewIssue[] {
+    return this.questions().map((question: Question) => {
+      const value = values[question.id];
+      const error = this.validateQuestionValue(question.type, value);
+
+      return {
+        id: question.id,
+        label: question.question,
+        value,
+        type: question.type,
+        options: question.options ?? [],
+        error,
+        source: 'template',
+        section: question.sectionId,
+        row: 4,
+      };
+    });
+  }
+
+  private validateQuestionValue(type: QuestionType, value: unknown): string {
+    if (type === 'file') {
+      const textValue = value === null || value === undefined ? '' : String(value).trim();
+
+      if (!textValue) {
+        return 'Please provide at least one file reference.';
+      }
+
+      return '';
+    }
+
+    if (type === 'multi-select') {
+      if (!Array.isArray(value) || value.length === 0) {
+        return 'Please select at least one option.';
+      }
+      return '';
+    }
+
+    if (type === 'boolean') {
+      if (typeof value !== 'boolean') {
+        return 'Please choose Yes or No.';
+      }
+      return '';
+    }
+
+    const textValue = value === null || value === undefined ? '' : String(value).trim();
+
+    if (!textValue) {
+      return 'This field is required.';
+    }
+
+    if (type === 'integer' && !/^-?\d+$/.test(textValue)) {
+      return 'Please use whole numbers only.';
+    }
+
+    if (type === 'decimal' && !/^-?\d+([.,]\d+)?$/.test(textValue)) {
+      return 'Please enter a valid decimal number.';
+    }
+
+    if (type === 'time' && !/^([01]\d|2[0-3]):([0-5]\d)$/.test(textValue)) {
+      return 'Please enter the time in HH:MM format.';
+    }
+
+    if (type === 'date' && Number.isNaN(Date.parse(textValue))) {
+      return 'Please enter a valid date.';
+    }
+
+    return '';
+  }
+
+  private normalizeParsedValue(type: QuestionType, rawValue: string): unknown {
+    const value = rawValue.trim();
+
+    if (type === 'boolean') {
+      const normalized = value.toLowerCase();
+      if (['yes', 'true'].includes(normalized)) {
+        return true;
+      }
+      if (['no', 'false'].includes(normalized)) {
+        return false;
+      }
+      return value;
+    }
+
+    if (type === 'multi-select') {
+      if (!value) {
+        return [];
+      }
+
+      return value
+        .split(',')
+        .map((item: string) => item.trim())
+        .filter(Boolean);
+    }
+
+    if (type === 'file') {
+      return value;
+    }
+
+    return value;
+  }
+
+  private getQuestionsForWorksheet(sheetName: string): Question[] {
+    const normalizedSheetName = this.normalizeText(sheetName);
+
+    const questionsBySection = new Map<string, Question[]>();
+
+    for (const question of this.questions()) {
+      const current = questionsBySection.get(question.sectionId) ?? [];
+      current.push(question);
+      questionsBySection.set(question.sectionId, current);
+    }
+
+    for (const [sectionId, questions] of questionsBySection.entries()) {
+      const sectionLabel = sectionId
+        .replace(/-/g, ' ')
+        .replace(/\b\w/g, (letter: string) => letter.toUpperCase());
+
+      const possibleNames = [
+        this.normalizeText(sectionId),
+        this.normalizeText(sectionLabel),
+        this.normalizeText(this.sheetName(sectionLabel)),
+      ];
+
+      if (possibleNames.includes(normalizedSheetName)) {
+        return questions;
+      }
+    }
+
+    return [];
+  }
+
+  private findQuestionByHeader(header: string): Question | undefined {
+    const normalizedHeader = this.normalizeText(header);
+
+    return this.questions().find((q: Question) => {
+      const byQuestion = this.normalizeText(q.question) === normalizedHeader;
+      const byId = this.normalizeText(q.id) === normalizedHeader;
+      return byQuestion || byId;
+    });
+  }
+
+  private normalizeText(value: string): string {
+    return value.toLowerCase().replace(/\s+/g, ' ').trim();
+  }
+
+  private cellToString(value: any): string {
+    if (value === null || value === undefined) {
+      return '';
+    }
+
+    if (typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean') {
+      return String(value);
+    }
+
+    if (value instanceof Date) {
+      return value.toISOString().slice(0, 10);
+    }
+
+    if (typeof value === 'object' && 'text' in value) {
+      return String(value.text ?? '');
+    }
+
+    if (typeof value === 'object' && 'result' in value) {
+      return String(value.result ?? '');
+    }
+
+    return String(value);
+  }
+
+  private sheetName(label: string): string {
+    return label.replace(/[\\/?*[\]:]/g, '').slice(0, 31);
+  }
+
+  private uniqueSheetName(base: string, used: Set<string>): string {
+    let name = base || 'Sheet';
+    let index = 1;
+
+    while (used.has(name.toLowerCase())) {
+      const suffix = `-${index++}`;
+      name = `${base.slice(0, 31 - suffix.length)}${suffix}`;
+    }
+
+    used.add(name.toLowerCase());
+    return name;
   }
 
   private getSelectedSections(): string[] {

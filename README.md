@@ -34,6 +34,10 @@
 
 This project presents the Business Analysis and Requirements Specification for an onboarding intake platform aimed at optimizing customer onboarding within Equiem’s SaaS ecosystem. It documents the problem space, defines functional and non-functional requirements, and outlines an MVP-aligned solution focused on automating data collection, improving validation, and reducing operational friction in the onboarding lifecycle.
 
+## Link of Cloud Deploy on Render
+
+https://g05-frontend.onrender.com
+
 ## 📁 Project Structure
 
 This project follows a **Three-Tier Architecture (Presentation, Business, Data)** to ensure clear separation of concerns, maintainability, and scalability.
@@ -215,6 +219,57 @@ The exact dependency flow of the src/ directory is:
 ```
 Presentation Layer → Business Layer → Data Layer
 ```
+
+### ▶️ Running the Application Locally
+
+Follow the steps below to set up and run the application on your local machine. This project consists of two main parts:
+
+- Backend: Node.js + Express API
+
+- Frontend: Angular application
+
+Both services must be running for the system to work correctly.
+
+1. **Clone the repository (via HTTPS)**
+
+    ```
+    git clone https://git.inteli.edu.br/graduacao/2026-1a/t17/g05.git
+
+    cd g05
+    ```
+2. **Open a terminal and navigate to the project root:**
+   ```sh
+   cd C:/Users/Inteli/Documents/Github/M5/g05
+   ```
+
+3. **Start the backend (API) in one terminal:**
+   ```sh
+   npm run dev
+   ```
+   This will start the API at http://localhost:3000.
+
+4. **Open a second terminal and start the frontend (Angular):**
+   ```sh
+   cd src/presentation/web
+   npm start
+   ```
+   This will start the Angular app at http://localhost:4200.
+
+5. **(Required) Open a third terminal in the project root and start the worker:**
+   ```sh
+   npm run worker:upload
+   ```
+   This runs the background worker needed for processing uploads.
+
+**Note:**
+- All three processes (backend, frontend, and worker) must be running for the system to work correctly.
+- If you encounter issues, check that Node.js and Angular CLI are installed, and that ports 3000 and 4200 are available.
+
+### Running the Database
+
+- Install PostgreSQL and create a database (e.g., equiem_db).
+- Run 01_create_database.sql to create the schema.
+- Run 02_initial_data.sql to insert initial data.
 
 ## 🗃 Release History
 
