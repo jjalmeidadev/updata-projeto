@@ -35,6 +35,14 @@ export class InputMethodComponent implements OnInit {
   }
 
   choose(method: 'upload' | 'manual'): void {
-    this.router.navigate([method === 'upload' ? '/upload' : '/form']);
+    const linkToken = this.route.snapshot.paramMap.get('linkToken');
+    const nextSegment = method === 'upload' ? 'upload' : 'form';
+
+    if (linkToken) {
+      this.router.navigate(['/onboarding', linkToken, nextSegment]);
+      return;
+    }
+
+    this.router.navigate([`/${nextSegment}`]);
   }
 }

@@ -17,6 +17,7 @@ export const appConfig: ApplicationConfig = {
       authorizationParams: {
         redirect_uri: window.location.origin + '/login',
         audience: 'https://api.updata.com',
+        scope: 'openid profile email',
       },
       httpInterceptor: {
         allowedList: ['/api/*', 'http://localhost:3000/api/*'],

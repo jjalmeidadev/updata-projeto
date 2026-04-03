@@ -1,7 +1,11 @@
 import express from "express";
+import dotenv from "dotenv";
 import userRoutes from "./presentation/api/routes/user-routes.ts";
 import uploadRoutes from "./presentation/api/routes/upload-routes.ts";
 import onboardingInstanceRoutes from "./presentation/api/routes/onboarding-instance-routes.ts";
+
+// Load local env values (including AUTH0_*) before routes initialize.
+dotenv.config({ path: "config/.env" });
 
 const app = express();
 
