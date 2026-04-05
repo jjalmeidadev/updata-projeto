@@ -83,6 +83,32 @@
 - <a href="https://www.linkedin.com/in/filipe-gon%C3%A7alves-08a55015b/">Filipe Golçalves</a> 
 - <a href="https://www.linkedin.com/in/lisane-valdo/">Lisane Valdo</a>
 
+## 📑 Table of Contents
+
+- [📝 Description](#-description)
+- [☁️ Cloud Deployment](#link-of-cloud-deploy-on-render)
+- [📁 Project Structure](#-project-structure)
+  - [1. src](#1-src)
+    - [1.1 Presentation Layer](#11-presentation-layer)
+      - [1.1.1 web/](#111-web)
+      - [1.1.2 api/](#112-api)
+    - [1.2 Business Layer](#12-business-layer)
+    - [1.3 Data Layer](#13-data-layer)
+    - [1.4 Mock Layer](#14-mock-layer)
+    - [1.5 Configuration Layer](#15-configuration-layer)
+  - [2. tests/](#2-tests)
+  - [3. docs/](#3-docs)
+  - [4. config/](#4-config)
+  - [5. appendix-math/](#5-appendix-math)
+- [📛 Naming Conventions](#naming-conventions)
+- [🏗 Architectural Rationale](#architectural-rationale)
+- [▶️ Running the Application Locally](#️-running-the-application-locally)
+  - [Quick Start with Docker](#quick-start-with-docker-recommended)
+  - [Manual Local Development](#manual-local-development)
+  - [Resetting the Database](#resetting-the-database)
+- [🗃 Release History](#-release-history)
+- [📋 License](#-license)
+
 ## 📝 Description
 
 This project presents the Business Analysis and Requirements Specification for an onboarding intake platform aimed at optimizing customer onboarding within Equiem’s SaaS ecosystem. It documents the problem space, defines functional and non-functional requirements, and outlines an MVP-aligned solution focused on automating data collection, improving validation, and reducing operational friction in the onboarding lifecycle.
@@ -352,6 +378,56 @@ Presentation Layer → Business Layer → Data Layer
 
 Follow the steps below to run the full application on your machine.
 
+---
+
+### Quick Start with Docker (Recommended)
+
+### Prerequisites
+- Docker Desktop
+- Docker Compose
+
+1. **Clone and open the project root**
+
+```bash
+git clone https://git.inteli.edu.br/graduacao/2026-1a/t17/g05.git
+cd g05
+```
+
+2. **Configure environment variables**
+
+Create `config/.env` using `config/.env.example` as reference and fill all required values (`DB_*`, `AWS_*`, and optional `EQUIEM_*`).
+
+Important for this project:
+- You must set `AWS_SESSION_TOKEN=` in `config/.env`.
+- This project uses AWS Academy Lab (free learning environment), which provides temporary AWS credentials and some service limitations.
+- Because credentials are temporary, refresh `AWS_SESSION_TOKEN` when it expires.
+
+3. **Start the development stack**
+```sh
+npm run stage:up:dev
+```
+4. **Open the application**
+- http://localhost:4200/login
+
+5. **Run the upload worker** (required for upload/background flows). Open a separate terminal:
+```sh
+docker compose -f docker-compose.dev.yml exec backend npm run worker:upload
+```
+
+6. **Stop the containers**
+Only run this command after you are done using the system. This step stops and removes the containers that were started earlier.
+```sh
+docker compose -f docker-compose.dev.yml down
+```
+
+- Dev stack config: docker-compose.dev.yml
+- Production stack config: docker-compose.prod.yml
+- Helper scripts: package.json
+
+---
+
+### Manual Local Development
+
 Prerequisites:
 
   - Node.js (recommended LTS)
@@ -375,29 +451,33 @@ Prerequisites:
     npm install
     cd ../../..
    ```
-4. **Configure and start PostgreSQL**
-- Create a database (example: equiem_db)
+4. **Configure environment variables**
+
+- Create `config/.env` using `config/.env.example` as reference.
+- Set all required values (`DB_*`, `AWS_*`, and optional `EQUIEM_*`).
+- Required for upload and background processing: set `AWS_SESSION_TOKEN=`.
+- This value is mandatory because the project uses AWS Academy Lab, where credentials are temporary and must be renewed periodically.
+
+5. **Configure and start PostgreSQL**
+- Create a database matching `DB_DATABASE` from `config/.env`.
 - Run:
     - [01_create_database.sql](./src/data/database/01_create_database.sql)
     - [02_initial_data.sql](./src/data/database/02_initial_data.sql)
 
-5. **Start backend API (terminal 1, project root)**
+6. **Start backend API (terminal 1, project root)**
    ```sh
     npm run dev
    ```
-Backend will run at:
 
-- http://localhost:3000
-
-6. **Start Angular frontend (terminal 2)**
+7. **Start Angular frontend (terminal 2)**
    ```sh
    cd src/presentation/web
    npm start
    ```
 Frontend will run at:
-- http://localhost:4200
+- http://localhost:4200/login
 
-7. **Start upload worker (terminal 3, project root)**
+8. **Start upload worker (terminal 3, project root)**
 ```sh
 npm run worker:upload
 ```
