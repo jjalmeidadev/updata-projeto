@@ -233,8 +233,138 @@ describe("user-controllers", () => {
 
       // Empty string should be treated as undefined 
       expect(resolveUserNavigation).toHaveBeenCalledWith(
-        { sub: "auth0|6", name: undefined, email: "" },
+        { sub: "auth0|6", name: undefined, email: undefined },
         expect.any(String)
+      )
+      expect(res.status).toHaveBeenCalledWith(200)
+    })
+
+    it("reads namespaced custom claims for email and name", async () => {
+      vi.mocked(resolveUserNavigation).mockResolvedValue({
+        outcome: "company",
+        companyId: "12",
+      })
+
+      const req = {
+        auth: {
+          payload: {
+            sub: "auth0|namespaced",
+            "https://updata.app/email": "ns@company.com",
+            "https://updata.app/name": "Namespaced User",
+          },
+        },
+        headers: { "x-debug-trace-id": "trace-namespaced" },
+      } as unknown as Request
+      const res = mockRes()
+
+      await getPayload(req, res)
+
+      expect(resolveUserNavigation).toHaveBeenCalledWith(
+        {
+          sub: "auth0|namespaced",
+          name: "Namespaced User",
+          email: "ns@company.com",
+        },
+        "trace-namespaced"
+      )
+      expect(res.status).toHaveBeenCalledWith(200)
+      expect(res.json).toHaveBeenCalledWith(
+        expect.objectContaining({ next: "/company/12", traceId: "trace-namespaced" })
+      )
+    })
+
+    it("builds name from given_name and family_name when name claim is absent", async () => {
+      vi.mocked(resolveUserNavigation).mockResolvedValue({
+        outcome: "company",
+        companyId: "22",
+      })
+
+      const req = {
+        auth: {
+          payload: {
+            sub: "auth0|split-name",
+            given_name: "Jane",
+            family_name: "Doe",
+            email: "jane@company.com",
+          },
+        },
+        headers: { "x-debug-trace-id": "trace-split-name" },
+      } as unknown as Request
+      const res = mockRes()
+
+      await getPayload(req, res)
+
+      expect(resolveUserNavigation).toHaveBeenCalledWith(
+        {
+          sub: "auth0|split-name",
+          name: "Jane Doe",
+          email: "jane@company.com",
+        },
+        "trace-split-name"
+      )
+      expect(res.status).toHaveBeenCalledWith(200)
+    })
+
+    it("reads email from any namespaced claim suffix", async () => {
+      vi.mocked(resolveUserNavigation).mockResolvedValue({
+        outcome: "company",
+        companyId: "31",
+      })
+
+      const req = {
+        auth: {
+          payload: {
+            sub: "auth0|ns-any",
+            "https://example.org/custom/email": "suffix@company.com",
+            nickname: "Suffix User",
+          },
+        },
+        headers: { "x-debug-trace-id": "trace-ns-any" },
+      } as unknown as Request
+      const res = mockRes()
+
+      await getPayload(req, res)
+
+      expect(resolveUserNavigation).toHaveBeenCalledWith(
+        {
+          sub: "auth0|ns-any",
+          name: "Suffix User",
+          email: "suffix@company.com",
+        },
+        "trace-ns-any"
+      )
+      expect(res.status).toHaveBeenCalledWith(200)
+    })
+
+    it("uses x-profile-name header when token has no name claim", async () => {
+      vi.mocked(resolveUserNavigation).mockResolvedValue({
+        outcome: "company",
+        companyId: "41",
+      })
+
+      const req = {
+        auth: {
+          payload: {
+            sub: "auth0|header-name",
+            email: "header@company.com",
+          },
+        },
+        headers: {
+          "x-debug-trace-id": "trace-header-name",
+          "x-profile-name": "Header Profile Name",
+        },
+      } as unknown as Request
+      const res = mockRes()
+
+      await getPayload(req, res)
+
+      expect(resolveUserNavigation).toHaveBeenCalledWith(
+        {
+          sub: "auth0|header-name",
+          name: "Header Profile Name",
+          email: "header@company.com",
+        },
+        "trace-header-name"
       )
       expect(res.status).toHaveBeenCalledWith(200)
     })

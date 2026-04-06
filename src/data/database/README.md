@@ -138,7 +138,7 @@ These modifications ensure the database schema more accurately reflects the oper
 
 ## 4. SQL Scripts
 
-This directory contains two SQL scripts used to build and populate the database.
+This directory contains SQL scripts used to build, populate, and maintain the database.
 
 ### 4.1 01_create_database.sql
 
@@ -177,6 +177,20 @@ Example data may include:
 - configuration entries
 
 This script must be executed only after running `01_create_database.sql`.
+
+---
+
+### 4.3 03_fix_user_email_placeholders.sql
+
+This maintenance script updates invalid placeholder user emails created during early authentication integration.
+
+It performs the following operations:
+
+- Finds users with empty/placeholder emails (`''` or `EMPTY`)
+- Generates deterministic fallback emails from `auth0_id`
+- Avoids collisions by appending a short user-id suffix when needed
+
+Use this script in existing environments where old rows still have invalid emails.
 
 ---
 

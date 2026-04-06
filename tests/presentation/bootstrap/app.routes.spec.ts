@@ -11,6 +11,12 @@ describe('app.routes', () => {
     vi.resetModules()
 
     vi.doMock('@auth0/auth0-angular', () => ({ authGuardFn: 'guard' }))
+    vi.doMock('../../../src/presentation/web/src/app/guards/internal-user.guard', () => ({
+      internalUserGuard: 'internalGuard',
+    }))
+    vi.doMock('../../../src/presentation/web/src/app/guards/instance-link-auth.guard', () => ({
+      instanceLinkAuthGuard: 'instanceLinkGuard',
+    }))
 
     vi.doMock('../../../src/presentation/web/src/app/pages/login/login.component', () => ({ LoginComponent: class {} }))
     vi.doMock('../../../src/presentation/web/src/app/pages/signup/signup.component', () => ({ SignupComponent: class {} }))
@@ -31,6 +37,8 @@ describe('app.routes', () => {
       'onboarding-intro',
       'signup',
       'home',
+      'monitoring',
+      'company/:companyId',
       'form',
       'upload',
       'review',
@@ -44,6 +52,8 @@ describe('app.routes', () => {
     ]);
 
     expect(routes.find((r: RouteConfig) => r.path === '**')?.redirectTo).toBe('/login')
-    expect(routes.find((r: RouteConfig) => r.path === 'home')?.canActivate).toEqual(['guard'])
+    expect(routes.find((r: RouteConfig) => r.path === 'home')?.canActivate).toEqual(['guard', 'internalGuard'])
+    expect(routes.find((r: RouteConfig) => r.path === 'onboarding/:linkToken')?.canActivate).toEqual(['instanceLinkGuard'])
+    expect(routes.find((r: RouteConfig) => r.path === 'onboarding/:linkToken/form')?.canActivate).toEqual(['instanceLinkGuard'])
   });
 });

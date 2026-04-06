@@ -1895,9 +1895,18 @@ Auth0 provides identity services using **OAuth 2.0 and OpenID Connect protocols*
 
 When a user attempts to access the onboarding platform, the frontend redirects the authentication request to Auth0. After successful authentication, Auth0 returns a secure token used by the frontend to authenticate API requests.
 
-The backend validates authentication tokens using **JWT validation**, ensuring that only authorized users can access protected system endpoints.
+The backend validates authentication tokens using **JWT validation**, ensuring that only authorized users can access protected system endpoints. After token validation, the backend resolves user navigation through a protected endpoint that returns the appropriate next route according to the user context.
 
-This architecture eliminates the need to implement custom authentication mechanisms while maintaining a high level of security.
+The implemented authentication flow applies role-based navigation with two operational outcomes:
+
+- **Internal users** are routed to monitoring flows.
+- **External users** are routed to company/onboarding flows.
+
+Internal recognition is based on organizational email-domain rules and an explicit test allowlist used for controlled validation scenarios. This guarantees deterministic behavior for internal access during both production and test operations.
+
+For external contributors, the platform enforces an **instance-link-first** onboarding flow. Users entering via onboarding instance links must remain in tokenized instance routes throughout method selection and completion steps. The login process preserves the intended route and restores it after authentication, preventing redirection to internal-only paths.
+
+This architecture eliminates the need to implement custom authentication mechanisms while maintaining a high level of security, predictable role-based routing, and continuity for collaborative onboarding sessions.
 
 ### 25.9. Communication Protocols
 
