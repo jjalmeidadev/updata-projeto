@@ -35,6 +35,8 @@ describe('app.config', () => {
         domain: 'dev-e8hme66hgt4cf75n.us.auth0.com',
         authorizationParams: expect.objectContaining({
           redirect_uri: 'http://localhost:4200/login',
+          audience: 'https://api.updata.com',
+          scope: 'openid profile email',
         }),
       }),
     );

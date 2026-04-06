@@ -1,5 +1,13 @@
-import { findUser, createUser, findCompanyByDomain } from "../../data/repositories/user-repository.js"
+import {
+  findUser,
+  findUserByEmail,
+  createUser,
+  findCompanyByDomain,
+  linkUserToAuth0ByEmail,
+  updateUserByAuth0Id,
+} from "../../data/repositories/user-repository.js"
 import { UserEntity } from "../entities/user-entity.js"
+import { isInternalEmail } from "../../shared/auth-constants.js"
 
 interface AuthPayload {
   sub: string
@@ -22,6 +30,15 @@ interface UserNavigationResult {
   companyId?: string
 }
 
+function isInternalUserEmail(email: string): boolean {
+  return isInternalEmail(email)
+}
+
+function buildSyntheticEmailFromSub(sub: string): string {
+  const normalizedSub = sub.trim().toLowerCase().replace(/[^a-z0-9._-]+/g, "_")
+  return `${normalizedSub || "unknown_user"}@auth0.local`
+}
+
 // Ensures the authenticated user exists and is linked to a company when possible.
 
 async function checkUser(
@@ -37,36 +54,103 @@ async function checkUser(
   }
 
   const auth0Id = payload.sub
+  const nameFromToken = (payload.name || "").trim()
+  const emailFromToken = (payload.email || "").trim().toLowerCase()
+  const hasRealEmail = emailFromToken.length > 0
+  const resolvedEmail = hasRealEmail ? emailFromToken : buildSyntheticEmailFromSub(auth0Id)
 
   console.log(`[FLOW][${traceId}] service:find_user auth0Id=${auth0Id}`)
 
   const user = await findUser(auth0Id, traceId)
 
-  // Return early when user already exists.
   if (user) {
     console.log(`[FLOW][${traceId}] service:user_found userId=${user.user_id}`)
+
+    // Keep DB profile in sync when token now includes richer user attributes.
+    const currentEmail = (user.user_email || "").trim().toLowerCase()
+    const currentName = (user.user_name || "").trim().toLowerCase()
+    const shouldSyncName = nameFromToken.length > 0 && currentName !== nameFromToken.toLowerCase()
+    const shouldSyncEmail = hasRealEmail && currentEmail !== emailFromToken
+    const shouldSyncCompany = hasRealEmail && !user.company_id
+
+    if (shouldSyncName || shouldSyncEmail || shouldSyncCompany) {
+      let companyId: string | null = null
+
+      if (hasRealEmail && (shouldSyncEmail || shouldSyncCompany)) {
+        companyId = await findCompanyByDomain(
+          new UserEntity(payload.sub, payload.name || "", emailFromToken).getEmailDomain(),
+          traceId
+        )
+
+        console.log(`[FLOW][${traceId}] service:user_sync companyId=${companyId || "none"} emailChanged=${shouldSyncEmail} nameChanged=${shouldSyncName}`)
+      } else {
+        console.log(`[FLOW][${traceId}] service:user_sync companyLookupSkipped emailChanged=${shouldSyncEmail} nameChanged=${shouldSyncName}`)
+      }
+
+      const syncedUser = await updateUserByAuth0Id(
+        {
+          auth0_id: payload.sub,
+          name: nameFromToken,
+          email: shouldSyncEmail ? emailFromToken : currentEmail,
+          company_id: companyId || undefined,
+        },
+        traceId
+      )
+
+      if (syncedUser) {
+        console.log(`[FLOW][${traceId}] service:user_synced userId=${syncedUser.user_id}`)
+        return syncedUser
+      }
+    }
+
     return user
   }
 
-  const entity = new UserEntity(
-    payload.sub,
-    payload.name || "",
-    payload.email || ""
-  )
+  const companyId = hasRealEmail
+    ? await findCompanyByDomain(new UserEntity(payload.sub, payload.name || "", resolvedEmail).getEmailDomain(), traceId)
+    : null
 
-  const domain = entity.getEmailDomain()
+  if (hasRealEmail) {
+    console.log(`[FLOW][${traceId}] service:company_lookup companyId=${companyId || "none"}`)
+  } else {
+    console.log(`[FLOW][${traceId}] service:company_lookup skipped_missing_email syntheticEmail=${resolvedEmail}`)
+  }
 
-  console.log(`[FLOW][${traceId}] service:domain_resolved domain=${domain || "empty"}`)
+  // Reconcile pre-existing DB users by email before creating a new row.
+  const email = emailFromToken
 
-  const companyId = await findCompanyByDomain(domain, traceId)
+  if (email) {
+    const existingByEmail = await findUserByEmail(email, traceId)
 
-  console.log(`[FLOW][${traceId}] service:company_lookup companyId=${companyId || "none"}`)
+    if (existingByEmail) {
+      console.log(`[FLOW][${traceId}] service:user_found_by_email userId=${existingByEmail.user_id}`)
+
+      if (existingByEmail.auth0_id === auth0Id) {
+        return existingByEmail
+      }
+
+      const linkedUser = await linkUserToAuth0ByEmail(
+        {
+          auth0_id: payload.sub,
+          name: payload.name || "",
+          email,
+          company_id: companyId || undefined,
+        },
+        traceId
+      )
+
+      if (linkedUser) {
+        console.log(`[FLOW][${traceId}] service:user_linked_to_auth0 userId=${linkedUser.user_id}`)
+        return linkedUser
+      }
+    }
+  }
 
   // Create first-time user and link company by email domain.
   const newUser = await createUser({
     auth0_id: payload.sub,
     name: payload.name || "",
-    email: payload.email || "",
+    email: resolvedEmail,
     company_id: companyId || undefined
   }, traceId)
 
@@ -96,7 +180,7 @@ async function resolveUserNavigation(
 
   const email = user.user_email || ""
 
-  if (email.endsWith("@getequiem.com")) {
+  if (isInternalUserEmail(email)) {
     console.log(`[FLOW][${traceId}] service:navigation next=/monitoring`)
     return {
       outcome: "monitoring",

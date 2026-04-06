@@ -4,6 +4,11 @@
   "private": true,
   "type": "module",
   "scripts": {
+    "sync:auth-constants": "node scripts/sync-auth-constants.mjs",
+    "predev": "npm run sync:auth-constants",
+    "prestart": "npm run sync:auth-constants",
+    "pretest": "npm run sync:auth-constants",
+    "pretypecheck": "npm run sync:auth-constants",
     "dev": "tsx watch src/server.ts",
     "start": "tsx src/server.ts",
     "worker:upload": "tsx src/business/workers/upload-worker.ts",

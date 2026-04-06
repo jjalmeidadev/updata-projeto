@@ -24,6 +24,7 @@ describe('LoginComponent', () => {
 
   let authMock: {
     isAuthenticated$: Subject<boolean>;
+    user$: ReturnType<typeof of>;
     loginWithRedirect: ReturnType<typeof vi.fn>;
   };
 
@@ -47,6 +48,7 @@ describe('LoginComponent', () => {
 
     authMock = {
       isAuthenticated$: authState$,
+      user$: of({ name: 'Auth Profile Name' }),
       loginWithRedirect: vi.fn(),
     };
 
@@ -77,17 +79,49 @@ describe('LoginComponent', () => {
     TestBed.resetTestingModule();
   });
 
-  it('does not resolve user flow when URL is not an Auth0 callback', () => {
+  it('does not resolve user flow when user is not authenticated', () => {
     // Arrange
     setUrlSearch('');
+    httpMock.get.mockReturnValue(of({ next: '/company/7' }));
+
+    // Act
+    component.ngOnInit();
+    authState$.next(false);
+
+    // Assert
+    expect(httpMock.get).not.toHaveBeenCalled();
+    expect(routerMock.navigateByUrl).not.toHaveBeenCalled();
+  });
+
+  it('resolves user flow when already authenticated even without callback params', () => {
+    // Arrange
+    setUrlSearch('');
+    httpMock.get.mockReturnValue(of({ next: '/company/9' }));
 
     // Act
     component.ngOnInit();
     authState$.next(true);
 
     // Assert
+    expect(httpMock.get).toHaveBeenCalledWith('/api/users', expect.objectContaining({
+      headers: expect.anything(),
+    }));
+    expect(routerMock.navigateByUrl).toHaveBeenCalledWith('/company/9');
+  });
+
+  it('returns to stored onboarding link target after authentication', () => {
+    // Arrange
+    setUrlSearch('');
+    sessionStorage.setItem('post_login_link_target', '/onboarding/token-abc/form');
+
+    // Act
+    component.ngOnInit();
+    authState$.next(true);
+
+    // Assert
+    expect(routerMock.navigateByUrl).toHaveBeenCalledWith('/onboarding/token-abc/form');
     expect(httpMock.get).not.toHaveBeenCalled();
-    expect(routerMock.navigateByUrl).not.toHaveBeenCalled();
+    expect(sessionStorage.getItem('post_login_link_target')).toBeNull();
   });
 
   it('resolves user flow on callback and navigates to API next route', () => {
@@ -100,8 +134,23 @@ describe('LoginComponent', () => {
     authState$.next(true);
 
     // Assert
-    expect(httpMock.get).toHaveBeenCalledWith('/api/users');
+    expect(httpMock.get).toHaveBeenCalledWith('/api/users', expect.objectContaining({
+      headers: expect.anything(),
+    }));
     expect(routerMock.navigateByUrl).toHaveBeenCalledWith('/company/7');
+  });
+
+  it('navigates to /login when API responds with 401', () => {
+    // Arrange
+    setUrlSearch('?code=abc&state=xyz');
+    httpMock.get.mockReturnValue(throwError(() => ({ status: 401 })));
+
+    // Act
+    component.ngOnInit();
+    authState$.next(true);
+
+    // Assert
+    expect(routerMock.navigateByUrl).toHaveBeenCalledWith('/login');
   });
 
   it('navigates to /home when API returns empty next', () => {
@@ -117,7 +166,7 @@ describe('LoginComponent', () => {
     expect(routerMock.navigateByUrl).toHaveBeenCalledWith('/home');
   });
 
-  it('navigates to /home when API responds with 403', () => {
+  it('navigates to /onboarding-intro when API responds with 403', () => {
     // Arrange
     setUrlSearch('?code=abc&state=xyz');
     httpMock.get.mockReturnValue(throwError(() => ({ status: 403 })));
@@ -127,7 +176,39 @@ describe('LoginComponent', () => {
     authState$.next(true);
 
     // Assert
-    expect(routerMock.navigateByUrl).toHaveBeenCalledWith('/home');
+    expect(routerMock.navigateByUrl).toHaveBeenCalledWith('/onboarding-intro');
+  });
+
+  it('navigates to /monitoring when API responds with 403 for internal test email profile', async () => {
+    // Arrange
+    setUrlSearch('?code=abc&state=xyz');
+    httpMock.get.mockReturnValue(throwError(() => ({ status: 403 })));
+
+    authMock.user$ = of({
+      name: 'Yudi Test',
+      email: 'yudi@equiem.com',
+    });
+
+    TestBed.resetTestingModule();
+    await resolveAngularResources();
+    await TestBed.configureTestingModule({
+      imports: [LoginComponent],
+      providers: [
+        { provide: AuthService, useValue: authMock },
+        { provide: HttpClient, useValue: httpMock },
+        { provide: Router, useValue: routerMock },
+      ],
+    }).compileComponents();
+
+    const fixture = TestBed.createComponent(LoginComponent);
+    component = fixture.componentInstance;
+
+    // Act
+    component.ngOnInit();
+    authState$.next(true);
+
+    // Assert
+    expect(routerMock.navigateByUrl).toHaveBeenCalledWith('/monitoring');
   });
 
   it('navigates to /signup when API responds with 404', () => {
@@ -164,7 +245,12 @@ describe('LoginComponent', () => {
     component.login();
 
     // Assert
-    expect(authMock.loginWithRedirect).toHaveBeenCalled();
+    expect(authMock.loginWithRedirect).toHaveBeenCalledWith({
+      authorizationParams: {
+        audience: 'https://api.updata.com',
+        scope: 'openid profile email',
+      },
+    });
   });
 
   it('calls loginWithRedirect with Google connection on loginWithGoogle()', () => {
@@ -176,7 +262,11 @@ describe('LoginComponent', () => {
 
     // Assert
     expect(authMock.loginWithRedirect).toHaveBeenCalledWith({
-      authorizationParams: { connection: 'google-oauth2' },
+      authorizationParams: {
+        audience: 'https://api.updata.com',
+        scope: 'openid profile email',
+        connection: 'google-oauth2',
+      },
     });
   });
 
@@ -190,6 +280,8 @@ describe('LoginComponent', () => {
     // Assert
     expect(authMock.loginWithRedirect).toHaveBeenCalledWith({
       authorizationParams: {
+        audience: 'https://api.updata.com',
+        scope: 'openid profile email',
         screen_hint: 'signup',
         prompt: 'login',
       },
