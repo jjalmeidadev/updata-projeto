@@ -297,13 +297,13 @@ The provided SQL scripts allow the entire database to be recreated and populated
 
 ---
 
-## 10. Sprint 3 Updates (27 de março de 2026) ⭐
+## 10. Sprint 3 Updates (March 27, 2026)
 
-### 10.1 Novas Tabelas & Melhorias
+### 10.1 New Tables & Improvements
 
-#### ✅ Tabela Nova: `processing_chunk`
+#### New Table: `processing_chunk`
 
-Adicionada para suportar processamento paralelo de chunks durante Stage 2 do onboarding.
+Added to support parallel chunk processing during Stage 2 of onboarding.
 
 ```sql
 CREATE TABLE equiem.processing_chunk (
@@ -322,11 +322,11 @@ CREATE TABLE equiem.processing_chunk (
 );
 ```
 
-**Propósito:** Permite que chunks sejam processados em paralelo (via Worker), com retry automático até 3x.
+**Purpose:** Allows chunks to be processed in parallel (via Worker), with automatic retry up to 3 times.
 
-#### ✅ Constraints Reforçadas
+#### Strengthened Constraints :
 
-Adicionadas `NOT NULL` em colunas críticas de `onboarding_batch`:
+Add `NOT NULL` contraints to critical columns of `onboarding_batch`:
 
 ```sql
 ALTER TABLE equiem.onboarding_batch 
@@ -337,28 +337,28 @@ ALTER TABLE equiem.onboarding_batch
   ALTER COLUMN s3_key SET NOT NULL;
 ```
 
-**Propósito:** Garantir integridade de dados e rastreabilidade (trace_id).
+**Purpose:** Ensure data integrity and traceability (trace_id).
 
-#### ✅ Índices de Performance (13 novos)
+#### Performance Indexes (13 new)
 
-Adicionados índices para otimizar queries frequentes:
+Indexes added to optimize frequent queries:
 
 ```sql
--- Rastreamento
+-- Tracking
 CREATE INDEX idx_onboarding_batch_trace_id ON equiem.onboarding_batch(trace_id);
 CREATE INDEX idx_onboarding_batch_status ON equiem.onboarding_batch(status);
 CREATE INDEX idx_onboarding_batch_created_at ON equiem.onboarding_batch(created_at);
 
--- Processamento de payloads
+-- Payload processing
 CREATE INDEX idx_onboarding_payload_batch_id ON equiem.onboarding_payload(batch_id);
 CREATE INDEX idx_onboarding_payload_entity_type ON equiem.onboarding_payload(entity_type);
 CREATE INDEX idx_onboarding_payload_is_valid ON equiem.onboarding_payload(is_valid);
 
--- Mapeamentos
+-- Mappings
 CREATE INDEX idx_onboarding_mapping_entity_external ON equiem.onboarding_mapping(external_id);
 CREATE INDEX idx_onboarding_mapping_internal_id ON equiem.onboarding_mapping(internal_id);
 
--- Jobs assíncronos
+-- Async jobs
 CREATE INDEX idx_processing_job_batch_id ON equiem.processing_job(batch_id);
 CREATE INDEX idx_processing_job_status ON equiem.processing_job(status);
 CREATE INDEX idx_processing_chunk_batch_status ON equiem.processing_chunk(batch_id, status);
@@ -370,48 +370,48 @@ CREATE INDEX idx_onboarding_instance_company_id ON equiem.onboarding_instance(co
 CREATE INDEX idx_onboarding_instance_status ON equiem.onboarding_instance(status);
 ```
 
-**Impacto:** Queries como `SELECT * FROM processing_chunk WHERE status = 'PENDING' ORDER BY chunk_index` passam de O(n) para O(log n).
+**Impact:** Queries such as `SELECT * FROM processing_chunk WHERE status = 'PENDING' ORDER BY chunk_index` move from O(n) to O(log n).
 
-### 10.2 Migrações & Versionamento
+### 10.2 Migrations & Versioning
 
-Arquivo de versionamento: `database-modif.md` (ver conteúdo para changelog completo)
+Versioning file: `database-modif.md` (see content for full changelog)
 
-Padrão de nomenclatura:
-- `01_create_database.sql` → Schema inicial
+Naming convention:
+- `01_create_database.sql` → Initial Schema
 - `02_initial_data.sql` → Bootstrap
-- `03_rollback.sql` → ⭐ NOVO: Reverter tudo
-- `04_migration_V2.sql` → (Futuro) Sprint 4+
+- `03_rollback.sql` → New: Full rollback
+- `04_migration_V2.sql` → (Futur) Sprint 4+
 
-### 10.3 Rollback & Recuperação
+### 10.3 Rollback & Recovery
 
-Script de rollback disponível em: **`03_rollback.sql`**
+Rollback script available at: **`03_rollback.sql`**
 
-Executar em case de emergência:
+Execute in case of emergency:
 
 ```bash
-# Backup primeiro!
+# Backup first!
 pg_dump -d equiem > backup-before-rollback-$(date +%s).sql
 
 # Rollback
 psql -d equiem < 03_rollback.sql
 
-# Validar
+# Validate
 psql -d equiem -c "SELECT COUNT(*) FROM pg_indexes WHERE schemaname = 'equiem';"
-# Esperado: 0 ou índices antigos (antes do Sprint 3)
+# Expected: 0 or legacy indexes (before Sprint 3)
 ```
 
-### 10.4 Monitoramento & Diagnostics
+### 10.4 Monitoring & Diagnostics
 
-#### Validar Índices Foram Criados
+#### Validate Index Creation
 
 ```bash
 psql -d equiem -c "
   SELECT COUNT(*) FROM pg_indexes WHERE schemaname = 'equiem';
 "
-# Esperado: 23+ índices
+# Expected: 23+ indexes
 ```
 
-#### Verificar Tamanho do Banco
+#### Check Database Size
 
 ```bash
 psql -d equiem -c "
@@ -422,7 +422,7 @@ psql -d equiem -c "
 "
 ```
 
-#### Auditar uma Requisição Completa
+#### Audit a Full Request
 
 ```bash
 psql -d equiem -c "
@@ -444,44 +444,45 @@ psql -d equiem -c "
 "
 ```
 
-### 10.5 Data Dictionary Completo
+### 10.5 Complete Data Dictionary
 
-Documentação detalhada disponível em: **`data-dictionary.md`** ⭐ NOVO
+Detailed documentation available at: **`data-dictionary.md`**
 
-Inclui:
-- Descrição de cada tabela
-- Tipos de dados, constraints, defaults
-- Relacionamentos e cardinalidades
-- Exemplos de JSON para JSONB
-- ENUMs disponíveis
-- Estratégia de índices
+Includes:
 
-### 10.6 Deployment Checklist para Sprint 3
+- Description of each table
+- Data types, constraints, defaults
+- Relationships and cardinalities
+- JSONB examples
+- Available ENUMs
+- Index strategy
 
-- [ ] Executar `01_create_database.sql`
-- [ ] Executar `02_initial_data.sql`
-- [ ] Validar contagem de tabelas: `SELECT COUNT(*) FROM information_schema.tables WHERE table_schema = 'equiem'` → Esperado: 18+
-- [ ] Validar contagem de índices: `SELECT COUNT(*) FROM pg_indexes WHERE schemaname = 'equiem'` → Esperado: 23+
-- [ ] Testar rastreamento: `SELECT * FROM equiem.onboarding_batch LIMIT 1`
-- [ ] Testar chunks: `SELECT * FROM equiem.processing_chunk LIMIT 1`
-- [ ] Confirmar backend consegue se conectar: `npm run db:validate` (se script existir)
+### 10.6 Sprint 3 Deployment Checklist
+
+- [ ] Run `01_create_database.sql`
+- [ ] Run `02_initial_data.sql`
+- [ ] Validate table count : `SELECT COUNT(*) FROM information_schema.tables WHERE table_schema = 'equiem'` → Expected: 18+
+- [ ] Validate index count: `SELECT COUNT(*) FROM pg_indexes WHERE schemaname = 'equiem'` → Expected: 23+
+- [ ] Test tracking: `SELECT * FROM equiem.onboarding_batch LIMIT 1`
+- [ ] Test chunking: `SELECT * FROM equiem.processing_chunk LIMIT 1`
+- [ ] Confirm backend connectivity: `npm run db:validate` (if script exists)
 
 ### 10.7 Performance Improvements
 
-| Operação | Antes | Depois |
+| Operation | Before | After |
 |----------|-------|--------|
-| Busca por trace_id | O(n) full scan | O(log n) index |
+| Search by trace_id | O(n) full scan | O(log n) index |
 | Job polling (`status='PENDING'`) | O(n) | O(log n) |
-| Listar chunks ativos | O(n) | O(log n) com composite index |
-| Validar duplicatas (internal_id) | O(n) | O(log n) |
+| List active chunks | O(n) | O(log n) with composite index |
+| duplicate validation (internal_id) | O(n) | O(log n) |
 
-**Redução esperada:** 50-70% em query times para operações de onboarding.
+**Expected reduction:** 50–70% reduction in query times for onboarding operations.
 
 ---
 
-## 11. Recursos Relacionados
+## 11. Related Resources
 
-- **Data Dictionary Completo:** [data-dictionary.md](./data-dictionary.md)
+- **Complete Data Dictionary:** [data-dictionary.md](./data-dictionary.md)
 - **Rollback Script:** [03_rollback.sql](./03_rollback.sql)
 - **Database Design:** [docs/database-design.md](../../docs/database-design.md)
 - **Changelog:** [database-modif.md](./database-modif.md)
@@ -489,6 +490,7 @@ Inclui:
 
 ---
 
-**Última revisão:** 27 de março de 2026  
-**Status:** ✅ Sprint 3 completo | 📋 Sprint 4 preparado  
-**Próxima revisão:** Fim de Sprint 4
+**Last review:** March 27, 2026
+
+**Status:** Sprint 3 completed | Sprint 4 prepared  
+**Next review:** End of Sprint 4
