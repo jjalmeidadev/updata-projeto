@@ -14,6 +14,13 @@ export const handleUpload = async (
   try {
 
     const file = req.file
+    const linkTokenHeader = req.headers["x-onboarding-link-token"]
+    const linkTokenFromHeader = typeof linkTokenHeader === "string" ? linkTokenHeader.trim() : ""
+    const linkTokenFromBody = typeof req.body?.linkToken === "string" ? req.body.linkToken.trim() : ""
+    const linkToken = linkTokenFromBody || linkTokenFromHeader || undefined
+
+    const companyNameHeader = req.headers["x-onboarding-company-name"]
+    const companyName = typeof companyNameHeader === "string" ? companyNameHeader.trim() : undefined
 
     if (!file) {
       return res.status(400).json({
@@ -22,7 +29,7 @@ export const handleUpload = async (
       })
     }
 
-    const result = await processUploadFile(file, traceId)
+    const result = await processUploadFile(file, traceId, { linkToken, companyName })
 
     return res.json({
       redirect: "/form",
