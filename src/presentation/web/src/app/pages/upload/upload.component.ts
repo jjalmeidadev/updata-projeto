@@ -109,6 +109,9 @@ export class UploadComponent implements OnInit {
           ? await this.parseCsvFile(file)
           : await this.parseExcelTemplate(file);
 
+      const companyName = this.instance()?.companyName;
+      await firstValueFrom(this.onboardingService.uploadFile(file, linkToken ?? undefined, companyName ?? undefined));
+
       const reviewItems = this.collectTemplateReviewItems(parsedValues);
 
       sessionStorage.setItem(UPLOADED_DATA_KEY, JSON.stringify(parsedValues));
