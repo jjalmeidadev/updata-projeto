@@ -1,6 +1,7 @@
 # Environment files
 .env
 .env.*
+!*.env.example
 config/.env
 
 # Node dependencies and logs

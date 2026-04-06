@@ -53,20 +53,32 @@ The system must:
 - Workers are responsible for asynchronous processing.
 - GraphQL operations must be isolated in dedicated modules.
 
-### Required Folder Structure (Backend)
+### Required Folder Structure 
 
 ```
 │
-├── src/
-│ ├── presentation/
-│ ├── business/
-│ ├── data/
-│ └── mock-api/
-|
-├── tests/
-├── docs/
 ├── config/
-└── README.md
+│ ├── .env
+│ └── .env.example
+├── docs/
+├── src/
+│ ├── business/
+│ ├── config/
+│ ├── data/
+│ ├── mock-api/
+│ ├── presentation/
+│ └── server.ts
+│
+├── tests/
+├── docker-compose.dev.yml
+├── docker-compose.prod.yml
+├── Dockerfile.dev
+├── Dockerfile.prod
+├── package-lock.json
+├── package.json
+├── README.md
+├── tsconfig.json
+└── vitest.config.ts
 
 ```
 
