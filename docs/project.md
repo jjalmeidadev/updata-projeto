@@ -1964,6 +1964,20 @@ Furthermore, the system enables parallel onboarding processes. Multiple customer
 
 Overall, these mechanisms are expected to reduce onboarding cycle time and operational overhead, particularly by decreasing manual file handling and version reconciliation. As a result, onboarding specialists can focus more on exception handling and client coordination rather than manual data cleansing. In practical terms, the system should enable faster transitions from submission to configuration readiness, lower marginal effort per record, and clearer operational visibility through monitored queues, worker health, and system performance metrics.
 
+### 26.2. Sustainability and Alignment with the 2030 Agenda
+
+The **2030 Agenda** frames sustainable development through five dimensions: **People**, **Planet**, **Prosperity**, **Peace**, and **Partnerships** (United Nations, 2015). Each dimension below states the **type of contribution** (*direct*, *indirect*, or *limited relevance*) and justifies it using this project’s scope.
+
+**People: *direct (moderate) and indirect.*** The solution **directly** improves **clarity and task structure** for customer administrators and internal analysts through guided data entry, visible progress status, and collaborative assignment mechanisms (Sections 9–10, FR10–FR11; usability discussion in Section 21). Furthermore, it facilitates inclusive collaboration by enabling distributed contributors to complete their assigned sections independently rather than relying on fragmented e-mail exchanges. The contribution is **moderate** because it targets a **specific workflow**, not broad labour-market policy.
+
+**Planet: *indirect (limited).*** The solution does not directly address environmental indicators such as building energy consumption or emissions. Its environmental relevance is therefore **indirect**, mainly through the **streamlining of digital workflows**, which reduces fragmented data exchanges and repetitive correction cycles. By consolidating onboarding activities into a structured and validated process, the system improves operational efficiency and reduces unnecessary computational and coordination overhead.
+
+**Prosperity: *direct.*** Faster, more reliable onboarding **accelerates time-to-value** for customers and improves **productivity** of Equiem teams, consistent with Section **8** (product goal) and **SDG-aligned** economic efficiency themes developed in §26.3.
+
+**Peace: *indirect (institutional).*** In the sense of **stability and trust**, the architecture contributes **indirectly** through **HTTPS**, **JWT validation** (Section **25.8**), traceable batches/jobs, and security-related NFRs (Section **17**), reducing disputes rooted in **ambiguity or unauthorised access**. The project does **not** address geopolitical conflict.
+
+**Partnerships: *direct.*** Multi-party onboarding and integrations with **identity and cloud providers** exemplify **collaborative delivery** (Sections **25.8–25.9**). Direct value lies in **aligned actors** operating on **shared artefacts** rather than disconnected e-mail chains
+
 
 --- 
 
