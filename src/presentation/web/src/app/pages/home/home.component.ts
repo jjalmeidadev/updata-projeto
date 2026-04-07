@@ -61,6 +61,10 @@ export class HomeComponent implements OnInit {
     this.router.navigate(['/module-selector']);
   }
 
+  goToEquiemReview(): void {
+  this.router.navigate(['/equiem-review']);
+}
+
   openOnboarding(instance: OnboardingInstance): void {
     this.router.navigate(['/onboarding', instance.linkToken]);
   }

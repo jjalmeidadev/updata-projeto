@@ -9,6 +9,20 @@
   color: #363640;
 }
 
+.equiem-review-btn {
+  background-color: #4f46e5;
+  color: white;
+  border: none;
+  padding: 10px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  margin-bottom: 16px;
+}
+
+.equiem-review-btn:hover {
+  background-color: #4338ca;
+}
+
 .background-svg {
   position: absolute;
   right: -150px;

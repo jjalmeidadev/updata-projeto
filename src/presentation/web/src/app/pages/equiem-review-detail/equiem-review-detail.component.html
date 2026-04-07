@@ -1,0 +1,63 @@
+<div class="home-container">
+  <header class="navbar">
+    <h2>Equiem Review Detail</h2>
+  </header>
+
+  <section class="content">
+    <div class="home-panel">
+
+      @if (loading()) {
+        <p class="subtitle">Loading...</p>
+      } @else if (!instance()) {
+        <p class="subtitle">Onboarding not found.</p>
+      } @else {
+        <div class="home-header">
+          <div>
+            <h1>{{ instance()!.companyName }}</h1>
+            <p class="subtitle">
+              Review the submitted onboarding data before approving or rejecting it.
+            </p>
+          </div>
+        </div>
+
+        @if (feedback()) {
+          <p class="subtitle">{{ feedback() }}</p>
+        }
+
+        <div class="table-wrapper">
+          <table class="company-table">
+            <thead>
+              <tr>
+                <th>Field</th>
+                <th>Value</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (entry of entries(instance()!.formData); track entry[0]) {
+                <tr>
+                  <td class="company-name">{{ entry[0] }}</td>
+                  <td>{{ entry[1] }}</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+
+        <div class="actions-row">
+          <button class="icon-btn" type="button" (click)="router.navigate(['/equiem-review'])">
+            Back
+          </button>
+
+          <button class="start-btn" type="button" (click)="approve()">
+            Approve
+          </button>
+
+          <button class="details-btn" type="button" (click)="reject()">
+            Reject
+          </button>
+        </div>
+      }
+
+    </div>
+  </section>
+</div>

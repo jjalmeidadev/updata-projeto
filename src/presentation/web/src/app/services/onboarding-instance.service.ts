@@ -95,4 +95,18 @@ export class OnboardingInstanceService {
       {}
     );
   }
+
+approveInstance(linkToken: string) {
+  return this.http.post<OnboardingInstance>(
+    `/api/onboarding-instances/${linkToken}/approve`,
+    {}
+  );
+}
+
+rejectInstance(linkToken: string, reason: string) {
+  return this.http.post<OnboardingInstance>(
+    `/api/onboarding-instances/${linkToken}/reject`,
+    { reason }
+  );
+}
 }
