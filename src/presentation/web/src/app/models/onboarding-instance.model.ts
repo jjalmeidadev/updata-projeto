@@ -35,6 +35,7 @@ export interface CreateOnboardingResponse {
   reusedExistingInstance: boolean;
   reuseRule: string;
 }
+
 export type OnboardingStatus =
   | 'draft'
   | 'in_progress'
@@ -59,4 +60,15 @@ export interface OnboardingInstance {
   completedAt: string | null;
   createdAt: string;
   updatedAt: string;
+}
+
+export interface ReviewDataItem {
+  rowNumber: number;
+  rawData: Record<string, unknown>;
+}
+
+export interface OnboardingReviewData {
+  linkToken: string;
+  batchId: string | null;
+  items: ReviewDataItem[];
 }

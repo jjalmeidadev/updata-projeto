@@ -2,6 +2,7 @@ import { CommonModule } from '@angular/common';
 import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
+import { OnboardingInstanceService } from '../../services/onboarding-instance.service';
 
 type ReviewFieldType =
   | 'text'
@@ -67,6 +68,7 @@ const REVIEW_CORRECTIONS_KEY = 'reviewCorrections';
 export class ReviewComponentsComponent implements OnInit {
   private readonly router = inject(Router);
   private readonly route = inject(ActivatedRoute);
+  private readonly onboardingService = inject(OnboardingInstanceService);
 
   readonly issues = signal<ReviewIssue[]>([]);
   readonly pageMessage = signal<string | null>(null);
@@ -149,25 +151,74 @@ export class ReviewComponentsComponent implements OnInit {
 
     if (loadedIssues.length === 0) {
       const linkToken = this.route.snapshot.paramMap.get('linkToken');
-      const queryParams = {
-        fromReview: true,
-        fromUpload: loadedSource === 'template',
-        autoSubmit: true,
-      };
-      const state = {
-        reviewSource: loadedSource,
-        autoSubmit: true,
-      };
 
       if (!linkToken) {
-        this.router.navigate(['/form'], { queryParams, state });
+        this.navigateBackToForm(loadedSource);
         return;
       }
 
-      this.router.navigate(['/onboarding', linkToken, 'form'], { queryParams, state });
+      this.onboardingService.getPublicReviewData(linkToken).subscribe({
+        next: (payload) => {
+          const apiIssues = this.buildIssuesFromApiRows(payload.items ?? []);
+
+          if (apiIssues.length === 0) {
+            this.navigateBackToForm(loadedSource, linkToken);
+            return;
+          }
+
+          this.source.set('template');
+          this.issues.set(apiIssues);
+          sessionStorage.setItem(
+            REVIEW_STATE_KEY,
+            JSON.stringify({
+              source: 'template',
+              issues: apiIssues,
+            })
+          );
+          this.focusFirstInvalidSection();
+        },
+        error: () => {
+          this.navigateBackToForm(loadedSource, linkToken);
+        },
+      });
       return;
     }
 
+    this.focusFirstInvalidSection();
+  }
+
+  private buildIssuesFromApiRows(rows: Array<{ rowNumber: number; rawData: Record<string, unknown> }>): ReviewIssue[] {
+    const issues: ReviewIssue[] = [];
+
+    for (const row of rows) {
+      const entries = Object.entries(row.rawData || {});
+
+      for (const [key, rawValue] of entries) {
+        const value = rawValue === null || rawValue === undefined ? '' : String(rawValue);
+        const error = this.validateValue(value, 'text', []);
+
+        if (!error) {
+          continue;
+        }
+
+        issues.push({
+          id: `${row.rowNumber}-${key}`,
+          label: key,
+          value,
+          type: 'text',
+          options: [],
+          error,
+          source: 'template',
+          section: 'general',
+          row: row.rowNumber,
+        });
+      }
+    }
+
+    return issues;
+  }
+
+  private focusFirstInvalidSection(): void {
     const firstInvalidSectionIndex = this.groupedSections().findIndex(
       (group: ReviewSectionGroup) => group.invalidCount > 0
     );
@@ -175,6 +226,25 @@ export class ReviewComponentsComponent implements OnInit {
     if (firstInvalidSectionIndex >= 0) {
       this.currentSectionIndex.set(firstInvalidSectionIndex);
     }
+  }
+
+  private navigateBackToForm(source: ReviewSource, linkToken?: string): void {
+    const queryParams = {
+      fromReview: true,
+      fromUpload: source === 'template',
+      autoSubmit: true,
+    };
+    const state = {
+      reviewSource: source,
+      autoSubmit: true,
+    };
+
+    if (!linkToken) {
+      this.router.navigate(['/form'], { queryParams, state });
+      return;
+    }
+
+    this.router.navigate(['/onboarding', linkToken, 'form'], { queryParams, state });
   }
 
   formatSectionLabel(section: string): string {

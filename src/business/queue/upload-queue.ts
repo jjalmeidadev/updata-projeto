@@ -18,6 +18,7 @@ interface Stage1Payload {
   traceId: string
   s3Key: string
   fileName: string
+  linkToken?: string
 }
 
 interface Stage2ChunkPayload {
@@ -76,7 +77,7 @@ async function sendEnvelope<T>(queueUrl: string, envelope: QueueEnvelope<T>, ret
 }
 
 async function enqueueStage1UploadJob(
-  metadata: { s3Key: string; fileName: string },
+  metadata: { s3Key: string; fileName: string; linkToken?: string },
   traceId = "no-trace"
 ): Promise<void> {
   const queueUrl = getEnv("AWS_SQS_QUEUE_URL")
@@ -90,6 +91,7 @@ async function enqueueStage1UploadJob(
     traceId,
     s3Key: metadata.s3Key,
     fileName: metadata.fileName,
+    linkToken: metadata.linkToken,
   }
 
   const envelope: QueueEnvelope<Stage1Payload> = {
@@ -119,6 +121,7 @@ async function enqueueStage2ChunkJob(message: Stage2ChunkPayload): Promise<void>
     type: "upload.stage2.chunk",
     emittedAt: new Date().toISOString(),
     traceId: message.traceId,
+    payload: message,
     retryAttempt: 0,
     retryDeadline: new Date(Date.now() + 600000).toISOString(), // 10 min deadline
   }
@@ -130,7 +133,7 @@ async function enqueueStage2ChunkJob(message: Stage2ChunkPayload): Promise<void>
 
 // Compatibilidade com o controller atual
 async function enqueueUploadJob(
-  metadata: { s3Key: string; fileName: string },
+  metadata: { s3Key: string; fileName: string; linkToken?: string },
   traceId = "no-trace"
 ): Promise<void> {
   await enqueueStage1UploadJob(metadata, traceId)

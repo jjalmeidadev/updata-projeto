@@ -5,6 +5,7 @@ import {
   completeEquiemReviewHandler,
   createOnboardingInstanceHandler,
   getOnboardingByLinkHandler,
+  getOnboardingReviewDataHandler,
   listCompaniesHandler,
   listOnboardingInstancesHandler,
   saveOnboardingProgressHandler,
@@ -24,6 +25,7 @@ router.post("/api/onboarding-instances", createOnboardingInstanceHandler)
 router.post("/api/onboarding-instances/:linkToken/review/complete", onboardingAuth, completeEquiemReviewHandler)
 
 router.get("/api/public/onboarding/:linkToken", getOnboardingByLinkHandler)
+router.get("/api/public/onboarding/:linkToken/review-data", getOnboardingReviewDataHandler)
 router.patch("/api/public/onboarding/:linkToken/progress", saveOnboardingProgressHandler)
 router.post("/api/public/onboarding/:linkToken/submit", submitOnboardingHandler)
 

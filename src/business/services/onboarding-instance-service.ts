@@ -1,4 +1,6 @@
 import crypto from "node:crypto"
+import { GetObjectCommand } from "@aws-sdk/client-s3"
+import { s3Client } from "../../config/aws-clients.js"
 import {
   createOnboardingInstance,
   findCompanyByName,
@@ -9,7 +11,12 @@ import {
   OnboardingInstanceRecord,
   updateOnboardingInstance,
 } from "../../data/repositories/onboarding-instance-repository.js"
-import { buildOnboardingEmailDraft } from "./onboarding-email-service.js"
+import {
+  buildOnboardingEmailDraft,
+  sendOnboardingSubmissionMessageToAdmins,
+} from "./onboarding-email-service.js"
+
+import { findOnboardingBatchById } from "../../data/repositories/onboarding-repository.js"
 
 interface CreateOnboardingInstanceInput {
   companyName: string
@@ -25,6 +32,15 @@ interface SaveOnboardingProgressInput {
 
 interface ReviewDecisionInput {
   linkToken: string
+}
+
+interface SnapshotReviewItem {
+  rowNumber: number
+  rawData: Record<string, unknown>
+}
+
+interface S3ReviewSnapshot {
+  items?: SnapshotReviewItem[]
 }
 
 function normalizeSections(sections: string[]): string[] {
@@ -126,6 +142,70 @@ async function getOnboardingInstanceByLink(linkToken: string, baseUrl: string) {
   return mapInstance(record, baseUrl)
 }
 
+async function getOnboardingReviewDataByLink(linkToken: string) {
+  const record = await findOnboardingInstanceByLinkToken(linkToken)
+
+  if (!record) {
+    return null
+  }
+
+  if (!record.batch_id) {
+    return {
+      linkToken: record.link_token,
+      batchId: null,
+      items: [],
+    }
+  }
+
+  const batch = await findOnboardingBatchById(record.batch_id)
+  const bucketName = (globalThis as { process?: { env?: Record<string, string | undefined> } }).process?.env
+    ?.AWS_S3_BUCKET
+
+  if (!batch || !bucketName) {
+    return {
+      linkToken: record.link_token,
+      batchId: record.batch_id,
+      items: [],
+    }
+  }
+
+  const snapshotKey = `${batch.s3Key}.parsed.json`
+  let items: SnapshotReviewItem[] = []
+
+  try {
+    const response = await s3Client.send(
+      new GetObjectCommand({
+        Bucket: bucketName,
+        Key: snapshotKey,
+      })
+    )
+
+    const snapshotRaw = await response.Body?.transformToString()
+
+    if (snapshotRaw) {
+      const parsed = JSON.parse(snapshotRaw) as S3ReviewSnapshot
+      items = Array.isArray(parsed.items)
+        ? parsed.items.filter(
+            (item): item is SnapshotReviewItem =>
+              Boolean(item && typeof item.rowNumber === "number" && typeof item.rawData === "object" && item.rawData)
+          )
+        : []
+    }
+  } catch (error) {
+    const errorName = (error as { name?: string })?.name
+
+    if (errorName !== "NoSuchKey") {
+      console.error("getOnboardingReviewDataByLink:s3_snapshot_read_error", error)
+    }
+  }
+
+  return {
+    linkToken: record.link_token,
+    batchId: record.batch_id,
+    items,
+  }
+}
+
 async function saveOnboardingProgress(input: SaveOnboardingProgressInput, baseUrl: string) {
   const record = await findOnboardingInstanceByLinkToken(input.linkToken)
 
@@ -162,7 +242,28 @@ async function submitOnboarding(linkToken: string, formData: Record<string, unkn
     submittedAt: new Date().toISOString(),
   })
 
-  return updated ? mapInstance(updated, baseUrl) : null
+  if (!updated) {
+    return null
+  }
+
+  const notificationResult = await sendOnboardingSubmissionMessageToAdmins({
+    companyName: updated.company_name,
+    onboardingLink: toPublicLink(baseUrl, updated.link_token),
+    selectedSections: updated.selected_sections,
+    submittedAt: updated.submitted_at ?? new Date().toISOString(),
+  })
+
+  const mergedPayload = {
+    ...(updated.email_payload ?? {}),
+    adminSubmissionMessage: notificationResult,
+  }
+
+  const withNotification = await updateOnboardingInstance(updated.id, {
+    emailStatus: notificationResult.sent ? "admin_submission_message_sent" : "admin_submission_message_failed",
+    emailPayload: mergedPayload,
+  })
+
+  return mapInstance(withNotification ?? updated, baseUrl)
 }
 
 async function completeEquiemReview(input: ReviewDecisionInput, baseUrl: string) {
@@ -188,6 +289,7 @@ export {
   getCompanies,
   getDashboardInstances,
   getOnboardingInstanceByLink,
+  getOnboardingReviewDataByLink,
   saveOnboardingProgress,
   submitOnboarding,
   completeEquiemReview,

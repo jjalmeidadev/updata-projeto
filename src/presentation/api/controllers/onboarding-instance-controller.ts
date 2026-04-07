@@ -5,6 +5,7 @@ import {
   getCompanies,
   getDashboardInstances,
   getOnboardingInstanceByLink,
+  getOnboardingReviewDataByLink,
   saveOnboardingProgress,
   submitOnboarding,
 } from "../../../business/services/onboarding-instance-service.js"
@@ -83,6 +84,22 @@ export async function getOnboardingByLinkHandler(req: Request, res: Response): P
   } catch (error) {
     console.error("getOnboardingByLinkHandler", error)
     return res.status(500).json({ error: "Failed to load onboarding instance" })
+  }
+}
+
+export async function getOnboardingReviewDataHandler(req: Request, res: Response): Promise<Response> {
+  try {
+    const linkToken = String(req.params["linkToken"] || "")
+    const reviewData = await getOnboardingReviewDataByLink(linkToken)
+
+    if (!reviewData) {
+      return res.status(404).json({ error: "Onboarding instance not found" })
+    }
+
+    return res.status(200).json(reviewData)
+  } catch (error) {
+    console.error("getOnboardingReviewDataHandler", error)
+    return res.status(500).json({ error: "Failed to load onboarding review data" })
   }
 }
 

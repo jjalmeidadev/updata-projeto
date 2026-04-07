@@ -19,7 +19,7 @@ interface OnboardingPayloadInput {
   entityType: string
   rawData: Record<string, unknown>
   isValid: boolean
-  validationErrors: string[]
+  validationErrors: unknown[]
 }
 
 interface OnboardingMappingInput {
@@ -45,6 +45,11 @@ interface ChunkSummary {
 interface BatchRawRow {
   rowNumber: number
   rawData: Record<string, unknown>
+}
+
+interface OnboardingBatchLookup {
+  id: string
+  s3Key: string
 }
 
 async function createOnboardingBatch(input: BatchCreateInput): Promise<string> {
@@ -301,6 +306,27 @@ async function listBatchRawRows(batchId: string): Promise<BatchRawRow[]> {
   }))
 }
 
+async function findOnboardingBatchById(batchId: string): Promise<OnboardingBatchLookup | null> {
+  const query = `
+    SELECT id, s3_key
+    FROM equiem.onboarding_batch
+    WHERE id = $1
+    LIMIT 1
+  `
+
+  const result = await pool.query(query, [batchId])
+  const row = result.rows[0] as { id: string; s3_key: string } | undefined
+
+  if (!row) {
+    return null
+  }
+
+  return {
+    id: row.id,
+    s3Key: row.s3_key,
+  }
+}
+
 export {
   createOnboardingBatch,
   updateOnboardingBatchStatus,
@@ -317,4 +343,5 @@ export {
   getChunkSummary,
   markBatchAsFinalizing,
   listBatchRawRows,
+  findOnboardingBatchById,
 }
