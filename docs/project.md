@@ -1954,6 +1954,8 @@ All external communications use HTTPS to ensure encrypted data transmission.
 
 This section examines the expected impact of the proposed onboarding automation system from both an operational and sustainability perspective. It outlines how the solution improves Equiem’s onboarding process and analyses the project in relation to the Sustainable Development Goals (SDGs) of the United Nations 2030 Agenda (United Nations, 2015), considering its potential contributions across the dimensions of People, Planet, Prosperity, Peace, and Partnerships, and its connection to the broader Smart Cities paradigm supported by digital infrastructure and PropTech innovation.
 
+Bibliographic references for sources cited in Section 26 are listed under **References** at the end of this document.
+
 ### 26.1. Operational Impact
 
 Section 2 describes Equiem’s current onboarding process, in which customer-specific data are collected and reviewed through decentralized e-mail and spreadsheet-based workflows. As a result, this approach often leads to inconsistencies, rework, and delays across stakeholders and time zones. To address these limitations, the proposed solution introduces a single structured onboarding channel that combines guided data capture, automated validation at submission (FR01–FR04, FR08), progress persistence (FR07), and asynchronous processing through message queues and background workers (Section 25).  
@@ -2411,3 +2413,20 @@ Based on the benchmark results, regression analysis, and optimization derivation
 This configuration provides a balanced level of parallelism while maintaining manageable memory usage and minimizing database contention.
 
 Future deployments may refine this configuration as additional production data becomes available, but the analytical model provides a strong initial guideline for system tuning.
+
+---
+
+
+## References
+
+Batty, M., Axhausen, K. W., Giannotti, F., Pozdnoukhov, A., Bazzani, A., Wachowicz, M., Ouzounis, G., & Portugali, Y. (2012). Smart cities of the future. *The European Physical Journal Special Topics*, *214*(1), 481–518. https://doi.org/10.1140/epjst/e2012-01703-3
+
+Organisation for Economic Co-operation and Development. (2020). *Digital government in Chile: Improving public service design and user experience*. OECD Publishing. https://doi.org/10.1787/b94582e8-en
+
+United Nations. (2015). *Transforming our world: The 2030 Agenda for Sustainable Development* (General Assembly Resolution A/RES/70/1). United Nations. https://sdgs.un.org/2030agenda
+
+United Nations Human Settlements Programme. (2022). *World cities report 2022: Envisioning the future of cities*. UN-Habitat. https://unhabitat.org/wcr2022
+
+United Nations Statistics Division. (n.d.). *Global SDG indicators database*. United Nations Department of Economic and Social Affairs. Retrieved March 30, 2026, from https://unstats.un.org/sdgs/dataportal
+
+World Economic Forum. (2022). *Data for the city of tomorrow: Developing the capabilities and capacity to guide better urban futures*. World Economic Forum. https://www.weforum.org/publications/data-for-the-city-of-tomorrow-developing-the-capabilities-and-capacity-to-guide-better-urban-futures/
