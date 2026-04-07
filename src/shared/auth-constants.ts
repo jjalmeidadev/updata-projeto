@@ -11,6 +11,7 @@ export const AUTH_ROLE_EXTERNAL = 'external';
 export const INTERNAL_TEST_EMAILS = new Set([
   'yudi@equiem.com',
   'jaime.almeida@sou.inteli.edu.br',
+  'owenpsail2963@gmail.com'
 ]);
 
 function normalizeEmail(email: string): string {

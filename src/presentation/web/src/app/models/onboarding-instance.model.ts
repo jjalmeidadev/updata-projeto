@@ -3,7 +3,7 @@ export interface OnboardingInstance {
   companyId: string | null;
   companyName: string;
   selectedSections: string[];
-  status: 'draft' | 'in_progress' | 'equiem_review' | 'completed' | string;
+  status: OnboardingStatus;
   progressPercent: number;
   linkToken: string;
   linkUrl: string;
@@ -34,4 +34,29 @@ export interface CreateOnboardingResponse {
   instance: OnboardingInstance;
   reusedExistingInstance: boolean;
   reuseRule: string;
+}
+export type OnboardingStatus =
+  | 'draft'
+  | 'in_progress'
+  | 'equiem_review'
+  | 'completed'
+  | 'rejected';
+
+export interface OnboardingInstance {
+  id: string;
+  companyId: string | null;
+  companyName: string;
+  selectedSections: string[];
+  status: OnboardingStatus;
+  progressPercent: number;
+  linkToken: string;
+  linkUrl: string;
+  formData: Record<string, unknown>;
+  emailStatus: string;
+  emailPayload: Record<string, unknown> | null;
+  submittedAt: string | null;
+  reviewedAt: string | null;
+  completedAt: string | null;
+  createdAt: string;
+  updatedAt: string;
 }

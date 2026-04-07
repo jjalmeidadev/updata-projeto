@@ -1,0 +1,96 @@
+<div class="home-container">
+
+  <header class="navbar">
+    <h2>Equiem Review</h2>
+  </header>
+
+  <section class="content">
+    <div class="home-panel">
+
+      <div class="home-header">
+        <div>
+          <h1>Onboarding waiting for review</h1>
+          <p class="subtitle">
+            Validate or reject submitted onboarding processes.
+          </p>
+        </div>
+      </div>
+
+      <p *ngIf="feedback()" class="subtitle">
+        {{ feedback() }}
+      </p>
+
+      <div class="table-wrapper">
+
+        <table class="company-table">
+
+          <thead>
+            <tr>
+              <th>Company</th>
+              <th>Submitted</th>
+              <th>Status</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+
+          <tbody>
+
+            <tr *ngIf="loading()">
+              <td colspan="4">Loading...</td>
+            </tr>
+
+            <tr *ngFor="let instance of instances()">
+
+              <td class="company-name">
+                {{ instance.companyName }}
+              </td>
+
+              <td>
+                {{ instance.submittedAt || 'N/A' }}
+              </td>
+
+              <td>
+                <span class="status-pill status-review">
+                  Equiem review
+                </span>
+              </td>
+
+              <td class="actions-cell">
+
+                <button
+                  class="icon-btn"
+                  (click)="open(instance)">
+                  Review
+                </button>
+
+                <button
+                  class="start-btn"
+                  (click)="approve(instance)">
+                  Approve
+                </button>
+
+                <button
+                  class="details-btn"
+                  (click)="reject(instance)">
+                  Reject
+                </button>
+
+              </td>
+
+            </tr>
+
+            <tr *ngIf="!loading() && !instances().length">
+              <td colspan="4">
+                No onboarding waiting for review.
+              </td>
+            </tr>
+
+          </tbody>
+
+        </table>
+
+      </div>
+
+    </div>
+  </section>
+</div>

@@ -1,29 +1,46 @@
-import { describe, expect, it, vi } from 'vitest';
 import { of } from 'rxjs';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 
 describe('internal-user.guard', () => {
-  it('allows @getequiem.com users', async () => {
+  beforeEach(() => {
     vi.resetModules();
+    vi.clearAllMocks();
+    sessionStorage.clear();
+  });
 
+  it('allows Equiem domain email', async () => {
     const createUrlTree = vi.fn(() => ({ redirected: true }));
     const routerMock = { createUrlTree };
-    const authMock = { user$: of({ email: 'internal@getequiem.com' }) };
+    const authMock = { user$: of({ email: 'jaime.almeida@getequiem.com' }) };
 
-    vi.doMock('@angular/core', () => ({
-      inject: (token: unknown) => {
-        const key = String(token);
-        if (key.includes('AuthService')) return authMock;
-        if (key.includes('Router')) return routerMock;
-        return undefined;
-      },
+    vi.doMock('@auth0/auth0-angular', () => ({
+      AuthService: class AuthService {},
     }));
 
-    vi.doMock('@auth0/auth0-angular', () => ({ AuthService: class AuthService {} }));
-    vi.doMock('@angular/router', () => ({ Router: class Router {} }));
+    vi.doMock('@angular/router', async () => {
+      const actual = await vi.importActual<typeof import('@angular/router')>('@angular/router');
+      return {
+        ...actual,
+        Router: class Router {},
+      };
+    });
 
-    const { internalUserGuard } = await import('../../../src/presentation/web/src/app/guards/internal-user.guard.ts');
+    vi.doMock('@angular/core', async () => {
+      const actual = await vi.importActual<typeof import('@angular/core')>('@angular/core');
+      return {
+        ...actual,
+        inject: (token: unknown) => {
+          if ((token as { name?: string })?.name === 'AuthService') return authMock;
+          if ((token as { name?: string })?.name === 'Router') return routerMock;
+          return null;
+        },
+      };
+    });
+
+    const { internalUserGuard } = await import('../../../src/presentation/web/src/app/guards/internal-user.guard');
+
     const value = await new Promise<unknown>((resolve) => {
-      const result$ = internalUserGuard() as any;
+      const result$ = internalUserGuard({} as any, { url: '/review' } as any) as any;
       result$.subscribe((v: unknown) => resolve(v));
     });
 
@@ -31,28 +48,39 @@ describe('internal-user.guard', () => {
     expect(createUrlTree).not.toHaveBeenCalled();
   });
 
-  it('allows test admin email yudi@equiem.com', async () => {
-    vi.resetModules();
-
+  it('allows internal test email', async () => {
     const createUrlTree = vi.fn(() => ({ redirected: true }));
     const routerMock = { createUrlTree };
     const authMock = { user$: of({ email: 'yudi@equiem.com' }) };
 
-    vi.doMock('@angular/core', () => ({
-      inject: (token: unknown) => {
-        const key = String(token);
-        if (key.includes('AuthService')) return authMock;
-        if (key.includes('Router')) return routerMock;
-        return undefined;
-      },
+    vi.doMock('@auth0/auth0-angular', () => ({
+      AuthService: class AuthService {},
     }));
 
-    vi.doMock('@auth0/auth0-angular', () => ({ AuthService: class AuthService {} }));
-    vi.doMock('@angular/router', () => ({ Router: class Router {} }));
+    vi.doMock('@angular/router', async () => {
+      const actual = await vi.importActual<typeof import('@angular/router')>('@angular/router');
+      return {
+        ...actual,
+        Router: class Router {},
+      };
+    });
 
-    const { internalUserGuard } = await import('../../../src/presentation/web/src/app/guards/internal-user.guard.ts');
+    vi.doMock('@angular/core', async () => {
+      const actual = await vi.importActual<typeof import('@angular/core')>('@angular/core');
+      return {
+        ...actual,
+        inject: (token: unknown) => {
+          if ((token as { name?: string })?.name === 'AuthService') return authMock;
+          if ((token as { name?: string })?.name === 'Router') return routerMock;
+          return null;
+        },
+      };
+    });
+
+    const { internalUserGuard } = await import('../../../src/presentation/web/src/app/guards/internal-user.guard');
+
     const value = await new Promise<unknown>((resolve) => {
-      const result$ = internalUserGuard() as any;
+      const result$ = internalUserGuard({} as any, { url: '/review' } as any) as any;
       result$.subscribe((v: unknown) => resolve(v));
     });
 
@@ -60,33 +88,86 @@ describe('internal-user.guard', () => {
     expect(createUrlTree).not.toHaveBeenCalled();
   });
 
-  it('redirects other emails to onboarding-intro', async () => {
-    vi.resetModules();
+  it('allows stored internal role', async () => {
+    sessionStorage.setItem('resolved_auth_role', 'internal');
 
-    const redirectedTree = { redirected: true };
-    const createUrlTree = vi.fn(() => redirectedTree);
+    const createUrlTree = vi.fn(() => ({ redirected: true }));
     const routerMock = { createUrlTree };
-    const authMock = { user$: of({ email: 'external@client.com' }) };
+    const authMock = { user$: of({ email: 'external@gmail.com' }) };
 
-    vi.doMock('@angular/core', () => ({
-      inject: (token: unknown) => {
-        const key = String(token);
-        if (key.includes('AuthService')) return authMock;
-        if (key.includes('Router')) return routerMock;
-        return undefined;
-      },
+    vi.doMock('@auth0/auth0-angular', () => ({
+      AuthService: class AuthService {},
     }));
 
-    vi.doMock('@auth0/auth0-angular', () => ({ AuthService: class AuthService {} }));
-    vi.doMock('@angular/router', () => ({ Router: class Router {} }));
+    vi.doMock('@angular/router', async () => {
+      const actual = await vi.importActual<typeof import('@angular/router')>('@angular/router');
+      return {
+        ...actual,
+        Router: class Router {},
+      };
+    });
 
-    const { internalUserGuard } = await import('../../../src/presentation/web/src/app/guards/internal-user.guard.ts');
+    vi.doMock('@angular/core', async () => {
+      const actual = await vi.importActual<typeof import('@angular/core')>('@angular/core');
+      return {
+        ...actual,
+        inject: (token: unknown) => {
+          if ((token as { name?: string })?.name === 'AuthService') return authMock;
+          if ((token as { name?: string })?.name === 'Router') return routerMock;
+          return null;
+        },
+      };
+    });
+
+    const { internalUserGuard } = await import('../../../src/presentation/web/src/app/guards/internal-user.guard');
+
     const value = await new Promise<unknown>((resolve) => {
-      const result$ = internalUserGuard() as any;
+      const result$ = internalUserGuard({} as any, { url: '/review' } as any) as any;
       result$.subscribe((v: unknown) => resolve(v));
     });
 
+    expect(value).toBe(true);
+    expect(createUrlTree).not.toHaveBeenCalled();
+  });
+
+  it('redirects external user to onboarding-intro', async () => {
+    const redirectedTree = { redirected: true };
+    const createUrlTree = vi.fn(() => redirectedTree);
+    const routerMock = { createUrlTree };
+    const authMock = { user$: of({ email: 'external@gmail.com' }) };
+
+    vi.doMock('@auth0/auth0-angular', () => ({
+      AuthService: class AuthService {},
+    }));
+
+    vi.doMock('@angular/router', async () => {
+      const actual = await vi.importActual<typeof import('@angular/router')>('@angular/router');
+      return {
+        ...actual,
+        Router: class Router {},
+      };
+    });
+
+    vi.doMock('@angular/core', async () => {
+      const actual = await vi.importActual<typeof import('@angular/core')>('@angular/core');
+      return {
+        ...actual,
+        inject: (token: unknown) => {
+          if ((token as { name?: string })?.name === 'AuthService') return authMock;
+          if ((token as { name?: string })?.name === 'Router') return routerMock;
+          return null;
+        },
+      };
+    });
+
+    const { internalUserGuard } = await import('../../../src/presentation/web/src/app/guards/internal-user.guard');
+
+    const value = await new Promise<unknown>((resolve) => {
+      const result$ = internalUserGuard({} as any, { url: '/review' } as any) as any;
+      result$.subscribe((v: unknown) => resolve(v));
+    });
+
+    expect(value).toEqual(redirectedTree);
     expect(createUrlTree).toHaveBeenCalledWith(['/onboarding-intro']);
-    expect(value).toBe(redirectedTree);
   });
 });

@@ -122,6 +122,13 @@
         <span class="avatar"><span>{{ userInitials$ | async }}</span></span>
       </button>
 
+      <button
+  class="equiem-review-btn"
+  (click)="goToEquiemReview()"
+>
+  Equiem Review
+</button>
+
       <div *ngIf="profileMenuOpen" class="profile-menu" role="menu">
         <div class="profile-menu-header">
           <div class="profile-menu-label">Account</div>
