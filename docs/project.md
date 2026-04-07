@@ -1954,6 +1954,17 @@ All external communications use HTTPS to ensure encrypted data transmission.
 
 This section examines the expected impact of the proposed onboarding automation system from both an operational and sustainability perspective. It outlines how the solution improves Equiem’s onboarding process and analyses the project in relation to the Sustainable Development Goals (SDGs) of the United Nations 2030 Agenda (United Nations, 2015), considering its potential contributions across the dimensions of People, Planet, Prosperity, Peace, and Partnerships, and its connection to the broader Smart Cities paradigm supported by digital infrastructure and PropTech innovation.
 
+### 26.1. Operational Impact
+
+Section 2 describes Equiem’s current onboarding process, in which customer-specific data are collected and reviewed through decentralized e-mail and spreadsheet-based workflows. As a result, this approach often leads to inconsistencies, rework, and delays across stakeholders and time zones. To address these limitations, the proposed solution introduces a single structured onboarding channel that combines guided data capture, automated validation at submission (FR01–FR04, FR08), progress persistence (FR07), and asynchronous processing through message queues and background workers (Section 25).  
+
+In this context, data collection and validation are handled through upload and mapping pipelines, supported by schema validation and business-rule checks, which allow potential issues to be identified before the data is consumed in downstream configuration processes (Sections 16–17). Consequently, the process reduces reliance on iterative e-mail exchanges and helps improve data quality while minimizing human error.
+
+Furthermore, the system enables parallel onboarding processes. Multiple customer-side contributors can collaborate through shared workflows and task assignments (FR10), while the backend infrastructure can process workloads from multiple clients simultaneously within infrastructure limits (NFR05; Sections 25.5–25.6). At the same time, scalability is supported through asynchronous processing with Amazon SQS and a distributed architecture involving containerized APIs, worker services, and a managed database (Section 25).
+
+Overall, these mechanisms are expected to reduce onboarding cycle time and operational overhead, particularly by decreasing manual file handling and version reconciliation. As a result, onboarding specialists can focus more on exception handling and client coordination rather than manual data cleansing. In practical terms, the system should enable faster transitions from submission to configuration readiness, lower marginal effort per record, and clearer operational visibility through monitored queues, worker health, and system performance metrics.
+
+
 --- 
 
 ## Appendix A: System Configuration and Optimization Report
