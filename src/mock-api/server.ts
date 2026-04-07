@@ -1,3 +1,14 @@
+/**
+ * Mock Equiem API (Express)
+ *
+ * Purpose:
+ * - Simulate the external Equiem integration during local development and testing.
+ * - Receive onboarding intake payloads from the worker.
+ * - Validate the payload structure by entity type.
+ * - Return a response that behaves like the external API, so the app can be tested safely without calling production.
+ 
+*/
+
 import express, { Request, Response } from "express"
 import { randomUUID } from "crypto"
 
@@ -58,7 +69,7 @@ const validators: Record<string, (record: EquiemRecord) => ValidationResult> = {
     if (!data.timezone || typeof data.timezone !== "string") {
       errors.push("Site: missing or invalid 'timezone' (e.g., Australia/Melbourne)")
     }
-    if (!data.customerId && typeof data.customerId !== "string") {
+    if (!data.customerId || typeof data.customerId !== "string") {
       errors.push("Site: missing or invalid 'customerId'")
     }
 
@@ -293,7 +304,7 @@ app.post("/users", (req: Request, res: Response) => {
     emailVerified: true,
     status: "active",
     userType: "commercial",
-    memberSince: new Date().toISOString(), // Gerado automaticamente
+    memberSince: new Date().toISOString(), 
     auth0Id: `auth0|${randomUUID()}`,
   })
 })
