@@ -266,13 +266,9 @@ Simulated Equiem API used for safe integration testing.
 
 ```
 mock-api/
-├── resolvers/
-├── schema/
 └── server.ts
 ```
 
-- **schema/** – API type definitions that simulate the external Equiem structure.
-- **resolvers/** –  Mock implementation logic for queries and mutations.
 - **server.ts** – Local mock server bootstrap.
 
 ### 1.5. Configuration Layer
