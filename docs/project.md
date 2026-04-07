@@ -1992,6 +1992,14 @@ The **primary SDGs** most relevant to this **PropTech onboarding** system are **
 
 Together, **digital infrastructure and automation** (SDG 9) within a **PropTech service context** connect improved **work processes** (SDG 8) with the **operational readiness of urban digital services** in the built environment (SDG 11).
 
+### 26.4. Relationship with the Smart Cities Concept
+
+The **Smart Cities** concept treats **data and digital infrastructure** as key enablers of **urban service quality** (Batty et al., 2012; UN-Habitat, 2022). Within this context, **PropTech platforms** operate between **buildings**, **operators**, and **occupants**, supporting the digital services that manage modern workplaces. For these services to function reliably, systems must begin with **trustworthy master data at the moment of system configuration (go-live)**.
+
+In practice, **building management platforms depend on correct configuration data**. The **digital onboarding infrastructure** introduced in this project ensures that data entering operational systems is **validated and structured before use**, preventing errors from propagating into building operations. At the same time, **scalable data processing**, implemented through background workers and benchmarked workloads (Appendix A), allows the system to support **large urban property portfolios** without requiring proportional increases in staffing.
+
+Together, these mechanisms contribute to **more reliable digital services in the built environment**, supporting the broader vision of **smarter urban systems**, while recognising that this module does **not** directly address city-scale infrastructures such as transport or utilities.
+
 
 --- 
 
