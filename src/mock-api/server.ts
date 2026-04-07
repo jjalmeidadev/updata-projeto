@@ -179,10 +179,6 @@ const validators: Record<string, (record: EquiemRecord) => ValidationResult> = {
       errors.push("User: missing or invalid 'email'")
     }
 
-    // memberSince: gerado automaticamente (hoje)
-    // uuid: gerado automaticamente
-    // auth0Id: pode vir ou é gerado
-
     return {
       valid: errors.length === 0,
       errors,
@@ -270,7 +266,7 @@ app.post("/onboarding/intake", (req: Request, res: Response) => {
   })
 })
 
-// Endpoints individuais para testes (opcional)
+
 app.post("/customers", (req: Request, res: Response) => {
   const { name, region } = req.body
   if (!name || !region) {
