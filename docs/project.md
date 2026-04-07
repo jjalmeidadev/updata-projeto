@@ -1950,6 +1950,12 @@ All external communications use HTTPS to ensure encrypted data transmission.
 - Using managed AWS infrastructure also provides additional security mechanisms, including network isolation, access policies, and infrastructure-level protections.
 --- 
 
+## 26. SDGs (Sustainable Development Goals) and Impact
+
+This section examines the expected impact of the proposed onboarding automation system from both an operational and sustainability perspective. It outlines how the solution improves Equiem’s onboarding process and analyses the project in relation to the Sustainable Development Goals (SDGs) of the United Nations 2030 Agenda (United Nations, 2015), considering its potential contributions across the dimensions of People, Planet, Prosperity, Peace, and Partnerships, and its connection to the broader Smart Cities paradigm supported by digital infrastructure and PropTech innovation.
+
+--- 
+
 ## Appendix A: System Configuration and Optimization Report
 
 This appendix determines the optimal configuration for two critical parameters of the system:
