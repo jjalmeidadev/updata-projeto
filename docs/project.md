@@ -116,7 +116,14 @@
     - [25.11. Performance Considerations](#2511-performance-considerations)
     - [25.12. Security Considerations](#2512-security-considerations)
     - [Appendix A: System Configuration and Optimization Report](#appendix-a-system-configuration-and-optimization-report)
-
+  - [26. SDGs (Sustainable Development Goals) and Impact](#26-sdgs-sustainable-development-goals-and-impact)
+    - [26.1. Operational Impact](#261-operational-impact)
+    - [26.2. Sustainability and Alignment with the 2030 Agenda](#262-sustainability-and-alignment-with-the-2030-agenda)
+    - [26.3. Priority Sustainable Development Goals](#263-priority-sustainable-development-goals)
+    - [26.4. Relationship with the Smart Cities Concept](#264-relationship-with-the-smart-cities-concept)
+    - [26.5. Evidence, Expected Impacts and Practical Implications](#265-evidence-expected-impacts-and-practical-implications)
+  - [Appendix A: System Configuration and Optimization Report](#appendix-a-system-configuration-and-optimization-report)
+  - [References](#references)
     
 ## 1. Introduction
 
