@@ -211,6 +211,7 @@ CREATE TABLE processing_log (
 CREATE TABLE onboarding_instance (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   company_id UUID REFERENCES company(id) ON DELETE SET NULL,
+  batch_id UUID REFERENCES onboarding_batch(id) ON DELETE SET NULL,
   company_name VARCHAR(255) NOT NULL,
   selected_sections TEXT[] NOT NULL DEFAULT '{}',
   status VARCHAR(50) NOT NULL DEFAULT 'draft',
@@ -251,6 +252,9 @@ CREATE TABLE processing_chunk (
 
 -- Onboarding batch lookups
 CREATE INDEX idx_onboarding_batch_trace_id ON onboarding_batch(trace_id);
+
+-- Onboarding instance lookups
+CREATE INDEX idx_onboarding_instance_batch_id ON onboarding_instance(batch_id);
 CREATE INDEX idx_onboarding_batch_status ON onboarding_batch(status);
 CREATE INDEX idx_onboarding_batch_created_at ON onboarding_batch(created_at DESC);
 

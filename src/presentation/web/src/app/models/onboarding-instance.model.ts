@@ -35,3 +35,14 @@ export interface CreateOnboardingResponse {
   reusedExistingInstance: boolean;
   reuseRule: string;
 }
+
+export interface ReviewDataItem {
+  rowNumber: number;
+  rawData: Record<string, unknown>;
+}
+
+export interface OnboardingReviewData {
+  linkToken: string;
+  batchId: string | null;
+  items: ReviewDataItem[];
+}

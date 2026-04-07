@@ -41,6 +41,11 @@ interface UploadProcessResult {
   fileName: string
 }
 
+interface UploadProcessOptions {
+  linkToken?: string
+  companyName?: string
+}
+
 function getContentType(fileName: string): string {
   const extension = fileName.toLowerCase().split(".").pop() || ""
 
@@ -61,12 +66,24 @@ function getContentType(fileName: string): string {
 
 async function processUploadFile(
   file: UploadRequestFile,
-  traceId = "no-trace"
+  traceId = "no-trace",
+  options?: UploadProcessOptions
 ): Promise<UploadProcessResult> {
   const bucketName = (globalThis as { process?: { env?: Record<string, string | undefined> } }).process?.env
     ?.AWS_S3_BUCKET
 
-  const s3Key = `uploads/${traceId}/${file.originalname}`
+  // Build s3Key based on available context
+  let s3Key: string
+  if (options?.companyName && options?.linkToken) {
+    // Best case: company name + link token
+    s3Key = `onboarding/${options.companyName}/${options.linkToken}/${file.originalname}`
+  } else if (options?.linkToken) {
+    // Fallback: just link token
+    s3Key = `onboarding/${options.linkToken}/${file.originalname}`
+  } else {
+    // Legacy: trace ID (backward compatibility)
+    s3Key = `uploads/${traceId}/${file.originalname}`
+  }
 
   const putCommand = new PutObjectCommand({
     Bucket: bucketName,
@@ -79,7 +96,11 @@ async function processUploadFile(
   console.log(`[FLOW][${traceId}] service:s3_upload s3Key=${s3Key}`)
 
   await enqueueUploadJob(
-    { s3Key, fileName: file.originalname },
+    {
+      s3Key,
+      fileName: file.originalname,
+      linkToken: options?.linkToken,
+    },
     traceId
   )
 
@@ -90,4 +111,4 @@ async function processUploadFile(
 }
 
 export { mapRowsToEntities, processUploadFile }
-export type { UploadRequestFile, UploadProcessResult }
+export type { UploadRequestFile, UploadProcessResult, UploadProcessOptions }

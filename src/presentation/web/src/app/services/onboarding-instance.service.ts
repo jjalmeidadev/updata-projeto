@@ -1,11 +1,12 @@
 import { inject, Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { map, Observable } from 'rxjs';
 import {
   CompanyListResponse,
   CompanyOption,
   CreateOnboardingResponse,
   OnboardingInstance,
+  OnboardingReviewData,
   OnboardingListResponse,
 } from '../models/onboarding-instance.model';
 
@@ -34,6 +35,39 @@ export class OnboardingInstanceService {
 
   getPublicInstance(linkToken: string): Observable<OnboardingInstance> {
     return this.http.get<OnboardingInstance>(`/api/public/onboarding/${linkToken}`);
+  }
+
+  getPublicReviewData(linkToken: string): Observable<OnboardingReviewData> {
+    return this.http.get<OnboardingReviewData>(`/api/public/onboarding/${linkToken}/review-data`);
+  }
+
+  uploadFile(file: File, linkToken?: string, companyName?: string): Observable<{
+    redirect: string;
+    s3Key: string;
+    fileName: string;
+    traceId: string;
+  }> {
+    const formData = new FormData();
+    formData.append('file', file);
+
+    if (linkToken) {
+      formData.append('linkToken', linkToken);
+    }
+
+    let headers = new HttpHeaders();
+    if (linkToken) {
+      headers = headers.set('x-onboarding-link-token', linkToken);
+    }
+    if (companyName) {
+      headers = headers.set('x-onboarding-company-name', companyName);
+    }
+
+    return this.http.post<{
+      redirect: string;
+      s3Key: string;
+      fileName: string;
+      traceId: string;
+    }>('/api/upload', formData, { headers: headers.keys().length > 0 ? headers : undefined });
   }
 
   saveProgress(linkToken: string, payload: {

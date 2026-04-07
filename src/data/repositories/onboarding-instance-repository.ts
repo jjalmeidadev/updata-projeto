@@ -25,6 +25,7 @@ interface OnboardingInstanceUpdateInput {
 export interface OnboardingInstanceRecord {
   id: string
   company_id: string | null
+  batch_id: string | null
   company_name: string
   selected_sections: string[]
   status: string
@@ -50,6 +51,7 @@ async function listOnboardingInstances(): Promise<OnboardingInstanceRecord[]> {
     SELECT
       id,
       company_id,
+      batch_id,
       company_name,
       selected_sections,
       status,
@@ -78,6 +80,7 @@ async function findOnboardingInstanceByLinkToken(
     SELECT
       id,
       company_id,
+      batch_id,
       company_name,
       selected_sections,
       status,
@@ -107,6 +110,7 @@ async function findReusableOnboardingInstance(
     SELECT
       id,
       company_id,
+      batch_id,
       company_name,
       selected_sections,
       status,
@@ -161,6 +165,7 @@ async function createOnboardingInstance(
   const query = `
     INSERT INTO equiem.onboarding_instance (
       company_id,
+      batch_id,
       company_name,
       selected_sections,
       status,
@@ -169,10 +174,11 @@ async function createOnboardingInstance(
       email_status,
       email_payload
     )
-    VALUES ($1, $2, $3::text[], $4, $5, $6, $7, $8::jsonb)
+    VALUES ($1, NULL, $2, $3::text[], $4, $5, $6, $7, $8::jsonb)
     RETURNING
       id,
       company_id,
+      batch_id,
       company_name,
       selected_sections,
       status,
@@ -222,6 +228,7 @@ async function updateOnboardingInstance(
     RETURNING
       id,
       company_id,
+      batch_id,
       company_name,
       selected_sections,
       status,
@@ -252,6 +259,39 @@ async function updateOnboardingInstance(
   return (result.rows[0] as OnboardingInstanceRecord | undefined) ?? null
 }
 
+async function linkBatchToOnboardingInstanceByLinkToken(
+  linkToken: string,
+  batchId: string
+): Promise<OnboardingInstanceRecord | null> {
+  const query = `
+    UPDATE equiem.onboarding_instance
+    SET
+      batch_id = $2,
+      updated_at = NOW()
+    WHERE link_token = $1
+    RETURNING
+      id,
+      company_id,
+      batch_id,
+      company_name,
+      selected_sections,
+      status,
+      progress_percent,
+      link_token,
+      form_data,
+      email_status,
+      email_payload,
+      submitted_at,
+      reviewed_at,
+      completed_at,
+      created_at,
+      updated_at
+  `
+
+  const result = await pool.query(query, [linkToken, batchId])
+  return (result.rows[0] as OnboardingInstanceRecord | undefined) ?? null
+}
+
 export {
   listOnboardingInstances,
   findOnboardingInstanceByLinkToken,
@@ -260,4 +300,5 @@ export {
   listCompanies,
   createOnboardingInstance,
   updateOnboardingInstance,
+  linkBatchToOnboardingInstanceByLinkToken,
 }
