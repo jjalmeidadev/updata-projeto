@@ -11,8 +11,12 @@ import {
   OnboardingInstanceRecord,
   updateOnboardingInstance,
 } from "../../data/repositories/onboarding-instance-repository.js"
+import {
+  buildOnboardingEmailDraft,
+  sendOnboardingSubmissionMessageToAdmins,
+} from "./onboarding-email-service.js"
+
 import { findOnboardingBatchById } from "../../data/repositories/onboarding-repository.js"
-import { buildOnboardingEmailDraft } from "./onboarding-email-service.js"
 
 interface CreateOnboardingInstanceInput {
   companyName: string
@@ -238,7 +242,28 @@ async function submitOnboarding(linkToken: string, formData: Record<string, unkn
     submittedAt: new Date().toISOString(),
   })
 
-  return updated ? mapInstance(updated, baseUrl) : null
+  if (!updated) {
+    return null
+  }
+
+  const notificationResult = await sendOnboardingSubmissionMessageToAdmins({
+    companyName: updated.company_name,
+    onboardingLink: toPublicLink(baseUrl, updated.link_token),
+    selectedSections: updated.selected_sections,
+    submittedAt: updated.submitted_at ?? new Date().toISOString(),
+  })
+
+  const mergedPayload = {
+    ...(updated.email_payload ?? {}),
+    adminSubmissionMessage: notificationResult,
+  }
+
+  const withNotification = await updateOnboardingInstance(updated.id, {
+    emailStatus: notificationResult.sent ? "admin_submission_message_sent" : "admin_submission_message_failed",
+    emailPayload: mergedPayload,
+  })
+
+  return mapInstance(withNotification ?? updated, baseUrl)
 }
 
 async function completeEquiemReview(input: ReviewDecisionInput, baseUrl: string) {
