@@ -194,7 +194,7 @@ describe('LoginComponent', () => {
     expect(routerMock.navigateByUrl).toHaveBeenCalledWith('/home');
   });
 
-  it('navigates to /onboarding-intro when API responds with 403', () => {
+  it('navigates to /login when API responds with 403', () => {
     // Arrange
     setUrlSearch('?code=abc&state=xyz');
     httpMock.get.mockReturnValue(throwError(() => ({ status: 403 })));
@@ -204,7 +204,7 @@ describe('LoginComponent', () => {
     authState$.next(true);
 
     // Assert
-    expect(routerMock.navigateByUrl).toHaveBeenCalledWith('/onboarding-intro');
+    expect(routerMock.navigateByUrl).toHaveBeenCalledWith('/login');
   });
 
   it('navigates to /monitoring when API responds with 403 for internal test email profile', async () => {
@@ -214,7 +214,7 @@ describe('LoginComponent', () => {
 
     authMock.user$ = of({
       name: 'Yudi Test',
-      email: 'yudi@equiem.com',
+      email: 'yudi@getequiem.com',
     });
 
     TestBed.resetTestingModule();

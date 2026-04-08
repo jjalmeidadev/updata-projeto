@@ -159,10 +159,21 @@ export class LoginComponent implements OnInit {
           return;
         }
 
+        if (err.status === 403) {
+          const alertFn = (globalThis as { alert?: (message: string) => void }).alert;
+          if (typeof alertFn === 'function') {
+            try {
+              alertFn('Access blocked. Your account does not have permission to access this area.');
+            } catch {
+              // Ignore alert failures in non-browser test environments.
+            }
+          }
+        }
+
         sessionStorage.setItem(AUTH_ROLE_STORAGE_KEY, AUTH_ROLE_EXTERNAL);
 
         if (err.status === 401) this.router.navigateByUrl('/login');
-        else if (err.status === 403) this.router.navigateByUrl('/onboarding-intro');
+        else if (err.status === 403) this.router.navigateByUrl('/login');
         else if (err.status === 404) this.router.navigateByUrl('/signup');
         else this.router.navigateByUrl('/home');
       },
