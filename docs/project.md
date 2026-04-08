@@ -116,7 +116,14 @@
     - [25.11. Performance Considerations](#2511-performance-considerations)
     - [25.12. Security Considerations](#2512-security-considerations)
     - [Appendix A: System Configuration and Optimization Report](#appendix-a-system-configuration-and-optimization-report)
-
+  - [26. SDGs (Sustainable Development Goals) and Impact](#26-sdgs-sustainable-development-goals-and-impact)
+    - [26.1. Operational Impact](#261-operational-impact)
+    - [26.2. Sustainability and Alignment with the 2030 Agenda](#262-sustainability-and-alignment-with-the-2030-agenda)
+    - [26.3. Priority Sustainable Development Goals](#263-priority-sustainable-development-goals)
+    - [26.4. Relationship with the Smart Cities Concept](#264-relationship-with-the-smart-cities-concept)
+    - [26.5. Evidence, Expected Impacts and Practical Implications](#265-evidence-expected-impacts-and-practical-implications)
+  - [Appendix A: System Configuration and Optimization Report](#appendix-a-system-configuration-and-optimization-report)
+  - [References](#references)
     
 ## 1. Introduction
 
@@ -1950,6 +1957,74 @@ All external communications use HTTPS to ensure encrypted data transmission.
 - Using managed AWS infrastructure also provides additional security mechanisms, including network isolation, access policies, and infrastructure-level protections.
 --- 
 
+## 26. SDGs (Sustainable Development Goals) and Impact
+
+This section examines the expected impact of the proposed onboarding automation system from both an operational and sustainability perspective. It outlines how the solution improves Equiem’s onboarding process and analyses the project in relation to the Sustainable Development Goals (SDGs) of the United Nations 2030 Agenda (United Nations, 2015), considering its potential contributions across the dimensions of People, Planet, Prosperity, Peace, and Partnerships, and its connection to the broader Smart Cities paradigm supported by digital infrastructure and PropTech innovation.
+
+Bibliographic references for sources cited in Section 26 are listed under **References** at the end of this document.
+
+### 26.1. Operational Impact
+
+Section 2 describes Equiem’s current onboarding process, in which customer-specific data are collected and reviewed through decentralized e-mail and spreadsheet-based workflows. As a result, this approach often leads to inconsistencies, rework, and delays across stakeholders and time zones. To address these limitations, the proposed solution introduces a single structured onboarding channel that combines guided data capture, automated validation at submission (FR01–FR04, FR08), progress persistence (FR07), and asynchronous processing through message queues and background workers (Section 25).  
+
+In this context, data collection and validation are handled through upload and mapping pipelines, supported by schema validation and business-rule checks, which allow potential issues to be identified before the data is consumed in downstream configuration processes (Sections 16–17). Consequently, the process reduces reliance on iterative e-mail exchanges and helps improve data quality while minimizing human error.
+
+Furthermore, the system enables parallel onboarding processes. Multiple customer-side contributors can collaborate through shared workflows and task assignments (FR10), while the backend infrastructure can process workloads from multiple clients simultaneously within infrastructure limits (NFR05; Sections 25.5–25.6). At the same time, scalability is supported through asynchronous processing with Amazon SQS and a distributed architecture involving containerized APIs, worker services, and a managed database (Section 25).
+
+Overall, these mechanisms are expected to reduce onboarding cycle time and operational overhead, particularly by decreasing manual file handling and version reconciliation. As a result, onboarding specialists can focus more on exception handling and client coordination rather than manual data cleansing. In practical terms, the system should enable faster transitions from submission to configuration readiness, lower marginal effort per record, and clearer operational visibility through monitored queues, worker health, and system performance metrics.
+
+### 26.2. Sustainability and Alignment with the 2030 Agenda
+
+The **2030 Agenda** frames sustainable development through five dimensions: **People**, **Planet**, **Prosperity**, **Peace**, and **Partnerships** (United Nations, 2015). Each dimension below states the **type of contribution** (*direct*, *indirect*, or *limited relevance*) and justifies it using this project’s scope.
+
+**People: *direct (moderate) and indirect.*** The solution **directly** improves **clarity and task structure** for customer administrators and internal analysts through guided data entry, visible progress status, and collaborative assignment mechanisms (Sections 9–10, FR10–FR11; usability discussion in Section 21). Furthermore, it facilitates inclusive collaboration by enabling distributed contributors to complete their assigned sections independently rather than relying on fragmented e-mail exchanges. The contribution is **moderate** because it targets a **specific workflow**, not broad labour-market policy.
+
+**Planet: *indirect (limited).*** The solution does not directly address environmental indicators such as building energy consumption or emissions. Its environmental relevance is therefore **indirect**, mainly through the **streamlining of digital workflows**, which reduces fragmented data exchanges and repetitive correction cycles. By consolidating onboarding activities into a structured and validated process, the system improves operational efficiency and reduces unnecessary computational and coordination overhead.
+
+**Prosperity: *direct.*** Faster, more reliable onboarding **accelerates time-to-value** for customers and improves **productivity** of Equiem teams, consistent with Section **8** (product goal) and **SDG-aligned** economic efficiency themes developed in §26.3.
+
+**Peace: *indirect (institutional).*** In the sense of **stability and trust**, the architecture contributes **indirectly** through **HTTPS**, **JWT validation** (Section **25.8**), traceable batches/jobs, and security-related NFRs (Section **17**), reducing disputes rooted in **ambiguity or unauthorised access**. The project does **not** address geopolitical conflict.
+
+**Partnerships: *direct.*** Multi-party onboarding and integrations with **identity and cloud providers** exemplify **collaborative delivery** (Sections **25.8–25.9**). Direct value lies in **aligned actors** operating on **shared artefacts** rather than disconnected e-mail chains.
+
+### 26.3. Priority Sustainable Development Goals
+
+The **primary SDGs** most relevant to this **PropTech onboarding** system are **SDG 8**, **SDG 9**, and **SDG 11** (United Nations Statistics Division, n.d.).
+
+**SDG 9 (Industry, Innovation and Infrastructure)** is central because the MVP constitutes **resilient digital infrastructure**: APIs, queues, workers, validation services, and a managed database replace **fragmented manual workflows**, supporting **innovation in digital service delivery** (Sections **16–17**, **25**). **Automation** is the mechanism that operationalises this infrastructure at scale.
+
+**SDG 11 (Sustainable Cities and Communities)** applies at the **building–urban interface**: Equiem operates in the context of **commercial real estate** and **tenant-facing digital experiences** (Section **3**). **Timely and validated onboarding data** supports the reliability of **building and workplace platforms**; without it, digital services such as access control, operations coordination, and tenant communications can degrade. This relationship between onboarding infrastructure and urban service readiness is discussed further in §26.4.
+
+**SDG 8 (Decent Work and Economic Growth - primary among social–economic goals)** is supported through the **reduction of repetitive manual work**, clearer **task allocation**, and **higher throughput per specialist**, improving working conditions within the onboarding function and increasing operational efficiency for customers. This contribution relates to **work quality and productivity improvements**, without claiming macroeconomic measurement.
+
+**SDG 12 (Responsible Consumption and Production - secondary)** is additionally relevant since the solution contributes to reducing **operational waste** generated by repeated data corrections and fragmented information exchanges.
+
+Together, **digital infrastructure and automation** (SDG 9) within a **PropTech service context** connect improved **work processes** (SDG 8) with the **operational readiness of urban digital services** in the built environment (SDG 11).
+
+### 26.4. Relationship with the Smart Cities Concept
+
+The **Smart Cities** concept treats **data and digital infrastructure** as key enablers of **urban service quality** (Batty et al., 2012; UN-Habitat, 2022). Within this context, **PropTech platforms** operate between **buildings**, **operators**, and **occupants**, supporting the digital services that manage modern workplaces. For these services to function reliably, systems must begin with **trustworthy master data at the moment of system configuration (go-live)**.
+
+In practice, **building management platforms depend on correct configuration data**. The **digital onboarding infrastructure** introduced in this project ensures that data entering operational systems is **validated and structured before use**, preventing errors from propagating into building operations. At the same time, **scalable data processing**, implemented through background workers and benchmarked workloads (Appendix A), allows the system to support **large urban property portfolios** without requiring proportional increases in staffing.
+
+Together, these mechanisms contribute to **more reliable digital services in the built environment**, supporting the broader vision of **smarter urban systems**, while recognising that this module does **not** directly address city-scale infrastructures such as transport or utilities. This directly aligns with Smart Cities principles by enabling interoperable, data-driven urban infrastructure through reliable building-level digital systems.
+
+### 26.5. Evidence, Expected Impacts and Practical Implications
+
+**Objective evidence** available in this repository includes: **functional and non-functional requirements** (Sections **16–17**), **business flows** and **user stories** (Sections **10**, **23**), **test and usability analyses** (Sections **18–21**), **[TEST_EXECUTION_REPORT.md](../tests/TEST_EXECUTION_REPORT.md)**, **deployment architecture** (Section **25**), and **benchmark-derived throughput analysis** (**Appendix A**). Together, these artefacts substantiate the system’s **design rationale**, **specified behaviour**, and **engineering trade-offs**. However, they represent **design and testing evidence**, not post-production operational KPIs.
+
+**Expected impacts**, aligned with the criteria defined in this section, include: **operational efficiency gains** through the separation of API and worker responsibilities and the adoption of asynchronous processing; **reduction of administrative workload**, as manual reconciliation of files and versions is replaced by structured workflows; **improved reliability of onboarding data** through validation before downstream system use; and **scalable digital infrastructure for real-estate platforms**, supported by horizontal scaling patterns described in Section **25** and throughput analysis in **Appendix A**. These improvements are also expected to enhance **service delivery and customer experience** through increased transparency, collaborative workflows, and early validation feedback (FR10–FR11; Section **21**).
+
+More broadly, organisations adopting **PropTech** and **digital building management platforms** face implications consistent with wider **digital transformation** literature: platforms that standardise **data supply chains** can reduce friction between **assets**, **operators**, and **users**, but they also require **governance structures**, **appropriate technical skills**, and **performance measurement** to sustain long-term value (OECD, 2020; World Economic Forum, 2022). While this document provides **design-level and testing evidence**, **SDG-level impact attribution** ultimately depends on operational baselines from partner organisations. To support empirical evaluation, the following **operational KPIs are defined**:
+
+1. **Onboarding cycle time** – time from initial data submission to configuration readiness.  
+2. **Re-submission rate** – percentage of datasets requiring correction cycles.  
+3. **Time-to-first-valid batch** – time required to achieve a fully validated dataset without errors.  
+
+These metrics provide a measurable basis for validating the operational and sustainability impacts described in this section.
+
+--- 
+
 ## Appendix A: System Configuration and Optimization Report
 
 This appendix determines the optimal configuration for two critical parameters of the system:
@@ -2351,3 +2426,20 @@ Based on the benchmark results, regression analysis, and optimization derivation
 This configuration provides a balanced level of parallelism while maintaining manageable memory usage and minimizing database contention.
 
 Future deployments may refine this configuration as additional production data becomes available, but the analytical model provides a strong initial guideline for system tuning.
+
+---
+
+
+## References
+
+Batty, M., Axhausen, K. W., Giannotti, F., Pozdnoukhov, A., Bazzani, A., Wachowicz, M., Ouzounis, G., & Portugali, Y. (2012). Smart cities of the future. *The European Physical Journal Special Topics*, *214*(1), 481–518. https://doi.org/10.1140/epjst/e2012-01703-3
+
+Organisation for Economic Co-operation and Development. (2020). *Digital government in Chile: Improving public service design and user experience*. OECD Publishing. https://doi.org/10.1787/b94582e8-en
+
+United Nations. (2015). *Transforming our world: The 2030 Agenda for Sustainable Development* (General Assembly Resolution A/RES/70/1). United Nations. https://sdgs.un.org/2030agenda
+
+United Nations Human Settlements Programme. (2022). *World cities report 2022: Envisioning the future of cities*. UN-Habitat. https://unhabitat.org/wcr2022
+
+United Nations Statistics Division. (n.d.). *Global SDG indicators database*. United Nations Department of Economic and Social Affairs. Retrieved March 30, 2026, from https://unstats.un.org/sdgs/dataportal
+
+World Economic Forum. (2022). *Data for the city of tomorrow: Developing the capabilities and capacity to guide better urban futures*. World Economic Forum. https://www.weforum.org/publications/data-for-the-city-of-tomorrow-developing-the-capabilities-and-capacity-to-guide-better-urban-futures/
