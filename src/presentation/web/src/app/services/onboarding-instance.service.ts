@@ -29,6 +29,7 @@ export class OnboardingInstanceService {
   createInstance(payload: {
     companyName: string;
     selectedSections: string[];
+    allowedEmails: string[];
   }): Observable<CreateOnboardingResponse> {
     return this.http.post<CreateOnboardingResponse>('/api/onboarding-instances', payload);
   }

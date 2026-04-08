@@ -128,6 +128,7 @@ INSERT INTO onboarding_instance (
   company_id,
   company_name,
   selected_sections,
+  allowed_emails,
   status,
   progress_percent,
   link_token,
@@ -144,6 +145,7 @@ SELECT
   c.id,
   c.name,
   ARRAY['building-setup', 'company-details', 'amenity-settings'],
+  status_data.allowed_emails,
   status_data.status,
   status_data.progress_percent,
   CONCAT('seed-', LOWER(REPLACE(c.name, ' ', '-')), '-', status_data.seed_suffix),
@@ -162,11 +164,45 @@ FROM (
 ) c
 JOIN (
   VALUES
-    (1, 'in_progress', 45, 'in-progress', NULL::timestamptz, NULL::timestamptz, NULL::timestamptz, interval '2 days', interval '30 minutes'),
-    (2, 'equiem_review', 100, 'review', NOW() - interval '1 day', NULL::timestamptz, NULL::timestamptz, interval '4 days', interval '2 hours'),
-    (3, 'completed', 100, 'completed', NOW() - interval '6 days', NOW() - interval '5 days', NOW() - interval '5 days', interval '10 days', interval '5 days')
+    (
+      1,
+      ARRAY['owner.acme@getequiem.com', 'ops.acme@getequiem.com']::text[],
+      'in_progress',
+      45,
+      'in-progress',
+      NULL::timestamptz,
+      NULL::timestamptz,
+      NULL::timestamptz,
+      interval '2 days',
+      interval '30 minutes'
+    ),
+    (
+      2,
+      ARRAY['review.globex@getequiem.com']::text[],
+      'equiem_review',
+      100,
+      'review',
+      NOW() - interval '1 day',
+      NULL::timestamptz,
+      NULL::timestamptz,
+      interval '4 days',
+      interval '2 hours'
+    ),
+    (
+      3,
+      ARRAY['admin.initech@getequiem.com', 'manager.initech@getequiem.com']::text[],
+      'completed',
+      100,
+      'completed',
+      NOW() - interval '6 days',
+      NOW() - interval '5 days',
+      NOW() - interval '5 days',
+      interval '10 days',
+      interval '5 days'
+    )
 ) AS status_data(
   row_num,
+  allowed_emails,
   status,
   progress_percent,
   seed_suffix,

@@ -4,6 +4,7 @@ interface OnboardingInstanceCreateInput {
   companyId?: string | null
   companyName: string
   selectedSections: string[]
+  allowedEmails: string[]
   linkToken: string
   status: string
   progressPercent: number
@@ -28,6 +29,7 @@ export interface OnboardingInstanceRecord {
   batch_id: string | null
   company_name: string
   selected_sections: string[]
+  allowed_emails: string[]
   status: string
   progress_percent: number
   link_token: string
@@ -54,6 +56,7 @@ async function listOnboardingInstances(): Promise<OnboardingInstanceRecord[]> {
       batch_id,
       company_name,
       selected_sections,
+      allowed_emails,
       status,
       progress_percent,
       link_token,
@@ -83,6 +86,7 @@ async function findOnboardingInstanceByLinkToken(
       batch_id,
       company_name,
       selected_sections,
+      allowed_emails,
       status,
       progress_percent,
       link_token,
@@ -113,6 +117,7 @@ async function findReusableOnboardingInstance(
       batch_id,
       company_name,
       selected_sections,
+      allowed_emails,
       status,
       progress_percent,
       link_token,
@@ -168,19 +173,21 @@ async function createOnboardingInstance(
       batch_id,
       company_name,
       selected_sections,
+      allowed_emails,
       status,
       progress_percent,
       link_token,
       email_status,
       email_payload
     )
-    VALUES ($1, NULL, $2, $3::text[], $4, $5, $6, $7, $8::jsonb)
+    VALUES ($1, NULL, $2, $3::text[], $4::text[], $5, $6, $7, $8, $9::jsonb)
     RETURNING
       id,
       company_id,
       batch_id,
       company_name,
       selected_sections,
+      allowed_emails,
       status,
       progress_percent,
       link_token,
@@ -198,6 +205,7 @@ async function createOnboardingInstance(
     input.companyId || null,
     input.companyName,
     input.selectedSections,
+    input.allowedEmails,
     input.status,
     input.progressPercent,
     input.linkToken,
@@ -231,6 +239,7 @@ async function updateOnboardingInstance(
       batch_id,
       company_name,
       selected_sections,
+      allowed_emails,
       status,
       progress_percent,
       link_token,
@@ -275,6 +284,7 @@ async function linkBatchToOnboardingInstanceByLinkToken(
       batch_id,
       company_name,
       selected_sections,
+      allowed_emails,
       status,
       progress_percent,
       link_token,

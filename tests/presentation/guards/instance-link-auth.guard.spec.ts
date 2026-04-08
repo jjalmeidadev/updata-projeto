@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import { of } from 'rxjs';
+import { of, throwError } from 'rxjs';
 
 describe('instance-link-auth.guard', () => {
   it('allows authenticated users', async () => {
@@ -12,18 +12,23 @@ describe('instance-link-auth.guard', () => {
       loginWithRedirect,
     };
     const routerMock = { createUrlTree };
+    const httpMock = {
+      get: vi.fn(() => of({ id: 'instance-1' })),
+    };
 
     vi.doMock('@angular/core', () => ({
       inject: (token: unknown) => {
         const key = String(token);
         if (key.includes('AuthService')) return authMock;
         if (key.includes('Router')) return routerMock;
+        if (key.includes('HttpClient')) return httpMock;
         return undefined;
       },
     }));
 
     vi.doMock('@auth0/auth0-angular', () => ({ AuthService: class AuthService {} }));
     vi.doMock('@angular/router', () => ({ Router: class Router {} }));
+    vi.doMock('@angular/common/http', () => ({ HttpClient: class HttpClient {}, HttpErrorResponse: class HttpErrorResponse {} }));
 
     const { instanceLinkAuthGuard } = await import('../../../src/presentation/web/src/app/guards/instance-link-auth.guard.ts');
 
@@ -33,6 +38,7 @@ describe('instance-link-auth.guard', () => {
     });
 
     expect(value).toBe(true);
+    expect(httpMock.get).toHaveBeenCalledWith('/api/public/onboarding/token-x');
     expect(loginWithRedirect).not.toHaveBeenCalled();
   });
 
@@ -56,18 +62,23 @@ describe('instance-link-auth.guard', () => {
       loginWithRedirect,
     };
     const routerMock = { createUrlTree };
+    const httpMock = {
+      get: vi.fn(),
+    };
 
     vi.doMock('@angular/core', () => ({
       inject: (token: unknown) => {
         const key = String(token);
         if (key.includes('AuthService')) return authMock;
         if (key.includes('Router')) return routerMock;
+        if (key.includes('HttpClient')) return httpMock;
         return undefined;
       },
     }));
 
     vi.doMock('@auth0/auth0-angular', () => ({ AuthService: class AuthService {} }));
     vi.doMock('@angular/router', () => ({ Router: class Router {} }));
+    vi.doMock('@angular/common/http', () => ({ HttpClient: class HttpClient {}, HttpErrorResponse: class HttpErrorResponse {} }));
 
     const { instanceLinkAuthGuard } = await import('../../../src/presentation/web/src/app/guards/instance-link-auth.guard.ts');
 
@@ -82,6 +93,83 @@ describe('instance-link-auth.guard', () => {
       authorizationParams: {
         audience: 'https://api.updata.com',
         scope: 'openid profile email',
+      },
+    });
+    expect(createUrlTree).toHaveBeenCalledWith(['/login']);
+    expect(value).toBe(redirectedTree);
+  });
+
+  it('blocks authenticated user before entering onboarding when API returns 403 and forces account selection', async () => {
+    vi.resetModules();
+
+    const storage = new Map<string, string>();
+    Object.defineProperty(globalThis, 'sessionStorage', {
+      value: {
+        setItem: (k: string, v: string) => storage.set(k, v),
+        getItem: (k: string) => storage.get(k) ?? null,
+      },
+      configurable: true,
+    });
+
+    const alertMock = vi.fn();
+    Object.defineProperty(globalThis, 'alert', {
+      value: alertMock,
+      configurable: true,
+    });
+
+    const redirectedTree = { redirected: true };
+    const loginWithRedirect = vi.fn();
+    const createUrlTree = vi.fn(() => redirectedTree);
+    const authMock = {
+      isAuthenticated$: of(true),
+      loginWithRedirect,
+    };
+    const routerMock = { createUrlTree };
+    const httpMock = {
+      get: vi.fn(() =>
+        throwError(() => ({
+          status: 403,
+          error: { error: 'You are not allowed to access this onboarding link' },
+        }))
+      ),
+    };
+
+    vi.doMock('@angular/core', () => ({
+      inject: (token: unknown) => {
+        const key = String(token);
+        if (key.includes('AuthService')) return authMock;
+        if (key.includes('Router')) return routerMock;
+        if (key.includes('HttpClient')) return httpMock;
+        return undefined;
+      },
+    }));
+
+    vi.doMock('@auth0/auth0-angular', () => ({ AuthService: class AuthService {} }));
+    vi.doMock('@angular/router', () => ({ Router: class Router {} }));
+    vi.doMock('@angular/common/http', () => ({ HttpClient: class HttpClient {}, HttpErrorResponse: class HttpErrorResponse {} }));
+
+    const { instanceLinkAuthGuard } = await import('../../../src/presentation/web/src/app/guards/instance-link-auth.guard.ts');
+
+    const value = await new Promise<unknown>((resolve) => {
+      const result$ = instanceLinkAuthGuard(
+        {
+          paramMap: { get: (key: string) => (key === 'linkToken' ? 'token-denied' : null) },
+        } as any,
+        { url: '/onboarding/token-denied/form' } as any
+      ) as any;
+      result$.subscribe((v: unknown) => resolve(v));
+    });
+
+    expect(httpMock.get).toHaveBeenCalledWith('/api/public/onboarding/token-denied');
+    expect(alertMock).toHaveBeenCalled();
+    expect(storage.get('post_login_link_target')).toBe('/onboarding/token-denied/form');
+    expect(storage.get('post_login_force_account_selection')).toBe('true');
+    expect(loginWithRedirect).toHaveBeenCalledWith({
+      appState: { target: '/onboarding/token-denied/form' },
+      authorizationParams: {
+        audience: 'https://api.updata.com',
+        scope: 'openid profile email',
+        prompt: 'select_account',
       },
     });
     expect(createUrlTree).toHaveBeenCalledWith(['/login']);

@@ -3,6 +3,7 @@ export interface OnboardingInstance {
   companyId: string | null;
   companyName: string;
   selectedSections: string[];
+  allowedEmails: string[];
   status: 'draft' | 'in_progress' | 'equiem_review' | 'completed' | string;
   progressPercent: number;
   linkToken: string;

@@ -168,6 +168,27 @@
         </datalist>
       </section>
 
+      <section class="page-section company-section allowlist-section" aria-labelledby="allowed-emails-title">
+          <h2 id="allowed-emails-title" class="section-heading">
+            <span class="section-heading-accent">Allowed recipient </span> emails
+          </h2>
+          <p class="section-subtitle">
+            Add the emails that can open this onboarding link.
+          </p>
+          <textarea
+            class="allowed-emails-input"
+            rows="5"
+            placeholder="One email per line or comma-separated"
+            [ngModel]="allowedEmailsText()"
+            (ngModelChange)="allowedEmailsText.set($event)"
+          ></textarea>
+          @if (allowedEmailsError()) {
+            <p class="feedback error-text">{{ allowedEmailsError() }}</p>
+          } @else if (allowedEmails().length > 0) {
+            <p class="feedback helper-text">{{ allowedEmails().length }} valid recipient email(s)</p>
+          }
+      </section>
+
       @if (loading()) {
         <p class="loading">Loading sections...</p>
       } @else {

@@ -1,65 +1,6 @@
 import { Request, Response } from "express"
 import { resolveUserNavigation } from "../../../business/services/user-service.js"
-
-const claimNamespaces = [
-  "https://updata.app",
-  "https://api.updata.com",
-]
-
-function readStringClaim(payload: Record<string, unknown>, key: string): string | undefined {
-  const direct = payload[key]
-
-  if (typeof direct === "string") {
-    const normalized = direct.trim()
-    return normalized.length > 0 ? normalized : undefined
-  }
-
-  for (const namespace of claimNamespaces) {
-    const namespaced = payload[`${namespace}/${key}`]
-
-    if (typeof namespaced === "string") {
-      const normalized = namespaced.trim()
-      return normalized.length > 0 ? normalized : undefined
-    }
-  }
-
-  const suffix = `/${key}`
-  for (const claimKey of Object.keys(payload)) {
-    if (!claimKey.endsWith(suffix)) {
-      continue
-    }
-
-    const namespaced = payload[claimKey]
-    if (typeof namespaced === "string") {
-      const normalized = namespaced.trim()
-      if (normalized.length > 0) {
-        return normalized
-      }
-    }
-  }
-
-  return undefined
-}
-
-function resolveNameClaim(payload: Record<string, unknown>): string | undefined {
-  const directName = readStringClaim(payload, "name")
-  if (directName) {
-    return directName
-  }
-
-  const givenName = readStringClaim(payload, "given_name")
-  const familyName = readStringClaim(payload, "family_name")
-
-  if (givenName && familyName) {
-    return `${givenName} ${familyName}`.trim()
-  }
-
-  return givenName || familyName || readStringClaim(payload, "nickname") || readStringClaim(payload, "preferred_username")
-}
-
-function resolveEmailClaim(payload: Record<string, unknown>): string | undefined {
-  return readStringClaim(payload, "email") || readStringClaim(payload, "upn")
-}
+import { resolveEmailClaim, resolveNameClaim } from "../auth-claims.js"
 
  // Handles authenticated user routing based on user email and company association.
 export const getPayload = async (
@@ -88,8 +29,12 @@ export const getPayload = async (
     const headerProfileName = typeof req.headers["x-profile-name"] === "string"
       ? req.headers["x-profile-name"].trim()
       : undefined
+    const headerProfileEmail = typeof req.headers["x-profile-email"] === "string"
+      ? req.headers["x-profile-email"].trim().toLowerCase()
+      : undefined
     const name = resolveNameClaim(safeClaims) || (headerProfileName && headerProfileName.length > 0 ? headerProfileName : undefined)
-    const email = resolveEmailClaim(safeClaims)
+    const claimEmail = resolveEmailClaim(safeClaims)
+    const email = claimEmail || (headerProfileEmail && headerProfileEmail.includes("@") ? headerProfileEmail : undefined)
 
     console.log(
       `[FLOW][${traceId}] controller:claims keys=${Object.keys(safeClaims).slice(0, 12).join(",")} hasName=${Boolean(name)} hasEmail=${Boolean(email)}`

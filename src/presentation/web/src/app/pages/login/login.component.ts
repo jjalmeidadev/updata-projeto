@@ -9,6 +9,7 @@ import { AUTH_ROLE_EXTERNAL, AUTH_ROLE_INTERNAL, AUTH_ROLE_STORAGE_KEY, isIntern
 
 type UserFlowResponse = { next: string };
 const LINK_TARGET_KEY = 'post_login_link_target';
+const LINK_FORCE_ACCOUNT_SELECTION_KEY = 'post_login_force_account_selection';
 
 @Component({
   selector: 'app-login',
@@ -34,9 +35,25 @@ export class LoginComponent implements OnInit {
       .pipe(filter(Boolean), take(1))
       .subscribe(() => {
         const storedTarget = sessionStorage.getItem(LINK_TARGET_KEY) || '';
+        const shouldForceAccountSelection =
+          (sessionStorage.getItem(LINK_FORCE_ACCOUNT_SELECTION_KEY) || '').trim() === 'true';
+
+        if (shouldForceAccountSelection) {
+          sessionStorage.removeItem(LINK_FORCE_ACCOUNT_SELECTION_KEY);
+
+          this.auth.loginWithRedirect({
+            appState: { target: storedTarget || '/login' },
+            authorizationParams: {
+              ...this.authRequestDefaults,
+              prompt: 'select_account',
+            },
+          });
+
+          return;
+        }
+
         if (this.isOnboardingLinkRoute(storedTarget)) {
-          sessionStorage.removeItem(LINK_TARGET_KEY);
-          this.router.navigateByUrl(storedTarget);
+          this.syncUserProfileAndNavigateToLink(storedTarget);
           return;
         }
 
@@ -75,7 +92,10 @@ export class LoginComponent implements OnInit {
 
   login(): void {
     this.auth.loginWithRedirect({
-      authorizationParams: this.authRequestDefaults,
+      authorizationParams: {
+        ...this.authRequestDefaults,
+        prompt: 'select_account',
+      },
     });
   }
 
@@ -84,6 +104,7 @@ export class LoginComponent implements OnInit {
       authorizationParams: {
         ...this.authRequestDefaults,
         connection: 'google-oauth2',
+        prompt: 'select_account',
       },
     });
   }
@@ -105,8 +126,14 @@ export class LoginComponent implements OnInit {
     };
 
     const normalizedProfileName = (profileName || '').trim();
+    const normalizedProfileEmail = (profileEmail || '').trim().toLowerCase();
+
     if (normalizedProfileName) {
       headerValues['x-profile-name'] = normalizedProfileName;
+    }
+
+    if (normalizedProfileEmail) {
+      headerValues['x-profile-email'] = normalizedProfileEmail;
     }
 
     const headers = new HttpHeaders(headerValues);
@@ -140,5 +167,47 @@ export class LoginComponent implements OnInit {
         else this.router.navigateByUrl('/home');
       },
     });
+  }
+
+  private syncUserProfileAndNavigateToLink(target: string): void {
+    const normalizedTarget = target.trim();
+
+    if (!normalizedTarget) {
+      this.router.navigateByUrl('/login');
+      return;
+    }
+
+    this.auth.user$
+      .pipe(
+        map((profile: User | null | undefined) => ({
+          name: (profile?.name || '').trim(),
+          email: (profile?.email || '').trim().toLowerCase(),
+        })),
+        take(1),
+      )
+      .subscribe((profile) => {
+        const headerValues: Record<string, string> = {
+          'x-debug-trace-id': `web-link-${Date.now()}`,
+        };
+
+        if (profile.name) {
+          headerValues['x-profile-name'] = profile.name;
+        }
+
+        if (profile.email) {
+          headerValues['x-profile-email'] = profile.email;
+        }
+
+        const headers = new HttpHeaders(headerValues);
+        const finish = () => {
+          sessionStorage.removeItem(LINK_TARGET_KEY);
+          this.router.navigateByUrl(normalizedTarget);
+        };
+
+        this.http.get<UserFlowResponse>('/api/users', { headers }).subscribe({
+          next: () => finish(),
+          error: () => finish(),
+        });
+      });
   }
 }

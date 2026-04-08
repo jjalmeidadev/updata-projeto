@@ -25,6 +25,7 @@ import { OnboardingInstanceService } from '../../services/onboarding-instance.se
   styleUrl: './module-selector.component.css',
 })
 export class ModuleSelectorComponent implements OnInit {
+  private readonly emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   private readonly questionService = inject(QuestionService);
   private readonly router = inject(Router);
   private readonly auth = inject(AuthService);
@@ -63,14 +64,23 @@ export class ModuleSelectorComponent implements OnInit {
   readonly selectedSections = signal<Set<string>>(new Set());
   readonly companies = signal<CompanyOption[]>([]);
   readonly companyName = signal('');
+  readonly allowedEmailsText = signal('');
   readonly saving = signal(false);
   readonly createdLink = signal('');
   readonly successMessage = signal('');
   readonly errorMessage = signal('');
   readonly sectionLabels = SECTION_LABELS;
+  readonly parsedAllowedEmails = computed(() => this.parseAllowedEmails(this.allowedEmailsText()));
+  readonly allowedEmails = computed(() => this.parsedAllowedEmails().emails);
+  readonly allowedEmailsError = computed(() => this.parsedAllowedEmails().error);
 
   readonly canCreate = computed(
-    () => this.selectedSections().size > 0 && this.companyName().trim().length > 0 && !this.saving()
+    () =>
+      this.selectedSections().size > 0 &&
+      this.companyName().trim().length > 0 &&
+      this.allowedEmails().length > 0 &&
+      !this.allowedEmailsError() &&
+      !this.saving()
   );
   readonly canContinueLegacy = computed(() => this.selectedSections().size > 0);
 
@@ -167,6 +177,7 @@ export class ModuleSelectorComponent implements OnInit {
     this.onboardingService.createInstance({
       companyName: this.companyName().trim(),
       selectedSections: Array.from(this.selectedSections()),
+      allowedEmails: this.allowedEmails(),
     }).subscribe({
       next: (response) => {
         this.createdLink.set(response.instance.linkUrl);
@@ -247,5 +258,26 @@ export class ModuleSelectorComponent implements OnInit {
     } catch {
       return [];
     }
+  }
+
+  private parseAllowedEmails(text: string): { emails: string[]; error: string } {
+    const values = text
+      .split(/[\n,]+/)
+      .map((value) => value.trim().toLowerCase())
+      .filter(Boolean);
+
+    const invalidEmails = values.filter((email) => !this.emailPattern.test(email));
+
+    if (invalidEmails.length > 0) {
+      return {
+        emails: Array.from(new Set(values.filter((email) => this.emailPattern.test(email)))).sort(),
+        error: `Invalid email format: ${Array.from(new Set(invalidEmails)).join(', ')}`,
+      };
+    }
+
+    return {
+      emails: Array.from(new Set(values)).sort(),
+      error: '',
+    };
   }
 }

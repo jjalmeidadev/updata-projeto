@@ -1,7 +1,9 @@
 import { Component, OnInit, effect, inject, signal, computed } from '@angular/core';
 import { animate, query, sequence, stagger, style, transition, trigger } from '@angular/animations';
+import { HttpErrorResponse } from '@angular/common/http';
 import { FormControl, FormGroup, ReactiveFormsModule } from '@angular/forms';
 import { ActivatedRoute, Params, Router } from '@angular/router';
+import { AuthService } from '@auth0/auth0-angular';
 import { QuestionService, SECTION_LABELS, SOURCE_OPTIONS } from '../services/question.service';
 import { Question, QuestionType } from '../models/question.model';
 import { DynamicFieldComponent } from '../components/dynamic-field/dynamic-field.component';
@@ -107,6 +109,7 @@ export class OnboardingFormComponent implements OnInit {
   private readonly questionService = inject(QuestionService);
   private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
+  private readonly auth = inject(AuthService);
   private readonly onboardingService = inject(OnboardingInstanceService);
 
   readonly questions = signal<Question[]>([]);
@@ -123,12 +126,15 @@ export class OnboardingFormComponent implements OnInit {
   readonly expandedAreas = signal<Record<string, boolean>>({});
   private autoSaveReady = false;
   private navAreaCompletionPrev: Record<string, boolean> = {};
+  private accessDeniedPopupShown = false;
 
   readonly sectionLabels = SECTION_LABELS;
-  readonly currentSection = computed(() => this.sections()[this.currentSectionIndex()]);
+  readonly currentSection = computed(() => this.sections()[this.currentSectionIndex()] ?? '');
   readonly currentSectionLabel = computed(() => this.getSectionLabel(this.currentSection()));
   readonly currentQuestions = computed(() =>
-    this.questionService.getQuestionsBySection(this.questions(), this.currentSection())
+    this.currentSection()
+      ? this.questionService.getQuestionsBySection(this.questions(), this.currentSection())
+      : []
   );
   readonly isFirstSection = computed(() => this.currentSectionIndex() === 0);
   readonly isLastSection = computed(() => this.currentSectionIndex() === this.sections().length - 1);
@@ -231,8 +237,20 @@ export class OnboardingFormComponent implements OnInit {
           },
         });
       },
-      error: () => {
-        this.pageMessage.set('Failed to load onboarding link.');
+      error: (error: unknown) => {
+        const message = this.resolveApiErrorMessage(error, 'Failed to load onboarding link.');
+        this.pageMessage.set(message);
+
+        if (this.isAccessDeniedError(error)) {
+          this.showAccessDeniedPopup(message);
+          this.auth.logout({
+            logoutParams: {
+              returnTo: window.location.origin + '/login',
+              federated: true,
+            },
+          });
+        }
+
         this.loading.set(false);
       },
     });
@@ -289,6 +307,10 @@ export class OnboardingFormComponent implements OnInit {
   }
 
   getSectionLabel(sectionId: string): string {
+    if (!sectionId) {
+      return 'Onboarding';
+    }
+
     const rawLabel = SECTION_LABELS[sectionId] ?? sectionId;
     if (sectionId.startsWith('amenity-')) {
       return rawLabel.replace(/^amenit(?:y|ies)\s+/i, '');
@@ -429,10 +451,45 @@ export class OnboardingFormComponent implements OnInit {
         this.fromUpload.set(false);
         this.submitted.set(true);
       },
-      error: () => {
-        this.pageMessage.set('Failed to submit onboarding.');
+      error: (error: unknown) => {
+        this.pageMessage.set(this.resolveApiErrorMessage(error, 'Failed to submit onboarding.'));
       },
     });
+  }
+
+  private resolveApiErrorMessage(error: unknown, fallback: string): string {
+    if (!(error instanceof HttpErrorResponse)) {
+      return fallback;
+    }
+
+    const body = error.error;
+
+    if (body && typeof body === 'object' && 'error' in body && typeof body.error === 'string') {
+      return body.error;
+    }
+
+    if (typeof body === 'string' && body.trim().length > 0) {
+      return body;
+    }
+
+    return fallback;
+  }
+
+  private isAccessDeniedError(error: unknown): boolean {
+    return error instanceof HttpErrorResponse && (error.status === 401 || error.status === 403);
+  }
+
+  private showAccessDeniedPopup(message: string): void {
+    if (this.accessDeniedPopupShown) {
+      return;
+    }
+
+    this.accessDeniedPopupShown = true;
+
+    const alertFn = (globalThis as { alert?: (text: string) => void }).alert;
+    if (typeof alertFn === 'function') {
+      alertFn(`You do not have permission to access this onboarding.\n\n${message}`);
+    }
   }
 
   private handleUploadedData(form: FormGroup): void {

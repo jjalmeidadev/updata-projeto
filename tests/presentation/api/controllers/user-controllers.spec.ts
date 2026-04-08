@@ -273,6 +273,36 @@ describe("user-controllers", () => {
       )
     })
 
+      it("falls back to x-profile-email header when token has no email claim", async () => {
+        vi.mocked(resolveUserNavigation).mockResolvedValue({
+          outcome: "company",
+          companyId: "77",
+        })
+
+        const req = {
+          auth: { payload: { sub: "auth0|header-email", name: "Header User" } },
+          headers: {
+            "x-debug-trace-id": "trace-header-email",
+            "x-profile-email": "anacristinaalvesjardim@gmail.com",
+          },
+        } as unknown as Request
+        const res = mockRes()
+
+        await getPayload(req, res)
+
+        expect(resolveUserNavigation).toHaveBeenCalledWith(
+          {
+            sub: "auth0|header-email",
+            name: "Header User",
+            email: "anacristinaalvesjardim@gmail.com",
+          },
+          "trace-header-email"
+        )
+        expect(res.status).toHaveBeenCalledWith(200)
+        expect(res.json).toHaveBeenCalledWith(
+          expect.objectContaining({ next: "/company/77", traceId: "trace-header-email" })
+        )
+      })
     it("builds name from given_name and family_name when name claim is absent", async () => {
       vi.mocked(resolveUserNavigation).mockResolvedValue({
         outcome: "company",

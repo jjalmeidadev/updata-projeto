@@ -21,6 +21,7 @@ import { findOnboardingBatchById } from "../../data/repositories/onboarding-repo
 interface CreateOnboardingInstanceInput {
   companyName: string
   selectedSections: string[]
+  allowedEmails: string[]
   baseUrl: string
 }
 
@@ -43,8 +44,78 @@ interface S3ReviewSnapshot {
   items?: SnapshotReviewItem[]
 }
 
+class OnboardingAccessDeniedError extends Error {
+  constructor(message = "Access denied to this onboarding link") {
+    super(message)
+    this.name = "OnboardingAccessDeniedError"
+  }
+}
+
+function isOnboardingAuthBypassed(): boolean {
+  const env = (globalThis as { process?: { env?: Record<string, string | undefined> } }).process?.env ?? {}
+  return env.DISABLE_ONBOARDING_AUTH === "true"
+}
+
+function normalizeEmailAddress(email: string): string {
+  return email.trim().toLowerCase()
+}
+
+function ensureOnboardingAccess(record: OnboardingInstanceRecord, authenticatedEmail?: string): void {
+  if (isOnboardingAuthBypassed()) {
+    return
+  }
+
+  const normalizedEmail = authenticatedEmail ? normalizeEmailAddress(authenticatedEmail) : ""
+
+  if (!normalizedEmail) {
+    throw new OnboardingAccessDeniedError("Authenticated email is required to access this onboarding link")
+  }
+
+  const allowedEmails = record.allowed_emails.map(normalizeEmailAddress)
+
+  if (!allowedEmails.includes(normalizedEmail)) {
+    throw new OnboardingAccessDeniedError(
+      `You are not allowed to access this onboarding link (authenticated as: ${normalizedEmail})`
+    )
+  }
+}
+
 function normalizeSections(sections: string[]): string[] {
   return Array.from(new Set(sections.map((section) => String(section).trim()).filter(Boolean))).sort()
+}
+
+function normalizeAllowedEmails(emails: string[]): string[] {
+  const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+
+  const normalized = emails
+    .map((email) => String(email).trim().toLowerCase())
+    .filter((email) => email.length > 0)
+
+  if (normalized.length === 0) {
+    throw new Error("At least one allowed email must be provided")
+  }
+
+  const invalidEmail = normalized.find((email) => !emailPattern.test(email))
+
+  if (invalidEmail) {
+    throw new Error(`Invalid email address: ${invalidEmail}`)
+  }
+
+  return Array.from(new Set(normalized)).sort()
+}
+
+function haveSameEmails(a: string[], b: string[]): boolean {
+  if (a.length !== b.length) {
+    return false
+  }
+
+  for (let i = 0; i < a.length; i++) {
+    if (a[i] !== b[i]) {
+      return false
+    }
+  }
+
+  return true
 }
 
 function toPublicLink(baseUrl: string, linkToken: string): string {
@@ -57,6 +128,7 @@ function mapInstance(record: OnboardingInstanceRecord, baseUrl: string) {
     companyId: record.company_id,
     companyName: record.company_name,
     selectedSections: record.selected_sections,
+    allowedEmails: record.allowed_emails,
     status: record.status,
     progressPercent: record.progress_percent,
     linkToken: record.link_token,
@@ -83,6 +155,7 @@ async function getCompanies() {
 
 async function createOrReuseOnboardingInstance(input: CreateOnboardingInstanceInput) {
   const selectedSections = normalizeSections(input.selectedSections)
+  const allowedEmails = normalizeAllowedEmails(input.allowedEmails)
 
   if (!input.companyName.trim()) {
     throw new Error("Company name is required")
@@ -97,7 +170,7 @@ async function createOrReuseOnboardingInstance(input: CreateOnboardingInstanceIn
     selectedSections,
   })
 
-  if (reusable) {
+  if (reusable && haveSameEmails(reusable.allowed_emails.map(normalizeEmailAddress).sort(), allowedEmails)) {
     return {
       instance: mapInstance(reusable, input.baseUrl),
       reusedExistingInstance: true,
@@ -118,6 +191,7 @@ async function createOrReuseOnboardingInstance(input: CreateOnboardingInstanceIn
     companyId: company?.id ?? null,
     companyName: company?.name ?? input.companyName.trim(),
     selectedSections,
+    allowedEmails,
     linkToken,
     status: "draft",
     progressPercent: 0,
@@ -142,12 +216,30 @@ async function getOnboardingInstanceByLink(linkToken: string, baseUrl: string) {
   return mapInstance(record, baseUrl)
 }
 
-async function getOnboardingReviewDataByLink(linkToken: string) {
+async function getOnboardingInstanceByLinkForAuthenticatedUser(
+  linkToken: string,
+  baseUrl: string,
+  authenticatedEmail?: string
+) {
   const record = await findOnboardingInstanceByLinkToken(linkToken)
 
   if (!record) {
     return null
   }
+
+  ensureOnboardingAccess(record, authenticatedEmail)
+
+  return mapInstance(record, baseUrl)
+}
+
+async function getOnboardingReviewDataByLink(linkToken: string, authenticatedEmail?: string) {
+  const record = await findOnboardingInstanceByLinkToken(linkToken)
+
+  if (!record) {
+    return null
+  }
+
+  ensureOnboardingAccess(record, authenticatedEmail)
 
   if (!record.batch_id) {
     return {
@@ -206,12 +298,18 @@ async function getOnboardingReviewDataByLink(linkToken: string) {
   }
 }
 
-async function saveOnboardingProgress(input: SaveOnboardingProgressInput, baseUrl: string) {
+async function saveOnboardingProgress(
+  input: SaveOnboardingProgressInput,
+  baseUrl: string,
+  authenticatedEmail?: string
+) {
   const record = await findOnboardingInstanceByLinkToken(input.linkToken)
 
   if (!record) {
     return null
   }
+
+  ensureOnboardingAccess(record, authenticatedEmail)
 
   const nextStatus =
     record.status === "equiem_review" || record.status === "completed"
@@ -228,12 +326,19 @@ async function saveOnboardingProgress(input: SaveOnboardingProgressInput, baseUr
   return updated ? mapInstance(updated, baseUrl) : null
 }
 
-async function submitOnboarding(linkToken: string, formData: Record<string, unknown>, baseUrl: string) {
+async function submitOnboarding(
+  linkToken: string,
+  formData: Record<string, unknown>,
+  baseUrl: string,
+  authenticatedEmail?: string
+) {
   const record = await findOnboardingInstanceByLinkToken(linkToken)
 
   if (!record) {
     return null
   }
+
+  ensureOnboardingAccess(record, authenticatedEmail)
 
   const updated = await updateOnboardingInstance(record.id, {
     formData,
@@ -289,8 +394,10 @@ export {
   getCompanies,
   getDashboardInstances,
   getOnboardingInstanceByLink,
+  getOnboardingInstanceByLinkForAuthenticatedUser,
   getOnboardingReviewDataByLink,
   saveOnboardingProgress,
   submitOnboarding,
   completeEquiemReview,
+  OnboardingAccessDeniedError,
 }
