@@ -223,6 +223,9 @@ CREATE TABLE onboarding_instance (
   submitted_at TIMESTAMPTZ,
   reviewed_at TIMESTAMPTZ,
   completed_at TIMESTAMPTZ,
+  section_review JSONB NOT NULL DEFAULT '{}'::jsonb,
+  returned_sections TEXT[] NOT NULL DEFAULT '{}',
+  rejection_reason TEXT,
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
@@ -279,3 +282,5 @@ CREATE INDEX idx_processing_chunk_status ON processing_chunk(status);
 CREATE INDEX idx_onboarding_instance_link_token ON onboarding_instance(link_token);
 CREATE INDEX idx_onboarding_instance_company_id ON onboarding_instance(company_id);
 CREATE INDEX idx_onboarding_instance_status ON onboarding_instance(status);
+CREATE INDEX idx_onboarding_instance_status_submitted ON onboarding_instance(status, submitted_at DESC);
+CREATE INDEX idx_onboarding_instance_returned_sections ON onboarding_instance USING GIN(returned_sections);
