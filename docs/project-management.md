@@ -479,7 +479,7 @@ This section presents the financial assessment for the development of the Equiem
 
 ### 6.1. Effort and Labor Scope
 
-The team is composed of entry-level professionals (Interns/Juniors). The effort estimation is based on a 10-week development cycle, with an average dedication of 16 hours per sprint per member.
+The team is composed of entry-level professionals (Interns/Juniors). The effort estimation is based on a 10-week development cycle (structured into 5 sprints, with each sprint lasting exactly 2 weeks), with an average dedication of 16 hours per sprint per member.
 
 For the Australian scenario, the Technical Hourly Rate was adjusted to **A$ 35.00/h**. This value is consistent with an entry-level/junior technology context in Australia, positioning the project above the national minimum wage and below the average market level of full software engineers, which makes it suitable for an MVP developed by interns/juniors.
 
@@ -494,7 +494,7 @@ For the Australian scenario, the Technical Hourly Rate was adjusted to **A$ 35.0
 
 ### 6.2. Infrastructure and Tools
 
-The infrastructure costs reflect the environments required to support the proposed deployment architecture, using AWS services and Auth0 during the MVP development and testing phase (approximately 2.5 months).
+The infrastructure costs reflect the environments required to support the proposed deployment architecture, using AWS services and Auth0 during the MVP development and testing phase (approximately 2.5 months). It also includes project management and design tools to represent the complete operational ecosystem.
 
 For this Australian version, infrastructure was also adapted to a local operating scenario. EC2 hosting was estimated based on Sydney-region equivalent pricing, while Auth0 was converted to AUD. RDS and SQS were maintained as conservative MVP-level estimates suitable for a small-scale onboarding platform in development/testing.
 
@@ -506,19 +506,20 @@ For this Australian version, infrastructure was also adapted to a local operatin
 | **Amazon RDS (PostgreSQL)** | Managed Database | A$ 40.00 | A$ 100.00 |
 | **Amazon SQS** | Messaging & Job Queues | A$ 1.00 | A$ 2.50 |
 | **Auth0** | Authentication Service (B2C Essentials) | A$ 50.64 | A$ 126.60 |
-| **GitHub / GitLab** | CI/CD and Version Control | A$ 0.00 (Free) | A$ 0.00 |
+| **GitHub / GitLab** | CI/CD, Version Control and Project Management | A$ 0.00 (Free) | A$ 0.00 |
+| **Figma** | UI/UX Prototyping (Free Tier) | A$ 0.00 | A$ 0.00 |
 | **Total Infrastructure** | - | **A$ 175.28** | **A$ 438.20** |
 
 ### 6.3. Financial Summary
 
-The table below consolidates the total estimated production cost for the development of the Equiem onboarding MVP in the Australian scenario, including a symbolic tax rate of 6% to simulate a basic tax burden.
+The table below consolidates the total estimated production cost for the development of the Equiem onboarding MVP in the Australian scenario. It includes a 10% contingency margin to account for unforeseen technical events or cloud traffic spikes. Furthermore, a symbolic tax rate of 6% is applied as an inclusive tax to simulate a basic tax burden.
 
 | Cost Category | Total Estimated Value |
 | :--- | :--- |
 | Total Labor Cost | A$ 19,600.00 |
 | Total Infrastructure & Tools Cost | A$ 438.20 |
-| **Subtotal (Production Cost)** | **A$ 20,038.20** |
-| Tax Burden (6%) | A$ 1,202.29 |
-| **Total Project Cost (MVP)** | **A$ 21,240.49** |
-
-
+| **Base Production Cost** | **A$ 20,038.20** |
+| Contingency Margin (10%) | A$ 2,003.82 |
+| **Adjusted Subtotal** | **A$ 22,042.02** |
+| Tax Burden (6% Inclusive Gross-up) | A$ 1,406.94 |
+| **Total Project Cost (MVP)** | **A$ 23,448.96** |
