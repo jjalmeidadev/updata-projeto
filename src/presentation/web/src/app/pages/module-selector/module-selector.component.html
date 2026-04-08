@@ -280,14 +280,6 @@
         </section>
       }
 
-      @if (successMessage()) {
-        <p class="feedback success-text">{{ successMessage() }}</p>
-      }
-
-      @if (errorMessage()) {
-        <p class="feedback error-text">{{ errorMessage() }}</p>
-      }
-
       @if (createdLink()) {
         <div class="link-preview">
           <p>Generated link</p>

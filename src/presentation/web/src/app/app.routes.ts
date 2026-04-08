@@ -11,6 +11,8 @@ import { ModuleSelectorComponent } from './pages/module-selector/module-selector
 import { ReviewComponentsComponent } from './pages/review/review-components';
 import { InputMethodComponent } from './pages/input-method/input-method.component';
 import { OnboardingIntroComponent } from './pages/onboarding-intro/onboarding-intro.component';
+import { EquiemReviewComponent } from './pages/equiem-review/equiem-review.component';
+import { EquiemReviewDetailComponent } from './pages/equiem-review-detail/equiem-review-detail.component';
 
 export const routes: Routes = [
   { path: '', redirectTo: '/login', pathMatch: 'full' },
@@ -40,5 +42,7 @@ export const routes: Routes = [
   { path: 'onboarding/:linkToken/form', component: OnboardingFormComponent, canActivate: [instanceLinkAuthGuard] },
   { path: 'onboarding/:linkToken/upload', component: UploadComponent, canActivate: [instanceLinkAuthGuard] },
   { path: 'onboarding/:linkToken/review', component: ReviewComponentsComponent, canActivate: [instanceLinkAuthGuard] },
-  { path: '**', redirectTo: '/login' }
+  {path: 'equiem-review',component: EquiemReviewComponent,canActivate: [authGuardFn, internalUserGuard]},
+  {path: 'equiem-review/:linkToken',component: EquiemReviewDetailComponent,canActivate: [authGuardFn, internalUserGuard]},
+  { path: '**', redirectTo: '/login' },
 ];

@@ -21,6 +21,9 @@ interface OnboardingInstanceUpdateInput {
   completedAt?: string | null
   emailStatus?: string
   emailPayload?: Record<string, unknown>
+  sectionReview?: Record<string, unknown>
+  returnedSections?: string[]
+  rejectionReason?: string | null
 }
 
 export interface OnboardingInstanceRecord {
@@ -39,6 +42,9 @@ export interface OnboardingInstanceRecord {
   submitted_at: string | null
   reviewed_at: string | null
   completed_at: string | null
+  section_review: Record<string, unknown> | null
+  returned_sections: string[]
+  rejection_reason: string | null
   created_at: string
   updated_at: string
 }
@@ -66,6 +72,9 @@ async function listOnboardingInstances(): Promise<OnboardingInstanceRecord[]> {
       submitted_at,
       reviewed_at,
       completed_at,
+      section_review,
+      returned_sections,
+      rejection_reason,
       created_at,
       updated_at
     FROM equiem.onboarding_instance
@@ -96,6 +105,9 @@ async function findOnboardingInstanceByLinkToken(
       submitted_at,
       reviewed_at,
       completed_at,
+      section_review,
+      returned_sections,
+      rejection_reason,
       created_at,
       updated_at
     FROM equiem.onboarding_instance
@@ -127,6 +139,9 @@ async function findReusableOnboardingInstance(
       submitted_at,
       reviewed_at,
       completed_at,
+      section_review,
+      returned_sections,
+      rejection_reason,
       created_at,
       updated_at
     FROM equiem.onboarding_instance
@@ -197,6 +212,9 @@ async function createOnboardingInstance(
       submitted_at,
       reviewed_at,
       completed_at,
+      section_review,
+      returned_sections,
+      rejection_reason,
       created_at,
       updated_at
   `
@@ -231,6 +249,9 @@ async function updateOnboardingInstance(
       completed_at = CASE WHEN $7::timestamptz IS NULL THEN completed_at ELSE $7::timestamptz END,
       email_status = COALESCE($8, email_status),
       email_payload = COALESCE($9::jsonb, email_payload),
+      rejection_reason = CASE WHEN $10::text IS NULL THEN rejection_reason ELSE $10::text END,
+      section_review = COALESCE($11::jsonb, section_review),
+      returned_sections = COALESCE($12::text[], returned_sections),
       updated_at = NOW()
     WHERE id = $1
     RETURNING
@@ -249,6 +270,9 @@ async function updateOnboardingInstance(
       submitted_at,
       reviewed_at,
       completed_at,
+      section_review,
+      returned_sections,
+      rejection_reason,
       created_at,
       updated_at
   `
@@ -263,6 +287,9 @@ async function updateOnboardingInstance(
     input.completedAt ?? null,
     input.emailStatus ?? null,
     input.emailPayload ? JSON.stringify(input.emailPayload) : null,
+    input.rejectionReason ?? null,
+    input.sectionReview ? JSON.stringify(input.sectionReview) : null,
+    input.returnedSections ?? null,
   ])
 
   return (result.rows[0] as OnboardingInstanceRecord | undefined) ?? null
@@ -294,6 +321,9 @@ async function linkBatchToOnboardingInstanceByLinkToken(
       submitted_at,
       reviewed_at,
       completed_at,
+      section_review,
+      returned_sections,
+      rejection_reason,
       created_at,
       updated_at
   `

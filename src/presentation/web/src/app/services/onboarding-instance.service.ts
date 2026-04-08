@@ -96,4 +96,31 @@ export class OnboardingInstanceService {
       {}
     );
   }
+
+approveInstance(linkToken: string) {
+  return this.http.post<OnboardingInstance>(
+    `/api/onboarding-instances/${linkToken}/approve`,
+    {}
+  );
+}
+
+rejectInstance(linkToken: string, reason: string) {
+  return this.http.post<OnboardingInstance>(
+    `/api/onboarding-instances/${linkToken}/reject`,
+    { reason }
+  );
+}
+
+reviewSection(payload: {
+  linkToken: string;
+  sectionId: string;
+  decision: 'approved' | 'rejected';
+  reason?: string;
+}) {
+  const { linkToken, sectionId, ...body } = payload;
+  return this.http.post<OnboardingInstance>(
+    `/api/onboarding-instances/${linkToken}/sections/${sectionId}/decision`,
+    body
+  );
+}
 }

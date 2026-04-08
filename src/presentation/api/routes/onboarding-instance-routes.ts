@@ -2,12 +2,15 @@ import express from "express"
 import { RequestHandler } from "express"
 import { authMiddleware } from "../middleware/auth-middleware.js"
 import {
+  approveOnboardingInstanceHandler,
   completeEquiemReviewHandler,
   createOnboardingInstanceHandler,
   getOnboardingByLinkHandler,
   getOnboardingReviewDataHandler,
   listCompaniesHandler,
   listOnboardingInstancesHandler,
+  rejectOnboardingInstanceHandler,
+  reviewOnboardingSectionHandler,
   saveOnboardingProgressHandler,
   submitOnboardingHandler,
 } from "../controllers/onboarding-instance-controller.js"
@@ -28,6 +31,9 @@ router.get("/api/companies", listCompaniesHandler)
 router.get("/api/onboarding-instances", onboardingAuth, listOnboardingInstancesHandler)
 router.post("/api/onboarding-instances", createOnboardingInstanceHandler)
 router.post("/api/onboarding-instances/:linkToken/review/complete", onboardingAuth, completeEquiemReviewHandler)
+router.post("/api/onboarding-instances/:linkToken/approve", onboardingAuth, approveOnboardingInstanceHandler)
+router.post("/api/onboarding-instances/:linkToken/reject", onboardingAuth, rejectOnboardingInstanceHandler)
+router.post("/api/onboarding-instances/:linkToken/sections/:sectionId/decision", onboardingAuth, reviewOnboardingSectionHandler)
 
 router.get("/api/public/onboarding/:linkToken", onboardingAuth, getOnboardingByLinkHandler)
 router.get("/api/public/onboarding/:linkToken/review-data", onboardingAuth, getOnboardingReviewDataHandler)

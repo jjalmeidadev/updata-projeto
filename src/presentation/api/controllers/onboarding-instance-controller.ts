@@ -1,11 +1,13 @@
 import { Request, Response } from "express"
 import {
+  approveOnboardingInstance,
   completeEquiemReview,
   createOrReuseOnboardingInstance,
   getCompanies,
   getDashboardInstances,
   getOnboardingReviewDataByLink,
   getOnboardingInstanceByLinkForAuthenticatedUser,
+  rejectOnboardingInstance,
   saveOnboardingProgress,
   submitOnboarding,
 } from "../../../business/services/onboarding-instance-service.js"
@@ -244,5 +246,93 @@ export async function completeEquiemReviewHandler(
   } catch (error) {
     console.error("completeEquiemReviewHandler", error)
     return res.status(500).json({ error: "Failed to complete Equiem review" })
+  }
+}
+
+export async function approveOnboardingInstanceHandler(
+  req: Request,
+  res: Response
+): Promise<Response> {
+  try {
+    const linkToken = String(req.params["linkToken"] || "")
+    const instance = await approveOnboardingInstance(
+      linkToken,
+      resolveBaseUrl(req)
+    )
+
+    if (!instance) {
+      return res.status(404).json({ error: "Onboarding instance not found" })
+    }
+
+    return res.status(200).json(instance)
+  } catch (error) {
+    console.error("approveOnboardingInstanceHandler", error)
+    return res.status(500).json({ error: "Failed to approve onboarding instance" })
+  }
+}
+
+export async function rejectOnboardingInstanceHandler(
+  req: Request,
+  res: Response
+): Promise<Response> {
+  try {
+    const linkToken = String(req.params["linkToken"] || "")
+    const reason = String(req.body?.reason || "").trim()
+
+    if (!reason) {
+      return res.status(400).json({ error: "Rejection reason is required" })
+    }
+
+    const instance = await rejectOnboardingInstance(
+      linkToken,
+      reason,
+      resolveBaseUrl(req)
+    )
+
+    if (!instance) {
+      return res.status(404).json({ error: "Onboarding instance not found" })
+    }
+
+    return res.status(200).json(instance)
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Failed to reject onboarding instance"
+    console.error("rejectOnboardingInstanceHandler", error)
+    return res.status(400).json({ error: message })
+  }
+}
+
+export async function reviewOnboardingSectionHandler(
+  req: Request,
+  res: Response
+): Promise<Response> {
+  try {
+    const linkToken = String(req.params["linkToken"] || "")
+    const sectionId = String(req.params["sectionId"] || "")
+    const decision = String(req.body?.decision || "") as "approved" | "rejected"
+    const reason = String(req.body?.reason || "").trim()
+
+    if (decision !== "approved" && decision !== "rejected") {
+      return res.status(400).json({ error: "Decision must be 'approved' or 'rejected'" })
+    }
+
+    const instance = await reviewOnboardingSection(
+      {
+        linkToken,
+        sectionId,
+        decision,
+        reason,
+      },
+      resolveBaseUrl(req)
+    )
+
+    if (!instance) {
+      return res.status(404).json({ error: "Onboarding instance not found" })
+    }
+
+    return res.status(200).json(instance)
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Failed to review onboarding section"
+    console.error("reviewOnboardingSectionHandler", error)
+    return res.status(400).json({ error: message })
   }
 }

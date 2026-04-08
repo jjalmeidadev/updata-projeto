@@ -131,6 +131,23 @@ export class OnboardingFormComponent implements OnInit {
   readonly sectionLabels = SECTION_LABELS;
   readonly currentSection = computed(() => this.sections()[this.currentSectionIndex()] ?? '');
   readonly currentSectionLabel = computed(() => this.getSectionLabel(this.currentSection()));
+  readonly returnedSections = computed(() => this.instance()?.returnedSections ?? []);
+  readonly sectionReview = computed(() => this.instance()?.sectionReview ?? {});
+  readonly hasReturnedSections = computed(() => this.returnedSections().length > 0);
+  readonly canSubmitReturnedCorrections = computed(() => {
+    if (!this.hasReturnedSections()) return false;
+
+    const questions = this.questions();
+    const values = this.formValues();
+    const returned = new Set(this.returnedSections());
+    const returnedQuestions = questions.filter((question) => returned.has(question.sectionId));
+
+    if (returnedQuestions.length === 0) return false;
+
+    return returnedQuestions.every(
+      (question) => this.validateQuestionValue(question.type, values[question.id]) === ''
+    );
+  });
   readonly currentQuestions = computed(() =>
     this.currentSection()
       ? this.questionService.getQuestionsBySection(this.questions(), this.currentSection())
@@ -318,6 +335,14 @@ export class OnboardingFormComponent implements OnInit {
     return rawLabel;
   }
 
+  isSectionReturned(sectionId: string): boolean {
+    return this.returnedSections().includes(sectionId);
+  }
+
+  getSectionReturnReason(sectionId: string): string {
+    return this.sectionReview()[sectionId]?.reason ?? '';
+  }
+
   goToUpload(): void {
     const linkToken = this.route.snapshot.paramMap.get('linkToken');
     sessionStorage.setItem(UPLOAD_SECTION_INDEX_KEY, this.currentSectionIndex().toString());
@@ -354,6 +379,16 @@ export class OnboardingFormComponent implements OnInit {
     sessionStorage.removeItem(REVIEW_FORM_DRAFT_KEY);
     sessionStorage.removeItem(REVIEW_SECTION_INDEX_KEY);
     this.completeSubmission();
+  }
+
+  submitCorrections(): void {
+    if (!this.canSubmitReturnedCorrections()) {
+      this.pageMessage.set('Please complete all required fields in returned sections before submitting.');
+      return;
+    }
+
+    this.pageMessage.set('');
+    this.submit();
   }
 
   private setupForm(questions: Question[], initialValues: Record<string, unknown>): void {

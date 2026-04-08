@@ -1,0 +1,170 @@
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  animation: fadeIn 0.2s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.modal-content {
+  background: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
+  max-width: 480px;
+  width: 90%;
+  animation: slideUp 0.3s ease-in-out;
+  display: flex;
+  flex-direction: column;
+  font-family: 'Segoe UI', 'Aptos', 'Helvetica Neue', sans-serif;
+}
+
+@keyframes slideUp {
+  from { transform: translateY(20px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  padding: 1.25rem 1.5rem;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.modal-header h2 {
+  margin: 0;
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: #111827;
+}
+
+.close-btn {
+  appearance: none;
+  background: transparent;
+  border: none;
+  font-size: 1.5rem;
+  cursor: pointer;
+  color: #6b7280;
+  padding: 0;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+}
+
+.close-btn:hover:not(:disabled) {
+  background: #f3f4f6;
+  color: #111827;
+}
+
+.close-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.modal-body {
+  padding: 1.5rem;
+}
+
+.modal-message {
+  margin: 0;
+  color: #374151;
+  font-size: 0.95rem;
+  line-height: 1.5;
+}
+
+.modal-footer {
+  display: flex;
+  gap: 0.75rem;
+  padding: 1.25rem 1.5rem 1.5rem;
+  border-top: 1px solid #e5e7eb;
+  background: #f9fafb;
+  justify-content: flex-end;
+}
+
+.cancel-btn,
+.confirm-btn {
+  padding: 0.65rem 1.2rem;
+  border-radius: 6px;
+  font-size: 0.88rem;
+  font-weight: 600;
+  cursor: pointer;
+  border: 1px solid transparent;
+  transition: all 0.2s ease;
+}
+
+.cancel-btn {
+  background: #ffffff;
+  color: #111827;
+  border-color: #d1d5db;
+}
+
+.cancel-btn:hover:not(:disabled) {
+  background: #f3f4f6;
+}
+
+.confirm-btn {
+  color: #ffffff;
+}
+
+.confirm-btn.primary {
+  background: #6d28d9;
+  border-color: #6d28d9;
+}
+
+.confirm-btn.primary:hover:not(:disabled) {
+  background: #5b21b6;
+  border-color: #5b21b6;
+}
+
+.confirm-btn.danger {
+  background: #ef4444;
+  border-color: #ef4444;
+}
+
+.confirm-btn.danger:hover:not(:disabled) {
+  background: #dc2626;
+  border-color: #dc2626;
+}
+
+.cancel-btn:disabled,
+.confirm-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+@media (max-width: 600px) {
+  .modal-content {
+    width: 95%;
+  }
+
+  .modal-body,
+  .modal-header,
+  .modal-footer {
+    padding-left: 1rem;
+    padding-right: 1rem;
+  }
+
+  .modal-footer {
+    flex-direction: column-reverse;
+  }
+
+  .cancel-btn,
+  .confirm-btn {
+    width: 100%;
+  }
+}

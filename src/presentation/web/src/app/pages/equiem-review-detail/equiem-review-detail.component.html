@@ -1,0 +1,200 @@
+<div class="home-container">
+  <header class="navbar">
+    <button class="back-link" type="button" (click)="backToReviewList()">← Back to Review List</button>
+    <h2>Equiem Review Detail</h2>
+  </header>
+
+  <section class="content">
+    <div class="home-panel">
+
+      @if (loading()) {
+        <div class="loading-state">
+          <div class="spinner"></div>
+          <p>Loading onboarding data...</p>
+        </div>
+      } @else if (!instance()) {
+        <div class="empty-state">
+          <div class="empty-icon">X</div>
+          <h3>Onboarding not found</h3>
+          <p>The onboarding you are looking for does not exist.</p>
+        </div>
+      } @else {
+        <div class="detail-header">
+          <div class="company-header">
+            <h1>{{ instance()!.companyName }}</h1>
+            <div class="company-meta">
+              <span class="meta-item">
+                <strong>Status:</strong>
+                <span class="status-badge status-review">In Review</span>
+              </span>
+              <span class="meta-item">
+                <strong>Submitted:</strong> {{ formatDate(instance()!.submittedAt) }}
+              </span>
+              <span class="meta-item">
+                <strong>Sections:</strong> {{ instance()!.selectedSections.join(', ') }}
+              </span>
+            </div>
+          </div>
+
+          <button
+            class="back-button"
+            type="button"
+            (click)="backToReviewList()"
+          >
+            ← Back
+          </button>
+        </div>
+
+        @if (feedback()) {
+          <div class="feedback-message" [ngClass]="'feedback-' + feedbackType()">
+            <span class="feedback-icon">
+              {{ feedbackType() === 'success' ? '✓' : '⚠' }}
+            </span>
+            {{ feedback() }}
+            <button class="close-feedback" type="button" (click)="feedback.set('')">✕</button>
+          </div>
+        }
+
+        <div class="review-workspace">
+          <aside class="sections-panel" aria-label="Review sections">
+            <div class="sections-panel-top">
+              <h3>Sections</h3>
+              <p>{{ progressSummary().approved }}/{{ progressSummary().total }} approved</p>
+            </div>
+
+            <button class="next-pending-btn next-pending-btn--top" type="button" (click)="goToNextPending()">
+              Next pending section
+            </button>
+
+            <div class="sections-controls">
+              <input
+                class="sections-search"
+                type="text"
+                placeholder="Search section"
+                [value]="sectionSearch()"
+                (input)="onSectionSearchInput($event)"
+              />
+              <div class="filter-chips">
+                <button type="button" class="chip" [class.chip-active]="statusFilter() === 'all'" (click)="setStatusFilter('all')">All</button>
+                <button type="button" class="chip" [class.chip-active]="statusFilter() === 'pending'" (click)="setStatusFilter('pending')">Pending</button>
+                <button type="button" class="chip" [class.chip-active]="statusFilter() === 'approved'" (click)="setStatusFilter('approved')">Approved</button>
+                <button type="button" class="chip" [class.chip-active]="statusFilter() === 'rejected'" (click)="setStatusFilter('rejected')">Returned</button>
+              </div>
+            </div>
+
+            <div class="sections-list">
+              @for (section of filteredSections(); track section.id) {
+                <button
+                  class="section-row"
+                  type="button"
+                  [class.section-row-active]="selectedSectionId() === section.id"
+                  (click)="setSelectedSection(section.id)"
+                >
+                  <span class="section-row-label">{{ section.label }}</span>
+                  <span class="section-status" [ngClass]="getSectionBadgeClass(section.status)">
+                    {{ getSectionBadgeLabel(section.status) }}
+                  </span>
+                </button>
+              }
+            </div>
+          </aside>
+
+          <main class="section-detail-panel">
+            @if (selectedSection(); as section) {
+              <div class="data-section">
+                <div class="section-header section-header-static">
+                  <div class="section-title-wrap">
+                    <h2>{{ section.label }}</h2>
+                    <span class="item-count">{{ section.questions.length }} questions</span>
+                  </div>
+                  <span class="section-status" [ngClass]="getSectionBadgeClass(section.status)">
+                    {{ getSectionBadgeLabel(section.status) }}
+                  </span>
+                </div>
+
+                <div class="section-actions section-actions-sticky">
+                  <button
+                    class="action-btn approve-btn"
+                    type="button"
+                    (click)="approveSection(section)"
+                    [disabled]="isProcessing()"
+                  >
+                    Approve Section
+                  </button>
+                  <button
+                    class="action-btn reject-btn"
+                    type="button"
+                    (click)="openRejectSection(section)"
+                    [disabled]="isProcessing()"
+                  >
+                    Return Section for Refill
+                  </button>
+                </div>
+
+                <div class="section-items section-items-scroll">
+                  @if (section.reason) {
+                    <div class="section-reason">
+                      <strong>Return reason:</strong> {{ section.reason }}
+                    </div>
+                  }
+
+                  @for (item of section.questions; track item.id) {
+                    <div class="data-item">
+                      <div class="item-label">{{ item.label }}</div>
+                      <div class="item-value" [ngClass]="'type-' + item.type">
+                        @switch (item.type) {
+                          @case ('boolean') {
+                            <span class="boolean-badge" [ngClass]="item.value ? 'true' : 'false'">
+                              {{ formatValue(item.value, item.type) }}
+                            </span>
+                          }
+                          @case ('multi-select') {
+                            <span class="array-items">
+                              @for (arr of toArray(item.value); track $index) {
+                                <span class="array-item">{{ arr }}</span>
+                              }
+                            </span>
+                          }
+                          @default {
+                            {{ formatValue(item.value, item.type) }}
+                          }
+                        }
+                      </div>
+                    </div>
+                  }
+                </div>
+              </div>
+            } @else {
+              <div class="empty-state">
+                <h3>No matching sections</h3>
+                <p>Try changing the filters or search query.</p>
+              </div>
+            }
+          </main>
+        </div>
+
+        <!-- Actions -->
+        <div class="actions-row">
+          <button
+            class="action-btn back-btn"
+            type="button"
+            (click)="backToReviewList()"
+            [disabled]="isProcessing()"
+          >
+            ← Back to Review List
+          </button>
+        </div>
+      }
+
+    </div>
+  </section>
+</div>
+
+<!-- Reject Modal -->
+<app-reject-reason-modal
+  [isOpen]="showRejectModal()"
+  [companyName]="(instance()?.companyName ?? '') + ' • ' + (sectionToReject()?.label ?? '')"
+  [isLoading]="isProcessing()"
+  (onConfirm)="onRejectConfirm($event)"
+  (onCancel)="onRejectCancel()"
+></app-reject-reason-modal>

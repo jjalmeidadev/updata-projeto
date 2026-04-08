@@ -5,6 +5,7 @@ import { AuthService } from '@auth0/auth0-angular';
 import { map } from 'rxjs/operators';
 import { OnboardingInstance } from '../../models/onboarding-instance.model';
 import { OnboardingInstanceService } from '../../services/onboarding-instance.service';
+import { ToastService } from '../../components/toast/toast.service';
 
 @Component({
   selector: 'app-home',
@@ -17,12 +18,12 @@ export class HomeComponent implements OnInit {
   private readonly auth = inject(AuthService);
   private readonly router = inject(Router);
   private readonly onboardingService = inject(OnboardingInstanceService);
+  private readonly toast = inject(ToastService);
 
   profileMenuOpen = false;
   loading = true;
   errorMessage = '';
   instances: OnboardingInstance[] = [];
-  feedbackMessage = '';
 
   readonly userEmail$ = this.auth.user$.pipe(
     map(user => user?.email ?? '')
@@ -61,6 +62,10 @@ export class HomeComponent implements OnInit {
     this.router.navigate(['/module-selector']);
   }
 
+  goToEquiemReview(): void {
+  this.router.navigate(['/equiem-review']);
+}
+
   openOnboarding(instance: OnboardingInstance): void {
     this.router.navigate(['/onboarding', instance.linkToken]);
   }
@@ -75,18 +80,20 @@ export class HomeComponent implements OnInit {
 
   copyLink(instance: OnboardingInstance): void {
     navigator.clipboard.writeText(instance.linkUrl).then(() => {
-      this.feedbackMessage = `Link copied for ${instance.companyName}.`;
+      this.toast.success(`Link copied for ${instance.companyName}.`);
+    }).catch(() => {
+      this.toast.error(`Failed to copy link for ${instance.companyName}.`);
     });
   }
 
   completeReview(instance: OnboardingInstance): void {
     this.onboardingService.completeEquiemReview(instance.linkToken).subscribe({
       next: () => {
-        this.feedbackMessage = `Equiem review completed for ${instance.companyName}.`;
+        this.toast.success(`Equiem review completed for ${instance.companyName}.`);
         this.loadInstances();
       },
       error: () => {
-        this.feedbackMessage = 'Failed to complete the Equiem review.';
+        this.toast.error('Failed to complete the Equiem review.');
       },
     });
   }

@@ -144,12 +144,16 @@
             Track the progress of all ongoing onboarding flows.
           </p>
         </div>
-        <button class="start-btn" type="button" (click)="createOnboarding()">
-          Create Onboarding
-        </button>
+        <div class="header-actions">
+          <button class="equiem-review-btn" type="button" (click)="goToEquiemReview()">
+            Equiem Review
+          </button>
+          <button class="start-btn" type="button" (click)="createOnboarding()">
+            Create Onboarding
+          </button>
+        </div>
       </div>
 
-      <p *ngIf="feedbackMessage" class="subtitle">{{ feedbackMessage }}</p>
       <p *ngIf="errorMessage" class="subtitle">{{ errorMessage }}</p>
 
       <div class="table-wrapper">
