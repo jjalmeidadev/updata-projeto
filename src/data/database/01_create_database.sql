@@ -214,6 +214,7 @@ CREATE TABLE onboarding_instance (
   batch_id UUID REFERENCES onboarding_batch(id) ON DELETE SET NULL,
   company_name VARCHAR(255) NOT NULL,
   selected_sections TEXT[] NOT NULL DEFAULT '{}',
+  allowed_emails TEXT[] NOT NULL DEFAULT '{}',
   status VARCHAR(50) NOT NULL DEFAULT 'draft',
   progress_percent INT NOT NULL DEFAULT 0,
   link_token VARCHAR(120) NOT NULL UNIQUE,
@@ -282,5 +283,6 @@ CREATE INDEX idx_processing_chunk_status ON processing_chunk(status);
 CREATE INDEX idx_onboarding_instance_link_token ON onboarding_instance(link_token);
 CREATE INDEX idx_onboarding_instance_company_id ON onboarding_instance(company_id);
 CREATE INDEX idx_onboarding_instance_status ON onboarding_instance(status);
+CREATE INDEX idx_onboarding_instance_emails ON onboarding_instance(allowed_emails);
 CREATE INDEX idx_onboarding_instance_status_submitted ON onboarding_instance(status, submitted_at DESC);
 CREATE INDEX idx_onboarding_instance_returned_sections ON onboarding_instance USING GIN(returned_sections);

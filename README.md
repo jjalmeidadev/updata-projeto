@@ -391,10 +391,12 @@ cd g05
 
 2. **Configure environment variables**
 
-Create `config/.env` using `config/.env.example` as reference and fill all required values (`DB_*`, `AWS_*`, and optional `EQUIEM_*`).
+Create `config/.env` using `config/.env.example` as reference and fill all required values (`DB_*`, `AWS_*`, `FRONTEND_BASE_URL`, and optional `EQUIEM_*` / SMTP values).
 
 Important for this project:
 - You must set `AWS_SESSION_TOKEN=` in `config/.env`.
+- Set `FRONTEND_BASE_URL` to the public URL used by the frontend so onboarding links are generated correctly.
+- If you want onboarding invite emails to be sent automatically, configure the SMTP variables (`ONBOARDING_SMTP_*` and `ONBOARDING_EMAIL_FROM`).
 - This project uses AWS Academy Lab (free learning environment), which provides temporary AWS credentials and some service limitations.
 - Because credentials are temporary, refresh `AWS_SESSION_TOKEN` when it expires.
 
@@ -450,8 +452,10 @@ Prerequisites:
 4. **Configure environment variables**
 
 - Create `config/.env` using `config/.env.example` as reference.
-- Set all required values (`DB_*`, `AWS_*`, and optional `EQUIEM_*`).
+- Set all required values (`DB_*`, `AWS_*`, `FRONTEND_BASE_URL`, and optional `EQUIEM_*` / SMTP values).
 - Required for upload and background processing: set `AWS_SESSION_TOKEN=`.
+- Set `FRONTEND_BASE_URL` to the public frontend URL if you want onboarding links to be generated without `localhost`.
+- Configure the SMTP variables if you want automatic invitation emails to be sent to the allowed recipients.
 - This value is mandatory because the project uses AWS Academy Lab, where credentials are temporary and must be renewed periodically.
 
 5. **Configure and start PostgreSQL**
@@ -489,10 +493,12 @@ For test runs:
 - Backend unit tests: npm test
 - Backend coverage: npm run test:coverage
 - Frontend tests:
+
 ```sh
 cd src/presentation/web
 npm test
 ```
+
 ### Resetting the Database
 
 If you need to reset the schema:

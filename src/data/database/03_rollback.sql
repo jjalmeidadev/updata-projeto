@@ -23,6 +23,7 @@ DROP INDEX IF EXISTS idx_processing_chunk_status CASCADE;
 DROP INDEX IF EXISTS idx_onboarding_instance_link_token CASCADE;
 DROP INDEX IF EXISTS idx_onboarding_instance_company_id CASCADE;
 DROP INDEX IF EXISTS idx_onboarding_instance_status CASCADE;
+DROP INDEX IF EXISTS idx_onboarding_instance_emails CASCADE;
 
 -- Drop tables (reverse dependency order)
 

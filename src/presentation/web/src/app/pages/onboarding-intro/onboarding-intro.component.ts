@@ -1,5 +1,6 @@
 import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { ActivatedRoute } from '@angular/router';
 import { Router } from '@angular/router';
 import { AuthService } from '@auth0/auth0-angular';
 import { map, take } from 'rxjs/operators';
@@ -14,11 +15,19 @@ const LINK_TARGET_KEY = 'post_login_link_target';
   styleUrl: './onboarding-intro.component.scss',
 })
 export class OnboardingIntroComponent {
+  private readonly route = inject(ActivatedRoute);
   private readonly router = inject(Router);
   private readonly auth = inject(AuthService);
   guidanceMessage = '';
 
   start(): void {
+    const linkToken = this.route.snapshot.paramMap.get('linkToken')?.trim() ?? '';
+
+    if (linkToken) {
+      this.router.navigate(['/onboarding', linkToken, 'input-method']);
+      return;
+    }
+
     this.auth.user$
       .pipe(
         take(1),

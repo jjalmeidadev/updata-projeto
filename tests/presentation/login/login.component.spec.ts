@@ -2,7 +2,7 @@ import { TestBed } from '@angular/core/testing';
 import { HttpClient } from '@angular/common/http';
 import { Router } from '@angular/router';
 import { AuthService } from '@auth0/auth0-angular';
-import { Subject, of, throwError } from 'rxjs';
+import { Observable, Subject, of, throwError } from 'rxjs';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { LoginComponent } from '../../../src/presentation/web/src/app/pages/login/login.component';
@@ -24,7 +24,7 @@ describe('LoginComponent', () => {
 
   let authMock: {
     isAuthenticated$: Subject<boolean>;
-    user$: ReturnType<typeof of>;
+    user$: Observable<any>;
     loginWithRedirect: ReturnType<typeof vi.fn>;
   };
 
@@ -43,6 +43,8 @@ describe('LoginComponent', () => {
 
   beforeEach(async () => {
     vi.clearAllMocks();
+    sessionStorage.removeItem('post_login_link_target');
+    sessionStorage.removeItem('post_login_force_account_selection');
 
     authState$ = new Subject<boolean>();
 
@@ -113,15 +115,41 @@ describe('LoginComponent', () => {
     // Arrange
     setUrlSearch('');
     sessionStorage.setItem('post_login_link_target', '/onboarding/token-abc/form');
+    httpMock.get.mockReturnValue(of({ next: '/company/9' }));
 
     // Act
     component.ngOnInit();
     authState$.next(true);
 
     // Assert
+    expect(httpMock.get).toHaveBeenCalledWith('/api/users', expect.objectContaining({
+      headers: expect.anything(),
+    }));
     expect(routerMock.navigateByUrl).toHaveBeenCalledWith('/onboarding/token-abc/form');
-    expect(httpMock.get).not.toHaveBeenCalled();
     expect(sessionStorage.getItem('post_login_link_target')).toBeNull();
+  });
+
+  it('forces account selection when onboarding access denial flag is present', () => {
+    // Arrange
+    setUrlSearch('');
+    sessionStorage.setItem('post_login_link_target', '/onboarding/token-xyz/form');
+    sessionStorage.setItem('post_login_force_account_selection', 'true');
+
+    // Act
+    component.ngOnInit();
+    authState$.next(true);
+
+    // Assert
+    expect(authMock.loginWithRedirect).toHaveBeenCalledWith({
+      appState: { target: '/onboarding/token-xyz/form' },
+      authorizationParams: {
+        audience: 'https://api.updata.com',
+        scope: 'openid profile email',
+        prompt: 'select_account',
+      },
+    });
+    expect(routerMock.navigateByUrl).not.toHaveBeenCalled();
+    expect(sessionStorage.getItem('post_login_force_account_selection')).toBeNull();
   });
 
   it('resolves user flow on callback and navigates to API next route', () => {
@@ -166,7 +194,7 @@ describe('LoginComponent', () => {
     expect(routerMock.navigateByUrl).toHaveBeenCalledWith('/home');
   });
 
-  it('navigates to /onboarding-intro when API responds with 403', () => {
+  it('navigates to /login when API responds with 403', () => {
     // Arrange
     setUrlSearch('?code=abc&state=xyz');
     httpMock.get.mockReturnValue(throwError(() => ({ status: 403 })));
@@ -176,7 +204,7 @@ describe('LoginComponent', () => {
     authState$.next(true);
 
     // Assert
-    expect(routerMock.navigateByUrl).toHaveBeenCalledWith('/onboarding-intro');
+    expect(routerMock.navigateByUrl).toHaveBeenCalledWith('/login');
   });
 
   it('navigates to /monitoring when API responds with 403 for internal test email profile', async () => {
@@ -186,7 +214,7 @@ describe('LoginComponent', () => {
 
     authMock.user$ = of({
       name: 'Yudi Test',
-      email: 'yudi@equiem.com',
+      email: 'yudi@getequiem.com',
     });
 
     TestBed.resetTestingModule();
@@ -249,6 +277,7 @@ describe('LoginComponent', () => {
       authorizationParams: {
         audience: 'https://api.updata.com',
         scope: 'openid profile email',
+        prompt: 'select_account',
       },
     });
   });
@@ -266,6 +295,7 @@ describe('LoginComponent', () => {
         audience: 'https://api.updata.com',
         scope: 'openid profile email',
         connection: 'google-oauth2',
+        prompt: 'select_account',
       },
     });
   });

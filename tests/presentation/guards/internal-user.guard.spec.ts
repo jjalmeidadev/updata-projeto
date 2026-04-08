@@ -5,7 +5,28 @@ describe('internal-user.guard', () => {
   beforeEach(() => {
     vi.resetModules();
     vi.clearAllMocks();
-    sessionStorage.clear();
+
+    if (!(globalThis as { sessionStorage?: Storage }).sessionStorage) {
+      const store = new Map<string, string>();
+      (globalThis as { sessionStorage?: Storage }).sessionStorage = {
+        getItem: (key: string) => store.get(key) ?? null,
+        setItem: (key: string, value: string) => {
+          store.set(key, value);
+        },
+        removeItem: (key: string) => {
+          store.delete(key);
+        },
+        clear: () => {
+          store.clear();
+        },
+        key: (index: number) => Array.from(store.keys())[index] ?? null,
+        get length() {
+          return store.size;
+        },
+      } as Storage;
+    }
+
+    (globalThis as { sessionStorage?: Storage }).sessionStorage?.clear();
   });
 
   it('allows Equiem domain email', async () => {
@@ -130,7 +151,7 @@ describe('internal-user.guard', () => {
     expect(createUrlTree).not.toHaveBeenCalled();
   });
 
-  it('redirects external user to onboarding-intro', async () => {
+  it('redirects external user to login', async () => {
     const redirectedTree = { redirected: true };
     const createUrlTree = vi.fn(() => redirectedTree);
     const routerMock = { createUrlTree };
@@ -168,6 +189,6 @@ describe('internal-user.guard', () => {
     });
 
     expect(value).toEqual(redirectedTree);
-    expect(createUrlTree).toHaveBeenCalledWith(['/onboarding-intro']);
+    expect(createUrlTree).toHaveBeenCalledWith(['/login']);
   });
 });

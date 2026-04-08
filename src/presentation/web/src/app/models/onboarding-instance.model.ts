@@ -10,6 +10,7 @@ export interface OnboardingInstance {
   companyId: string | null;
   companyName: string;
   selectedSections: string[];
+  allowedEmails: string[];
   status: OnboardingStatus;
   progressPercent: number;
   linkToken: string;

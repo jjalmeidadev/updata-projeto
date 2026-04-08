@@ -20,7 +20,16 @@ export const internalUserGuard: CanActivateFn = () => {
         return true;
       }
 
-      return router.createUrlTree(['/onboarding-intro']);
+      const alertFn = (globalThis as { alert?: (message: string) => void }).alert;
+      if (typeof alertFn === 'function') {
+        try {
+          alertFn('Access blocked. Your account does not have permission to access this area.');
+        } catch {
+          // Ignore alert failures in non-browser test environments.
+        }
+      }
+
+      return router.createUrlTree(['/login']);
     }),
   );
 };

@@ -12,19 +12,27 @@ export const AUTH_ROLE_STORAGE_KEY = 'resolved_auth_role';
 export const AUTH_ROLE_INTERNAL = 'internal';
 export const AUTH_ROLE_EXTERNAL = 'external';
 
-export const INTERNAL_TEST_EMAILS = new Set([
-  'yudi@equiem.com',
-  'jaime.almeida@sou.inteli.edu.br',
-  'owenpsail2963@gmail.com',
-  'yudiomaki@gmail.com'
-]);
+function readEnv(name: string): string | undefined {
+  return (globalThis as { process?: { env?: Record<string, string | undefined> } }).process?.env?.[name];
+}
+
+function resolveAdminEmail(): string {
+  return "equiem.onboarding@gmail.com";
+}
+
+const internalTestEmailValues = [resolveAdminEmail()].filter(
+  (email): email is string => Boolean(email)
+);
+
+export const INTERNAL_TEST_EMAILS = new Set(internalTestEmailValues);
+
 
 function normalizeEmail(email: string): string {
   return (email || '').trim().toLowerCase();
 }
 
 /**
- * Check if an email is marked as an internal test email
+ * Check if an email is marked as an internal allowlisted email
  */
 export function isInternalTestEmail(email: string): boolean {
   return INTERNAL_TEST_EMAILS.has(normalizeEmail(email));
