@@ -1985,7 +1985,7 @@ The **2030 Agenda** frames sustainable development through five dimensions: **Pe
 
 **Peace: *indirect (institutional).*** In the sense of **stability and trust**, the architecture contributes **indirectly** through **HTTPS**, **JWT validation** (Section **25.8**), traceable batches/jobs, and security-related NFRs (Section **17**), reducing disputes rooted in **ambiguity or unauthorised access**. The project does **not** address geopolitical conflict.
 
-**Partnerships: *direct.*** Multi-party onboarding and integrations with **identity and cloud providers** exemplify **collaborative delivery** (Sections **25.8–25.9**). Direct value lies in **aligned actors** operating on **shared artefacts** rather than disconnected e-mail chains
+**Partnerships: *direct.*** Multi-party onboarding and integrations with **identity and cloud providers** exemplify **collaborative delivery** (Sections **25.8–25.9**). Direct value lies in **aligned actors** operating on **shared artefacts** rather than disconnected e-mail chains.
 
 ### 26.3. Priority Sustainable Development Goals
 
@@ -2007,7 +2007,7 @@ The **Smart Cities** concept treats **data and digital infrastructure** as key e
 
 In practice, **building management platforms depend on correct configuration data**. The **digital onboarding infrastructure** introduced in this project ensures that data entering operational systems is **validated and structured before use**, preventing errors from propagating into building operations. At the same time, **scalable data processing**, implemented through background workers and benchmarked workloads (Appendix A), allows the system to support **large urban property portfolios** without requiring proportional increases in staffing.
 
-Together, these mechanisms contribute to **more reliable digital services in the built environment**, supporting the broader vision of **smarter urban systems**, while recognising that this module does **not** directly address city-scale infrastructures such as transport or utilities.
+Together, these mechanisms contribute to **more reliable digital services in the built environment**, supporting the broader vision of **smarter urban systems**, while recognising that this module does **not** directly address city-scale infrastructures such as transport or utilities. This directly aligns with Smart Cities principles by enabling interoperable, data-driven urban infrastructure through reliable building-level digital systems.
 
 ### 26.5. Evidence, Expected Impacts and Practical Implications
 
@@ -2015,7 +2015,13 @@ Together, these mechanisms contribute to **more reliable digital services in the
 
 **Expected impacts**, aligned with the criteria defined in this section, include: **operational efficiency gains** through the separation of API and worker responsibilities and the adoption of asynchronous processing; **reduction of administrative workload**, as manual reconciliation of files and versions is replaced by structured workflows; **improved reliability of onboarding data** through validation before downstream system use; and **scalable digital infrastructure for real-estate platforms**, supported by horizontal scaling patterns described in Section **25** and throughput analysis in **Appendix A**. These improvements are also expected to enhance **service delivery and customer experience** through increased transparency, collaborative workflows, and early validation feedback (FR10–FR11; Section **21**).
 
-More broadly, organisations adopting **PropTech** and **digital building management platforms** face implications consistent with wider **digital transformation** literature: platforms that standardise **data supply chains** can reduce friction between **assets**, **operators**, and **users**, but they also require **governance structures**, **appropriate technical skills**, and **performance measurement** to sustain long-term value (OECD, 2020; World Economic Forum, 2022). While this document provides **design-level and testing evidence**, **SDG-level impact attribution** ultimately depends on operational baselines from partner organisations. Future work should therefore define **operational KPIs** (such as onboarding cycle time, re-submission rates, and time-to-first-valid batch) to support empirical evaluation of the impacts outlined in this section.
+More broadly, organisations adopting **PropTech** and **digital building management platforms** face implications consistent with wider **digital transformation** literature: platforms that standardise **data supply chains** can reduce friction between **assets**, **operators**, and **users**, but they also require **governance structures**, **appropriate technical skills**, and **performance measurement** to sustain long-term value (OECD, 2020; World Economic Forum, 2022). While this document provides **design-level and testing evidence**, **SDG-level impact attribution** ultimately depends on operational baselines from partner organisations. To support empirical evaluation, the following **operational KPIs are defined**:
+
+1. **Onboarding cycle time** – time from initial data submission to configuration readiness.  
+2. **Re-submission rate** – percentage of datasets requiring correction cycles.  
+3. **Time-to-first-valid batch** – time required to achieve a fully validated dataset without errors.  
+
+These metrics provide a measurable basis for validating the operational and sustainability impacts described in this section.
 
 --- 
 
