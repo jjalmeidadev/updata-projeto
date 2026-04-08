@@ -16,6 +16,7 @@ import { QuestionService, SECTION_LABELS } from '../../services/question.service
 import { Question } from '../../models/question.model';
 import { CompanyOption } from '../../models/onboarding-instance.model';
 import { OnboardingInstanceService } from '../../services/onboarding-instance.service';
+import { ToastService } from '../../components/toast/toast.service';
 
 @Component({
   selector: 'app-module-selector',
@@ -30,6 +31,7 @@ export class ModuleSelectorComponent implements OnInit {
   private readonly auth = inject(AuthService);
   private readonly elRef = inject(ElementRef<HTMLElement>);
   private readonly onboardingService = inject(OnboardingInstanceService);
+  private readonly toast = inject(ToastService);
 
   profileMenuOpen = false;
 
@@ -65,8 +67,6 @@ export class ModuleSelectorComponent implements OnInit {
   readonly companyName = signal('');
   readonly saving = signal(false);
   readonly createdLink = signal('');
-  readonly successMessage = signal('');
-  readonly errorMessage = signal('');
   readonly sectionLabels = SECTION_LABELS;
 
   readonly canCreate = computed(
@@ -161,8 +161,6 @@ export class ModuleSelectorComponent implements OnInit {
 
     this.saveSelection();
     this.saving.set(true);
-    this.successMessage.set('');
-    this.errorMessage.set('');
 
     this.onboardingService.createInstance({
       companyName: this.companyName().trim(),
@@ -170,25 +168,30 @@ export class ModuleSelectorComponent implements OnInit {
     }).subscribe({
       next: (response) => {
         this.createdLink.set(response.instance.linkUrl);
-        this.successMessage.set(
+        this.toast.success(
           response.reusedExistingInstance
-            ? 'Existing onboarding instance reused for this company and section set.'
+            ? 'Existing onboarding reused for this company and section set.'
             : 'Onboarding link created successfully.'
         );
         this.saving.set(false);
       },
       error: () => {
-        this.errorMessage.set('Failed to create the onboarding link.');
+        this.toast.error('Failed to create the onboarding link.');
         this.saving.set(false);
       },
     });
   }
 
   copyLink(): void {
-    if (!this.createdLink()) return;
+    if (!this.createdLink()) {
+      this.toast.info('Create the onboarding link first.');
+      return;
+    }
 
     navigator.clipboard.writeText(this.createdLink()).then(() => {
-      this.successMessage.set('Onboarding link copied to clipboard.');
+      this.toast.success('Onboarding link copied to clipboard.');
+    }).catch(() => {
+      this.toast.error('Unable to copy the onboarding link.');
     });
   }
 
