@@ -8,6 +8,7 @@ import {
   getOnboardingReviewDataByLink,
   getOnboardingInstanceByLinkForAuthenticatedUser,
   rejectOnboardingInstance,
+  reviewOnboardingSection,
   saveOnboardingProgress,
   submitOnboarding,
 } from "../../../business/services/onboarding-instance-service.js"

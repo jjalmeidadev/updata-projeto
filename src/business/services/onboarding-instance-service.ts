@@ -13,6 +13,7 @@ import {
 } from "../../data/repositories/onboarding-instance-repository.js"
 import {
   buildOnboardingEmailDraft,
+  sendOnboardingInviteToAllowedEmails,
   sendOnboardingSubmissionMessageToAdmins,
 } from "./onboarding-email-service.js"
 
@@ -213,8 +214,27 @@ async function createOrReuseOnboardingInstance(input: CreateOnboardingInstanceIn
   })
 
   if (reusable && haveSameEmails(reusable.allowed_emails.map(normalizeEmailAddress).sort(), allowedEmails)) {
+    const inviteResult = await sendOnboardingInviteToAllowedEmails({
+      companyName: reusable.company_name,
+      onboardingLink: toPublicLink(input.baseUrl, reusable.link_token),
+      selectedSections,
+      allowedEmails,
+    })
+
+    const invitePayload = {
+      ...(reusable.email_payload ?? {}),
+      onboardingInvite: inviteResult,
+    }
+
+    const withInviteStatus = await updateOnboardingInstance(reusable.id, {
+      emailStatus: inviteResult.sent ? "invite_sent" : "invite_failed",
+      emailPayload: invitePayload,
+    })
+
+    const persistedReusable = withInviteStatus ?? reusable
+
     return {
-      instance: mapInstance(reusable, input.baseUrl),
+      instance: mapInstance(persistedReusable, input.baseUrl),
       reusedExistingInstance: true,
       reuseRule: "An existing non-terminal onboarding instance was reused for the same company and section set.",
     }
@@ -241,8 +261,27 @@ async function createOrReuseOnboardingInstance(input: CreateOnboardingInstanceIn
     emailPayload,
   })
 
+  const inviteResult = await sendOnboardingInviteToAllowedEmails({
+    companyName: input.companyName.trim(),
+    onboardingLink: linkUrl,
+    selectedSections,
+    allowedEmails,
+  })
+
+  const invitePayload = {
+    ...(record.email_payload ?? {}),
+    onboardingInvite: inviteResult,
+  }
+
+  const withInviteStatus = await updateOnboardingInstance(record.id, {
+    emailStatus: inviteResult.sent ? "invite_sent" : "invite_failed",
+    emailPayload: invitePayload,
+  })
+
+  const persistedRecord = withInviteStatus ?? record
+
   return {
-    instance: mapInstance(record, input.baseUrl),
+    instance: mapInstance(persistedRecord, input.baseUrl),
     reusedExistingInstance: false,
     reuseRule: "A new onboarding instance is created when the previous cycle is completed and a new cycle starts.",
   }
