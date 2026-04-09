@@ -176,14 +176,13 @@
               </td>
               <td>
                 <div class="progress-container">
-                  <span class="percent">0%</span>
                   <div class="progress-bar">
                     <div
                       class="progress-fill"
                       [style.width.%]="instance.progressPercent"
                     ></div>
                   </div>
-                  <span class="percent">100%</span>
+                  <span class="progress-value">{{ instance.progressPercent }}%</span>
                 </div>
               </td>
               <td class="status-cell">
