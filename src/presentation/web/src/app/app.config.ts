@@ -10,7 +10,6 @@ export const appConfig: ApplicationConfig = {
     provideAnimations(),
     provideBrowserGlobalErrorListeners(),
     provideRouter(routes),
-    provideHttpClient(withInterceptors([authHttpInterceptorFn])),
     provideAuth0({
       domain: 'dev-e8hme66hgt4cf75n.us.auth0.com',
       clientId: 'UdMuqErwkmF1lmBbHZz77ejJAhCt4dur',
@@ -20,8 +19,14 @@ export const appConfig: ApplicationConfig = {
         scope: 'openid profile email',
       },
       httpInterceptor: {
-        allowedList: ['/api/*', 'http://localhost:3000/api/*'],
+        allowedList: [
+          {
+            uri: '/api/*',
+            allowAnonymous: false,
+          },
+        ],
       },
     }),
+    provideHttpClient(withInterceptors([authHttpInterceptorFn])),
   ],
 };
