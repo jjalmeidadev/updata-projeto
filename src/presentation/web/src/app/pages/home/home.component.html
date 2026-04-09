@@ -215,9 +215,10 @@
                     *ngIf="instance.status === 'equiem_review'"
                     class="details-btn"
                     type="button"
+                    [disabled]="isCompletingReview(instance)"
                     (click)="completeReview(instance)"
                   >
-                    Complete review
+                    {{ isCompletingReview(instance) ? 'Completing...' : 'Complete review' }}
                   </button>
                   <button
                     *ngIf="instance.status === 'completed'"

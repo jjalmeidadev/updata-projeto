@@ -357,6 +357,14 @@
   background: #d6c5fb;
 }
 
+.details-btn:disabled,
+.start-btn:disabled,
+.icon-btn:disabled,
+.equiem-review-btn:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
+}
+
 .start-btn {
   background: #d6c5fb;
   color: #363640;
