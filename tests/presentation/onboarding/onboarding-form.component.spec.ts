@@ -1,6 +1,7 @@
 import { TestBed } from '@angular/core/testing';
 import { FormGroup } from '@angular/forms';
 import { ActivatedRoute, Params, Router } from '@angular/router';
+import { AuthService } from '@auth0/auth0-angular';
 import { BehaviorSubject, of, throwError } from 'rxjs';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
@@ -39,6 +40,10 @@ describe('OnboardingFormComponent', () => {
     getPublicInstance: ReturnType<typeof vi.fn>;
     saveProgress: ReturnType<typeof vi.fn>;
     submit: ReturnType<typeof vi.fn>;
+  };
+
+  let authMock: {
+    logout: ReturnType<typeof vi.fn>;
   };
 
   const questions: Question[] = [
@@ -98,6 +103,10 @@ describe('OnboardingFormComponent', () => {
       submit: vi.fn().mockReturnValue(of(null)),
     };
 
+    authMock = {
+      logout: vi.fn(),
+    };
+
     await resolveAngularResources();
 
     await TestBed.configureTestingModule({
@@ -124,6 +133,7 @@ describe('OnboardingFormComponent', () => {
           },
         },
         { provide: OnboardingInstanceService, useValue: onboardingServiceMock },
+        { provide: AuthService, useValue: authMock },
       ],
     }).compileComponents();
 

@@ -7,6 +7,7 @@ import { catchError, map, switchMap, take } from 'rxjs/operators';
 
 const LINK_TARGET_KEY = 'post_login_link_target';
 const LINK_FORCE_ACCOUNT_SELECTION_KEY = 'post_login_force_account_selection';
+const ONBOARDING_ACCESS_DENIED_NOTICE_KEY = 'onboarding_access_denied_notice';
 
 function setStoredLinkTarget(target: string): void {
   const storage = (globalThis as { sessionStorage?: Storage }).sessionStorage;
@@ -30,6 +31,15 @@ function setForceAccountSelection(value: boolean): void {
   }
 
   storage.removeItem(LINK_FORCE_ACCOUNT_SELECTION_KEY);
+}
+
+function setAccessDeniedNotice(message: string): void {
+  const storage = (globalThis as { sessionStorage?: Storage }).sessionStorage;
+  if (!storage) {
+    return;
+  }
+
+  storage.setItem(ONBOARDING_ACCESS_DENIED_NOTICE_KEY, message);
 }
 
 function extractLinkToken(route: { paramMap?: { get: (key: string) => string | null } }, url: string): string {
@@ -99,11 +109,7 @@ export const instanceLinkAuthGuard: CanActivateFn = (route, state) => {
             if (status === 401 || status === 403) {
               setStoredLinkTarget(target);
               setForceAccountSelection(true);
-              const alertFn = (globalThis as { alert?: (message: string) => void }).alert;
-
-              if (typeof alertFn === 'function') {
-                alertFn(`You do not have permission to access this onboarding.\n\n${readApiErrorMessage(error)}`);
-              }
+              setAccessDeniedNotice(readApiErrorMessage(error));
 
               auth.loginWithRedirect({
                 appState: { target },
