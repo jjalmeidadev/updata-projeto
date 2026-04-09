@@ -61,9 +61,10 @@ export class LoginComponent implements OnInit {
         const fallback = setTimeout(() => {
           if (!resolved) {
             resolved = true;
+            console.warn('[LOGIN] Fallback timeout: calling resolveUserFlow without profile data');
             this.resolveUserFlow();
           }
-        }, 1500);
+        }, 3000); // Increased from 1500ms to 3000ms to allow Auth0 to load user profile
 
         this.auth.user$
           .pipe(
@@ -71,7 +72,11 @@ export class LoginComponent implements OnInit {
               name: (profile?.name || '').trim(),
               email: (profile?.email || '').trim().toLowerCase(),
             })),
-            filter(profile => profile.name.length > 0 || profile.email.length > 0),
+            filter(profile => {
+              const hasData = profile.name.length > 0 || profile.email.length > 0;
+              console.log(`[LOGIN] Auth0 user$ received: name="${profile.name}", email="${profile.email}", hasData=${hasData}`);
+              return hasData;
+            }),
             take(1),
           )
           .subscribe(profile => {
@@ -81,6 +86,7 @@ export class LoginComponent implements OnInit {
 
             resolved = true;
             clearTimeout(fallback);
+            console.log(`[LOGIN] Resolving user flow with profile: name="${profile.name}", email="${profile.email}"`);
             this.resolveUserFlow(profile.name, profile.email);
           });
       });
@@ -128,6 +134,8 @@ export class LoginComponent implements OnInit {
     const normalizedProfileName = (profileName || '').trim();
     const normalizedProfileEmail = (profileEmail || '').trim().toLowerCase();
 
+    console.log(`[LOGIN] resolveUserFlow called: profileName="${profileName}", profileEmail="${profileEmail}"`);
+
     if (normalizedProfileName) {
       headerValues['x-profile-name'] = normalizedProfileName;
     }
@@ -135,6 +143,8 @@ export class LoginComponent implements OnInit {
     if (normalizedProfileEmail) {
       headerValues['x-profile-email'] = normalizedProfileEmail;
     }
+
+    console.log(`[LOGIN] Request headers: x-profile-name="${headerValues['x-profile-name'] || 'NOT SET'}", x-profile-email="${headerValues['x-profile-email'] || 'NOT SET'}"`);
 
     const headers = new HttpHeaders(headerValues);
 
