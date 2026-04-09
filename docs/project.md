@@ -680,6 +680,99 @@ The following video demonstrates the application execution as required, showing 
 
 Demo (Sprint 4): [link](https://drive.google.com/file/d/11NpnOOebpEBunGlq0J-5xIeZmRQvYbDP/view?usp=sharing)
 
+## 12.3 Feature Development Sprint 5
+
+This section documents Sprint 5 implementation progress, using a strict compliance view against the original Functional Requirements and explicit justification for deferred corrections and evolutions.
+
+### Sprint 5 Development Status (Strict Compliance View)
+
+| Planned item (Sprint / FR) | Status in Sprint 5 | What was implemented | Compliance vs original FR wording |
+| --- | --- | --- | --- |
+| FR07 – Automatic Progress Persistence | Implemented | Progress and form data are now persisted server-side through API calls from the onboarding form, no longer only in client session state | Aligned |
+| FR08 – Dynamic Onboarding Interface | Implemented (scope-based) | Form questions are filtered by selected sections per onboarding instance | Aligned for selected section scope |
+| FR11 – Onboarding Status and Feedback | Partially implemented | End-to-end workflow states and section review decisions were implemented (submit, section approve/reject, final approve/reject) with persisted review metadata | Partial, because required finite states are not exactly the specified set: Not Started, In Progress, Processing, Completed, Failed for both section and file |
+| FR03 – Intermediate Data Persistence | Partial | Intermediate persistence exists for uploaded payload rows and onboarding form progress, including batch linkage | Partial, because there is no version history per submission for controlled comparison/reprocessing cycles |
+| FR04 – Data Validation and Conflict Detection | Partial | Validation framework exists and flags missing required fields for key attributes during payload mapping | Partial, because schema-complete mandatory checks, format validation (YYYY-MM-DD/email), and uniqueness/conflict detection by natural identifiers are not fully implemented |
+| FR05 – Safe Data Correction via Re-Submission | Not fully implemented | Users can correct data in the review/form cycle and submit corrected onboarding content | Partial in UX, not compliant in backend replacement semantics by natural identifier |
+| FR06 – Change Comparison Visualization | Not implemented | Data comparison interface structure exists at model level | Not compliant, because there is no implemented comparison endpoint/service and no persisted version-to-version diff workflow |
+| FR09 – Section Dependency Enforcement | Not implemented | Section review decisions exist | Not compliant, because prerequisite dependency locks are not enforced in navigation/submission flow |
+| FR10 – Collaborative Section Assignment | Not implemented | Access allowlist exists at onboarding-link level | Not compliant, because there is no per-section assignment model, assignment API, or per-section contributor authorization |
+| FR12 – Data Consolidation and Secure Integration | Partial | External API integration exists and payload transmission is operational for ingestion worker | Partial, because the requirement specifies consolidated CSV/JSON package export plus JWT signature validation, while current integration uses Bearer API key |
+
+### Feedback from Sprint 4 Test Results and Implemented Corrections
+
+The following evolutions were implemented in Sprint 5 based on previous sprint feedback:
+
+- Server-side progress persistence and recovery for onboarding form state.
+- End-to-end onboarding review workflow with section-level approve/reject decisions.
+- Controlled onboarding access via allowed email list and authenticated link access.
+- Stronger operational traceability in upload processing pipeline through batch/job linkage and logs.
+
+### New Functionalities
+
+Detailing the new features implemented during Sprint 5, the most relevant additions were the review workflow for Equiem specialists and the controlled onboarding invitation system via email.
+
+The review workflow allows Equiem specialists to inspect submitted onboarding data, analyze its content, and request corrections when necessary. This functionality improves the validation and quality control process before onboarding data is finalized.
+
+<div align="center">
+<sub>FIGURE X – Equiem Review Page</sub><br>
+  <img src="assets/review-all-page.png" width="100%" alt="Equiem Review Page"><br>
+  <sup>Source: Material produced by the authors, 2026.</sup>
+</div>
+
+From this page, specialists can open a specific onboarding submission to review its details and evaluate the provided information.
+
+<div align="center">
+<sub>FIGURE X – Equiem Review Detail Page</sub><br>
+  <img src="assets/review-page.png" width="100%" alt="Equiem Review Detail Page"><br>
+  <sup>Source: Material produced by the authors, 2026.</sup>
+</div>
+
+If inconsistencies or missing data are identified in one section, the specialist can request modifications from the responsible users through the request changes interface for each section.
+
+<div align="center">
+<sub>FIGURE X – Equiem Request Changes Page</sub><br>
+  <img src="assets/request-changes.png" width="100%" alt="Equiem Request Changes Page"><br>
+  <sup>Source: Material produced by the authors, 2026.</sup>
+</div>
+
+Another important feature implemented during this sprint was the email-based onboarding invitation system.
+
+When creating a new onboarding instance, the Equiem specialist can specify which email addresses are authorized to access and complete the onboarding form. Only the users whose emails are registered in this list are allowed to log into the system and fill out the onboarding data. 
+
+<div align="center">
+<sub>FIGURE X – Allowed Recipient Emails Field in Create Onboaridng Page</sub><br>
+  <img src="assets/allowed-emails.png" width="100%" alt="Allowed Recipient Emails Field in Create Onboaridng Page"><br>
+  <sup>Source: Material produced by the authors, 2026.</sup>
+</div>
+
+After the onboarding instance is created, the selected users receive an email containing the onboarding access link, which directs them to the system where they can complete the required information.
+
+Additionally, when an onboarding process is completed, the Equiem team receives an automatic notification email, allowing them to review the submitted data.
+
+<div align="center">
+<sub>FIGURE X – E-mail sent to Customers with Onboarding Link </sub><br>
+  <img src="assets/ADD LATER" width="100%" alt="E-mail sent to Customers with Onboarding Link"><br>
+  <sup>Source: Material produced by the authors, 2026.</sup>
+</div>
+
+### Justification for Non-Execution of Remaining Corrections and Evolutions
+
+| Deferred item | Justification for non-execution in this module | Why it remains future work |
+| --- | --- | --- |
+| FR03 full version history | Current architecture already persists batch payload and form progress, but versioned submission history requires schema evolution and migration strategy to avoid regressions in active onboarding data | Requires a dedicated migration cycle, backward compatibility checks, and historical data policy definition |
+| FR04 full validation and conflict detection | Full implementation requires domain-level schema registry, deterministic type/format rules per dataset, and uniqueness checks against canonical entities | Depends on final natural identifier definitions approved by business and integration teams |
+| FR05 safe re-submission by natural identifier | Safe replacement logic depends on completed FR03 versioning plus completed FR04 conflict detection | Implementing before FR03 and FR04 completion risks silent overwrites and data integrity issues |
+| FR06 comparison view between submissions | Requires stable versioned persistence model and a diff contract between backend and frontend | Deferred to avoid building comparison UX on unstable or noisy historical snapshots |
+| FR09 dependency enforcement | Requires a finalized finite-state model and explicit prerequisite map per section | Deferred until section state model is standardized to prevent inconsistent blocking behavior |
+| FR10 collaborative section assignment | Requires a new data model (section assignees), role rules, and concurrency controls for parallel editing | Deferred due to high complexity and cross-cutting impact in authentication, UI, and API contracts |
+| FR11 strict finite-state compliance | Current status model supports operational flow, but not exact required state taxonomy for all section/file transitions | Deferred to align state machine redesign with FR09 and FR10 implementation |
+| FR12 full secure integration (JWT signature plus consolidated export) | Current integration validates operational connectivity but does not yet implement required JWT signature workflow and formal consolidated CSV/JSON export pipeline | Deferred pending partner-side contract hardening and end-to-end certification against target environment |
+
+### Sprint 5 Conclusion
+
+Sprint 5 delivered substantial functional progress and addressed important workflow gaps identified after Sprint 4, especially in persistence, review operations, and access control. However, strict compliance with all original FR definitions is not yet complete. Deferred items were not skipped due to lack of implementation effort; they were intentionally postponed because they require foundational schema, state-model, and integration changes to be delivered safely without compromising data integrity.
+
 ## 13. MVP Canvas
 
 <div align="center">
