@@ -22,6 +22,8 @@ app.use(uploadRoutes);
 // Mount onboarding instance routes for dashboard, creation and public link flows.
 app.use(onboardingInstanceRoutes);
 
-app.listen(3000, () => {
-  console.log("Server running on port 3000");
+const port = Number(process.env.PORT || "3000");
+
+app.listen(port, () => {
+  console.log(`Server running on port ${port}`);
 });

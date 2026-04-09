@@ -16,16 +16,16 @@ RUN npx esbuild src/server.ts \
     --bundle \
     --platform=node \
     --target=node20 \
-    --format=esm \
+    --format=cjs \
     --minify \
-    --outfile=dist/server.js \
+    --outfile=dist/server.cjs \
     && npx esbuild src/business/workers/upload-worker.ts \
     --bundle \
     --platform=node \
     --target=node20 \
-    --format=esm \
+    --format=cjs \
     --minify \
-    --outfile=dist/worker.js
+    --outfile=dist/worker.cjs
 
 # Stage 2: Runtime
 FROM node:20-alpine AS runner
@@ -48,4 +48,4 @@ USER nodejs
 
 EXPOSE 3000
 
-CMD ["node", "dist/server.js"]
+CMD ["node", "dist/server.cjs"]

@@ -3,7 +3,7 @@
   flex-direction: column;
   min-height: 100vh;
   background-color: #ffffff;
-  font-family: 'Inter', sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
   position: relative;
   overflow: hidden;
   color: #363640;
@@ -80,7 +80,7 @@
   cursor: pointer;
   border: none;
   transition: background-color 0.18s ease, color 0.18s ease;
-  font-family: 'Inter', sans-serif;
+  font-family: inherit;
   white-space: nowrap;
   background: #d6c5fb;
   color: #363640;
