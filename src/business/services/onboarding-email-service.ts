@@ -132,8 +132,7 @@ async function sendSmtpMessage(config: SmtpNotificationConfig, input: SmtpSendIn
   accepted: string[]
   rejected: string[]
 }> {
-  const importModule = new Function("return import('nodemailer')") as () => Promise<any>
-  const nodemailerModule = await importModule()
+  const nodemailerModule = await import("nodemailer")
   const nodemailer = nodemailerModule?.default ?? nodemailerModule
 
   const transporter = nodemailer.createTransport({
@@ -224,9 +223,83 @@ interface OnboardingInviteResult {
   accepted?: string[]
   rejected?: string[]
   messageId?: string
+  equiemNotification?: {
+    sent: boolean
+    to: string[]
+    accepted?: string[]
+    rejected?: string[]
+    messageId?: string
+    reason?: string
+    error?: string
+  }
   reason?: string
   error?: string
   sentAt?: string
+}
+
+function escapeHtml(value: string): string {
+  return value
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/\"/g, "&quot;")
+    .replace(/'/g, "&#39;")
+}
+
+function buildEmailTemplate(input: {
+  title: string
+  eyebrow?: string
+  intro: string
+  details: Array<{ label: string; value: string }>
+  ctaLabel: string
+  ctaUrl: string
+  footerNote?: string
+}): string {
+  const detailsHtml = input.details
+    .map(
+      (detail) =>
+        `<tr><td style="padding:8px 0;color:#0f172a;font-size:14px;font-weight:600;width:140px;vertical-align:top;">${escapeHtml(
+          detail.label
+        )}</td><td style="padding:8px 0;color:#334155;font-size:14px;">${escapeHtml(detail.value)}</td></tr>`
+    )
+    .join("")
+
+  return [
+    '<!doctype html>',
+    '<html lang="en">',
+    '<body style="margin:0;padding:0;background:#f4f6fb;font-family:Segoe UI,Arial,sans-serif;color:#0f172a;">',
+    '<table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background:#f4f6fb;padding:24px 12px;">',
+    '<tr><td align="center">',
+    '<table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="max-width:640px;background:#ffffff;border-radius:12px;overflow:hidden;border:1px solid #e2e8f0;">',
+    '<tr><td style="background:linear-gradient(135deg,#d6c5fb,#c4b3f0);padding:20px 24px;">',
+    `<p style="margin:0;color:#ffffff;font-size:12px;letter-spacing:0.08em;text-transform:uppercase;">${escapeHtml(
+      input.eyebrow || "Equiem Onboarding"
+    )}</p>`,
+    `<h1 style="margin:8px 0 0 0;color:#ffffff;font-size:24px;line-height:1.3;">${escapeHtml(input.title)}</h1>`,
+    '</td></tr>',
+    '<tr><td style="padding:24px;">',
+    `<p style="margin:0 0 16px 0;color:#1e293b;font-size:15px;line-height:1.6;">${escapeHtml(input.intro)}</p>`,
+    '<table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="margin:0 0 20px 0;">',
+    detailsHtml,
+    '</table>',
+    '<table role="presentation" cellspacing="0" cellpadding="0" style="margin:0 0 16px 0;">',
+    `<tr><td style="border-radius:8px;background:#6d28d9;"><a href="${input.ctaUrl}" style="display:inline-block;padding:12px 18px;color:#ffffff;text-decoration:none;font-weight:700;font-size:14px;">${escapeHtml(
+      input.ctaLabel
+    )}</a></td></tr>`,
+    '</table>',
+    `<p style="margin:0 0 10px 0;color:#64748b;font-size:12px;word-break:break-all;">If the button does not work, copy and paste this URL in your browser: ${escapeHtml(
+      input.ctaUrl
+    )}</p>`,
+    input.footerNote
+      ? `<p style="margin:0;color:#475569;font-size:13px;line-height:1.6;">${escapeHtml(input.footerNote)}</p>`
+      : "",
+    '</td></tr>',
+    '</table>',
+    '</td></tr>',
+    '</table>',
+    '</body>',
+    '</html>',
+  ].join("")
 }
 
 function buildOnboardingInviteMessage(input: OnboardingInviteInput): {
@@ -246,12 +319,53 @@ function buildOnboardingInviteMessage(input: OnboardingInviteInput): {
     `Open onboarding: ${input.onboardingLink}`,
   ].join("\n")
 
-  const html = [
-    "<p>Hello,</p>",
-    `<p>You were invited to fill the onboarding form for <strong>${input.companyName}</strong>.</p>`,
-    `<p><strong>Selected sections:</strong> ${sectionList}</p>`,
-    `<p><a href=\"${input.onboardingLink}\">Open onboarding form</a></p>`,
-  ].join("")
+  const html = buildEmailTemplate({
+    title: "Your onboarding form is ready",
+    eyebrow: "Client Invitation",
+    intro: `You were invited to fill the onboarding form for ${input.companyName}.`,
+    details: [
+      { label: "Company", value: input.companyName },
+      { label: "Selected sections", value: sectionList },
+    ],
+    ctaLabel: "Open onboarding form",
+    ctaUrl: input.onboardingLink,
+    footerNote: "If you have any questions, reply to this email and the Equiem team will help you.",
+  })
+
+  return {
+    subject,
+    text,
+    html,
+  }
+}
+
+function buildEquiemOnboardingLinkMessage(input: OnboardingInviteInput): {
+  subject: string
+  text: string
+  html: string
+} {
+  const sectionList = input.selectedSections.length > 0 ? input.selectedSections.join(", ") : "No sections selected"
+  const clientRecipients = input.allowedEmails.join(", ")
+  const subject = `[Onboarding] Link generated for ${input.companyName}`
+  const text = [
+    `A new onboarding link was generated for ${input.companyName}.`,
+    `Client recipients: ${clientRecipients}`,
+    `Selected sections: ${sectionList}`,
+    `Open onboarding: ${input.onboardingLink}`,
+  ].join("\n")
+
+  const html = buildEmailTemplate({
+    title: "New onboarding link generated",
+    eyebrow: "Equiem Notification",
+    intro: `A new onboarding link was generated for ${input.companyName}.`,
+    details: [
+      { label: "Company", value: input.companyName },
+      { label: "Client recipients", value: clientRecipients },
+      { label: "Selected sections", value: sectionList },
+    ],
+    ctaLabel: "Open onboarding",
+    ctaUrl: input.onboardingLink,
+  })
 
   return {
     subject,
@@ -275,23 +389,53 @@ async function sendOnboardingInviteToAllowedEmails(
   }
 
   const message = buildOnboardingInviteMessage(input)
+  const equiemMessage = buildEquiemOnboardingLinkMessage(input)
 
   try {
-    const info = await sendSmtpMessage(config, {
+    const inviteInfo = await sendSmtpMessage(config, {
       to: input.allowedEmails,
       subject: message.subject,
       text: message.text,
       html: message.html,
     })
 
+    let equiemNotification: OnboardingInviteResult["equiemNotification"]
+
+    if (config.adminRecipients.length > 0) {
+      try {
+        const equiemInfo = await sendSmtpMessage(config, {
+          to: config.adminRecipients,
+          subject: equiemMessage.subject,
+          text: equiemMessage.text,
+          html: equiemMessage.html,
+        })
+
+        equiemNotification = {
+          sent: true,
+          to: config.adminRecipients,
+          accepted: equiemInfo.accepted,
+          rejected: equiemInfo.rejected,
+          messageId: equiemInfo.messageId,
+        }
+      } catch (error) {
+        equiemNotification = {
+          sent: false,
+          to: config.adminRecipients,
+          reason: "smtp_send_failed",
+          error: error instanceof Error ? error.message : "unknown_error",
+        }
+      }
+    }
+
     return {
       sent: true,
       provider: "smtp",
       to: input.allowedEmails,
       from: config.from,
-      accepted: info.accepted,
-      rejected: info.rejected,
-      messageId: info.messageId,
+      accepted: inviteInfo.accepted,
+      rejected: inviteInfo.rejected,
+      messageId: inviteInfo.messageId,
+      equiemNotification,
       sentAt: new Date().toISOString(),
     }
   } catch (error) {
