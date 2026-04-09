@@ -506,7 +506,7 @@ For this Australian version, infrastructure was also adapted to a local operatin
 | **Amazon RDS (PostgreSQL)** | Managed Database | A$ 40.00 | A$ 100.00 |
 | **Amazon SQS** | Messaging & Job Queues | A$ 1.00 | A$ 2.50 |
 | **Auth0** | Authentication Service (B2C Essentials) | A$ 50.64 | A$ 126.60 |
-| **GitHub / GitLab** | CI/CD, Version Control and Project Management | A$ 0.00 (Free) | A$ 0.00 |
+| **GitLab** | CI/CD, Version Control and Project Management | A$ 0.00 (Free) | A$ 0.00 |
 | **Figma** | UI/UX Prototyping (Free Tier) | A$ 0.00 | A$ 0.00 |
 | **Total Infrastructure** | - | **A$ 175.28** | **A$ 438.20** |
 
