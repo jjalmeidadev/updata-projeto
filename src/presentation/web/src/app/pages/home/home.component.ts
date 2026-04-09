@@ -24,6 +24,7 @@ export class HomeComponent implements OnInit {
   loading = true;
   errorMessage = '';
   instances: OnboardingInstance[] = [];
+  reviewCompletionInFlight = new Set<string>();
 
   readonly userEmail$ = this.auth.user$.pipe(
     map(user => user?.email ?? '')
@@ -75,7 +76,7 @@ export class HomeComponent implements OnInit {
       return;
     }
 
-    this.router.navigate(['/onboarding', instance.linkToken]);
+    this.router.navigate(['/equiem-review', instance.linkToken]);
   }
 
   copyLink(instance: OnboardingInstance): void {
@@ -87,12 +88,21 @@ export class HomeComponent implements OnInit {
   }
 
   completeReview(instance: OnboardingInstance): void {
+    if (this.reviewCompletionInFlight.has(instance.linkToken)) {
+      return;
+    }
+
+    this.reviewCompletionInFlight.add(instance.linkToken);
     this.onboardingService.completeEquiemReview(instance.linkToken).subscribe({
-      next: () => {
+      next: (updatedInstance: OnboardingInstance) => {
+        this.instances = this.instances.map(item =>
+          item.linkToken === instance.linkToken ? updatedInstance : item
+        );
         this.toast.success(`Equiem review completed for ${instance.companyName}.`);
-        this.loadInstances();
+        this.reviewCompletionInFlight.delete(instance.linkToken);
       },
       error: () => {
+        this.reviewCompletionInFlight.delete(instance.linkToken);
         this.toast.error('Failed to complete the Equiem review.');
       },
     });
@@ -114,6 +124,10 @@ export class HomeComponent implements OnInit {
 
   showContinue(instance: OnboardingInstance): boolean {
     return instance.status === 'draft' || instance.status === 'in_progress';
+  }
+
+  isCompletingReview(instance: OnboardingInstance): boolean {
+    return this.reviewCompletionInFlight.has(instance.linkToken);
   }
 
   private loadInstances(): void {

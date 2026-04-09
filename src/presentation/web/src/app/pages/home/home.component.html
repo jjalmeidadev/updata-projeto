@@ -176,14 +176,13 @@
               </td>
               <td>
                 <div class="progress-container">
-                  <span class="percent">0%</span>
                   <div class="progress-bar">
                     <div
                       class="progress-fill"
                       [style.width.%]="instance.progressPercent"
                     ></div>
                   </div>
-                  <span class="percent">100%</span>
+                  <span class="progress-value">{{ instance.progressPercent }}%</span>
                 </div>
               </td>
               <td class="status-cell">
@@ -195,38 +194,41 @@
                 </span>
               </td>
               <td class="actions-cell">
-                <button
-                  class="icon-btn"
-                  type="button"
-                  title="Copy onboarding link"
-                  (click)="copyLink(instance)"
-                >
-                  Copy Link
-                </button>
-                <button
-                  *ngIf="showContinue(instance)"
-                  class="start-btn"
-                  type="button"
-                  (click)="openOnboarding(instance)"
-                >
-                  Continue
-                </button>
-                <button
-                  *ngIf="instance.status === 'equiem_review'"
-                  class="details-btn"
-                  type="button"
-                  (click)="completeReview(instance)"
-                >
-                  Complete review
-                </button>
-                <button
-                  *ngIf="instance.status === 'completed'"
-                  class="details-btn"
-                  type="button"
-                  (click)="viewDetails(instance)"
-                >
-                  View details ->
-                </button>
+                <div class="actions-group">
+                  <button
+                    class="icon-btn"
+                    type="button"
+                    title="Copy onboarding link"
+                    (click)="copyLink(instance)"
+                  >
+                    Copy Link
+                  </button>
+                  <button
+                    *ngIf="showContinue(instance)"
+                    class="start-btn"
+                    type="button"
+                    (click)="openOnboarding(instance)"
+                  >
+                    Continue
+                  </button>
+                  <button
+                    *ngIf="instance.status === 'equiem_review'"
+                    class="details-btn"
+                    type="button"
+                    [disabled]="isCompletingReview(instance)"
+                    (click)="completeReview(instance)"
+                  >
+                    {{ isCompletingReview(instance) ? 'Completing...' : 'Complete review' }}
+                  </button>
+                  <button
+                    *ngIf="instance.status === 'completed'"
+                    class="details-btn"
+                    type="button"
+                    (click)="viewDetails(instance)"
+                  >
+                    View details ->
+                  </button>
+                </div>
               </td>
             </tr>
             <tr *ngIf="!loading && instances.length === 0">
