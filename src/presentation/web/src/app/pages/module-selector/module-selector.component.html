@@ -299,7 +299,11 @@
             [disabled]="!canCreate()"
             (click)="createLink()"
           >
-            Create Link
+            @if (saving()) {
+              Creating link...
+            } @else {
+              Create Link
+            }
           </button>
         </div>
       }

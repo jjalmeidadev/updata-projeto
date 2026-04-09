@@ -12,6 +12,7 @@ vi.mock("../../../src/data/repositories/onboarding-instance-repository.js", () =
 
 vi.mock("../../../src/business/services/onboarding-email-service.js", () => ({
   buildOnboardingEmailDraft: vi.fn(),
+  sendOnboardingInviteToAllowedEmails: vi.fn(),
   sendOnboardingSubmissionMessageToAdmins: vi.fn(),
 }))
 
@@ -24,7 +25,10 @@ import {
   listOnboardingInstances,
   updateOnboardingInstance,
 } from "../../../src/data/repositories/onboarding-instance-repository.js"
-import { sendOnboardingSubmissionMessageToAdmins } from "../../../src/business/services/onboarding-email-service.js"
+import {
+  sendOnboardingInviteToAllowedEmails,
+  sendOnboardingSubmissionMessageToAdmins,
+} from "../../../src/business/services/onboarding-email-service.js"
 import {
   OnboardingAccessDeniedError,
   createOrReuseOnboardingInstance,
@@ -171,6 +175,12 @@ describe("onboarding-instance-service allowlist handling", () => {
     vi.mocked(findOnboardingInstanceByLinkToken).mockReset()
     vi.mocked(listCompanies).mockReset()
     vi.mocked(listOnboardingInstances).mockReset()
+    vi.mocked(sendOnboardingInviteToAllowedEmails).mockReset()
+    vi.mocked(sendOnboardingInviteToAllowedEmails).mockResolvedValue({
+      sent: true,
+      provider: "smtp",
+      to: ["admin@company.com"],
+    } as never)
   })
 
   it("rejects an empty allowedEmails list", async () => {

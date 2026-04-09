@@ -152,6 +152,17 @@ describe('LoginComponent', () => {
     expect(sessionStorage.getItem('post_login_force_account_selection')).toBeNull();
   });
 
+  it('opens access denied modal when notice is stored in session', () => {
+    setUrlSearch('');
+    sessionStorage.setItem('onboarding_access_denied_notice', 'Access blocked. Your account does not have permission to access this area.');
+
+    component.ngOnInit();
+
+    expect(component.accessDeniedModalOpen).toBe(true);
+    expect(component.accessDeniedModalMessage).toContain('Access blocked. Your account does not have permission to access this area.');
+    expect(sessionStorage.getItem('onboarding_access_denied_notice')).toBeNull();
+  });
+
   it('resolves user flow on callback and navigates to API next route', () => {
     // Arrange
     setUrlSearch('?code=abc&state=xyz');

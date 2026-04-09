@@ -59,6 +59,7 @@ const REVIEW_FORM_DRAFT_KEY = 'reviewFormDraft';
 const REVIEW_SECTION_INDEX_KEY = 'reviewSectionIndex';
 const UPLOADED_DATA_KEY = 'uploadedData';
 const UPLOAD_SECTION_INDEX_KEY = 'uploadSectionIndex';
+const ONBOARDING_ACCESS_DENIED_NOTICE_KEY = 'onboarding_access_denied_notice';
 
 @Component({
   selector: 'app-onboarding-form',
@@ -126,7 +127,6 @@ export class OnboardingFormComponent implements OnInit {
   readonly expandedAreas = signal<Record<string, boolean>>({});
   private autoSaveReady = false;
   private navAreaCompletionPrev: Record<string, boolean> = {};
-  private accessDeniedPopupShown = false;
 
   readonly sectionLabels = SECTION_LABELS;
   readonly currentSection = computed(() => this.sections()[this.currentSectionIndex()] ?? '');
@@ -259,7 +259,7 @@ export class OnboardingFormComponent implements OnInit {
         this.pageMessage.set(message);
 
         if (this.isAccessDeniedError(error)) {
-          this.showAccessDeniedPopup(message);
+          this.storeAccessDeniedNotice(message);
           this.auth.logout({
             logoutParams: {
               returnTo: window.location.origin + '/login',
@@ -514,17 +514,13 @@ export class OnboardingFormComponent implements OnInit {
     return error instanceof HttpErrorResponse && (error.status === 401 || error.status === 403);
   }
 
-  private showAccessDeniedPopup(message: string): void {
-    if (this.accessDeniedPopupShown) {
+  private storeAccessDeniedNotice(message: string): void {
+    const storage = (globalThis as { sessionStorage?: Storage }).sessionStorage;
+    if (!storage) {
       return;
     }
 
-    this.accessDeniedPopupShown = true;
-
-    const alertFn = (globalThis as { alert?: (text: string) => void }).alert;
-    if (typeof alertFn === 'function') {
-      alertFn(`You do not have permission to access this onboarding.\n\n${message}`);
-    }
+    storage.setItem(ONBOARDING_ACCESS_DENIED_NOTICE_KEY, message);
   }
 
   private handleUploadedData(form: FormGroup): void {

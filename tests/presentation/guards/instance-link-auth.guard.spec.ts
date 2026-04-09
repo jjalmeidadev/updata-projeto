@@ -111,12 +111,6 @@ describe('instance-link-auth.guard', () => {
       configurable: true,
     });
 
-    const alertMock = vi.fn();
-    Object.defineProperty(globalThis, 'alert', {
-      value: alertMock,
-      configurable: true,
-    });
-
     const redirectedTree = { redirected: true };
     const loginWithRedirect = vi.fn();
     const createUrlTree = vi.fn(() => redirectedTree);
@@ -161,9 +155,9 @@ describe('instance-link-auth.guard', () => {
     });
 
     expect(httpMock.get).toHaveBeenCalledWith('/api/public/onboarding/token-denied');
-    expect(alertMock).toHaveBeenCalled();
     expect(storage.get('post_login_link_target')).toBe('/onboarding/token-denied/form');
     expect(storage.get('post_login_force_account_selection')).toBe('true');
+    expect(storage.get('onboarding_access_denied_notice')).toBe('You are not allowed to access this onboarding link');
     expect(loginWithRedirect).toHaveBeenCalledWith({
       appState: { target: '/onboarding/token-denied/form' },
       authorizationParams: {
