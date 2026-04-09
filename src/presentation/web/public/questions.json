@@ -311,7 +311,7 @@
   "moduleId": "onboarding",
   "sectionId": "amenity-rates",
   "question": "Start of business hours",
-  "type": "time",
+  "type": "text",
   "order": 30
 },
 {
@@ -319,7 +319,7 @@
   "moduleId": "onboarding",
   "sectionId": "amenity-rates",
   "question": "End of business hours",
-  "type": "time",
+  "type": "text",
   "order": 31
 },
 {
@@ -453,7 +453,7 @@
   "moduleId": "onboarding",
   "sectionId": "amenity-availability",
   "question": "Available from (time)",
-  "type": "time",
+  "type": "text",
   "order": 52
 },
 {
@@ -461,7 +461,7 @@
   "moduleId": "onboarding",
   "sectionId": "amenity-availability",
   "question": "Available to (time)",
-  "type": "time",
+  "type": "text",
   "order": 53
 },
 {
