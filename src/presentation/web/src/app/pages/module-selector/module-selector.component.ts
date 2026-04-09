@@ -206,10 +206,8 @@ export class ModuleSelectorComponent implements OnInit {
     });
   }
 
-  openLink(): void {
-    if (!this.createdLink()) return;
-    const url = new URL(this.createdLink());
-    this.router.navigateByUrl(url.pathname);
+  goBackToMonitoring(): void {
+    this.router.navigate(['/monitoring']);
   }
 
   continueLegacyFlow(): void {
