@@ -405,12 +405,10 @@ Important for this project:
 npm run stage:up:dev
 ```
 4. **Open the application**
-- http://localhost:4200/login
+http://localhost:4200/login
 
-5. **Run the upload worker** (required for upload/background flows). Open a separate terminal:
-```sh
-docker compose -f docker-compose.dev.yml exec backend npm run worker:upload
-```
+5. **The upload worker starts automatically** as a separate container in the same Docker stack.
+  You can follow its logs with `docker compose -f docker-compose.dev.yml logs -f worker` if needed.
 
 6. **Stop the containers**
 Only run this command after you are done using the system. This step stops and removes the containers that were started earlier.

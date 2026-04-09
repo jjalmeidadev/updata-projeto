@@ -8,7 +8,10 @@ const __dirname = path.dirname(__filename);
 
 const workspaceRoot = path.resolve(__dirname, '..');
 const sourcePath = path.join(workspaceRoot, 'src', 'shared', 'auth-constants.ts');
-const frontendTargetPath = path.join(workspaceRoot, 'src', 'presentation', 'web', 'src', 'shared', 'auth-constants.ts');
+const frontendTargetPaths = [
+  path.join(workspaceRoot, 'src', 'presentation', 'web', 'src', 'shared', 'auth-constants.ts'),
+  path.join(workspaceRoot, 'src', 'presentation', 'web', 'src', 'app', 'shared', 'auth-constants.ts'),
+];
 const envPath = path.join(workspaceRoot, 'config', '.env');
 
 const generatedHeader = [
@@ -29,11 +32,13 @@ async function main() {
     `  return ${JSON.stringify(adminEmail)};\n`
   );
 
-  await writeFile(frontendTargetPath, outputContent, 'utf8');
+  await Promise.all(frontendTargetPaths.map((targetPath) => writeFile(targetPath, outputContent, 'utf8')));
 
   console.log('Synced auth constants:');
   console.log(`- Source: ${sourcePath}`);
-  console.log(`- Target: ${frontendTargetPath}`);
+  frontendTargetPaths.forEach((targetPath) => {
+    console.log(`- Target: ${targetPath}`);
+  });
 }
 
 main().catch(error => {

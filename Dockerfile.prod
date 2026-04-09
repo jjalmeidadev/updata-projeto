@@ -18,7 +18,14 @@ RUN npx esbuild src/server.ts \
     --target=node20 \
     --format=esm \
     --minify \
-    --outfile=dist/server.js
+    --outfile=dist/server.js \
+    && npx esbuild src/business/workers/upload-worker.ts \
+    --bundle \
+    --platform=node \
+    --target=node20 \
+    --format=esm \
+    --minify \
+    --outfile=dist/worker.js
 
 # Stage 2: Runtime
 FROM node:20-alpine AS runner

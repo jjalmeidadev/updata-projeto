@@ -40,11 +40,11 @@ services:
 
   # Production backend API service.
   backend:
-    build:
-      context: .
-      dockerfile: Dockerfile.prod
+    image: anagarden007/backend:latest
     # Keep service up unless manually stopped.
     restart: unless-stopped
+    env_file:
+      - ./.env
     environment:
       NODE_ENV: production
       NODE_OPTIONS: --max-old-space-size=96
@@ -61,11 +61,28 @@ services:
     mem_limit: 32m
     cpus: 0.20
 
+  # Production background worker for upload processing.
+  worker:
+    image: anagarden007/backend:latest
+    restart: unless-stopped
+    env_file:
+      - ./.env
+    environment:
+      NODE_ENV: production
+      NODE_OPTIONS: --max-old-space-size=96
+      DATABASE_URL: postgresql://postgres:postgres@database:5432/appdb
+    depends_on:
+      database:
+        condition: service_healthy
+    command: ["node", "dist/worker.js"]
+    networks:
+      - app_net_prod
+    mem_limit: 32m
+    cpus: 0.20
+
   # Production frontend static server.
   frontend:
-    build:
-      context: ./src/presentation/web
-      dockerfile: Dockerfile.prod
+    image: anagarden007/frontend:latest
     restart: unless-stopped
     # Frontend should start after backend container is created.
     depends_on:

@@ -45,6 +45,7 @@ services:
       NODE_ENV: development
       NODE_OPTIONS: --max-old-space-size=192
       DATABASE_URL: postgresql://postgres:postgres@database:5432/appdb
+      FRONTEND_BASE_URL: http://localhost:4200
       PORT: 3000
     # Start backend only after database passes healthcheck.
     depends_on:
@@ -53,6 +54,27 @@ services:
     ports:
       - "3000:3000"
     # Bind source code for fast local iteration.
+    volumes:
+      - ./:/app
+      - /app/node_modules
+    networks:
+      - app_net_dev
+    mem_limit: 256m
+    cpus: 0.30
+
+  # Background worker for upload processing.
+  worker:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    environment:
+      NODE_ENV: development
+      NODE_OPTIONS: --max-old-space-size=192
+      DATABASE_URL: postgresql://postgres:postgres@database:5432/appdb
+    depends_on:
+      database:
+        condition: service_healthy
+    command: npm run worker:upload
     volumes:
       - ./:/app
       - /app/node_modules
