@@ -195,38 +195,40 @@
                 </span>
               </td>
               <td class="actions-cell">
-                <button
-                  class="icon-btn"
-                  type="button"
-                  title="Copy onboarding link"
-                  (click)="copyLink(instance)"
-                >
-                  Copy Link
-                </button>
-                <button
-                  *ngIf="showContinue(instance)"
-                  class="start-btn"
-                  type="button"
-                  (click)="openOnboarding(instance)"
-                >
-                  Continue
-                </button>
-                <button
-                  *ngIf="instance.status === 'equiem_review'"
-                  class="details-btn"
-                  type="button"
-                  (click)="completeReview(instance)"
-                >
-                  Complete review
-                </button>
-                <button
-                  *ngIf="instance.status === 'completed'"
-                  class="details-btn"
-                  type="button"
-                  (click)="viewDetails(instance)"
-                >
-                  View details ->
-                </button>
+                <div class="actions-group">
+                  <button
+                    class="icon-btn"
+                    type="button"
+                    title="Copy onboarding link"
+                    (click)="copyLink(instance)"
+                  >
+                    Copy Link
+                  </button>
+                  <button
+                    *ngIf="showContinue(instance)"
+                    class="start-btn"
+                    type="button"
+                    (click)="openOnboarding(instance)"
+                  >
+                    Continue
+                  </button>
+                  <button
+                    *ngIf="instance.status === 'equiem_review'"
+                    class="details-btn"
+                    type="button"
+                    (click)="completeReview(instance)"
+                  >
+                    Complete review
+                  </button>
+                  <button
+                    *ngIf="instance.status === 'completed'"
+                    class="details-btn"
+                    type="button"
+                    (click)="viewDetails(instance)"
+                  >
+                    View details ->
+                  </button>
+                </div>
               </td>
             </tr>
             <tr *ngIf="!loading && instances.length === 0">

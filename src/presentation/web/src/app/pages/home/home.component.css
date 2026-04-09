@@ -204,15 +204,19 @@
   margin-top: 3rem;
   box-shadow: none;
   border: 1px solid #e5e7eb;
-  overflow: hidden;
+  width: 100%;
+  max-width: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
 }
 
 .company-table {
   width: 100%;
+  min-width: 100%;
   border-collapse: collapse;
   font-size: 0.8rem;
   color: #363640;
-  table-layout: fixed;
+  table-layout: auto;
 }
 
 .company-table thead {
@@ -224,9 +228,7 @@
   padding: 0.75rem 1rem;
   text-align: left;
   border-bottom: 1px solid #e3e3e8;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  vertical-align: middle;
 }
 
 .company-table th {
@@ -245,22 +247,22 @@
 
 .company-table th:nth-child(1),
 .company-table td:nth-child(1) {
-  width: 26%;
+  width: 24%;
 }
 
 .company-table th:nth-child(2),
 .company-table td:nth-child(2) {
-  width: 34%;
+  width: 30%;
 }
 
 .company-table th:nth-child(3),
 .company-table td:nth-child(3) {
-  width: 18%;
+  width: 16%;
 }
 
 .company-table th:nth-child(4),
 .company-table td:nth-child(4) {
-  width: 22%;
+  width: 30%;
 }
 
 /* COMPANY NAME */
@@ -269,6 +271,7 @@
   font-size: 0.9rem;
   font-weight: 600;
   color: #111827;
+  white-space: nowrap;
 }
 
 /* PROGRESS */
@@ -277,15 +280,18 @@
   display: flex;
   align-items: center;
   gap: 0.9rem;
+  min-width: 0;
 }
 
 .percent {
   font-size: 0.7rem;
   opacity: 0.7;
+  white-space: nowrap;
 }
 
 .progress-bar {
   flex: 1;
+  min-width: 120px;
   height: 10px;
   background: #f0eefc;
   border-radius: 6px;
@@ -325,9 +331,15 @@
 }
 
 .actions-cell {
+  white-space: normal;
+}
+
+.actions-group {
   display: flex;
+  flex-wrap: wrap;
   gap: 0.5rem;
   align-items: center;
+  justify-content: flex-start;
 }
 
 .details-btn {
@@ -359,6 +371,7 @@
 
 .status-pill {
   font-size: 0.7rem;
+  white-space: nowrap;
 }
 
 .status-started {
@@ -389,7 +402,7 @@
   }
 
   .home-panel {
-    padding: 2rem 1.5rem;
+    padding: 0;
   }
 
   .home-header {
@@ -399,6 +412,10 @@
   .header-actions {
     width: 100%;
     justify-content: flex-start;
+  }
+
+  .company-table {
+    min-width: 760px;
   }
 }
 
