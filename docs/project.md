@@ -584,13 +584,13 @@ Start of Builder Administrator Flow: https://g05-frontend.onrender.com/onboardin
   Added an explanatory screen where users can choose between uploading a complete CSV file or filling out the onboarding form manually, making the process clearer and more accessible.
 
 <div align="center">
-<sub>FIGURE X – New screen with onboarding intro</sub><br>
+<sub>FIGURE 8 – New screen with onboarding intro</sub><br>
   <img src="assets/onboarding-intro.png" width="100%" alt="Screen for onboarding intro"><br>
   <sup>Source: Material produced by the authors, 2026.</sup>
 </div>
 
 <div align="center">
-<sub>FIGURE X – Screen explaining the two available ways of sending the data</sub><br>
+<sub>FIGURE 9 – Screen explaining the two available ways of sending the data</sub><br>
   <img src="assets/selection-fill-form.png" width="100%" alt="Screen for selection of how you will send the data"><br>
   <sup>Source: Material produced by the authors, 2026.</sup>
 </div>
@@ -599,13 +599,13 @@ Start of Builder Administrator Flow: https://g05-frontend.onrender.com/onboardin
   Introduced a button for downloading a XLSX template, guiding users on the correct data format and reducing input errors.
 
 <div align="center">
-<sub>FIGURE X – Button for dowloading the template of the XLSX file</sub><br>
+<sub>FIGURE 10 – Button for dowloading the template of the XLSX file</sub><br>
   <img src="assets/download-template.png" width="100%" alt="Button for dowloading the template of the XLSX file"><br>
   <sup>Source: Material produced by the authors, 2026.</sup>
 </div>
 
 <div align="center">
-<sub>FIGURE X – Template of the XLSX file containing different tabs for different sections</sub><br>
+<sub>FIGURE 11 – Template of the XLSX file containing different tabs for different sections</sub><br>
   <img src="assets/xlsx-template.png" width="100%" alt="Template of the XLSX file"><br>
   <sup>Source: Material produced by the authors, 2026.</sup>
 </div>
@@ -615,13 +615,13 @@ Start of Builder Administrator Flow: https://g05-frontend.onrender.com/onboardin
   Implemented an error screen that shows exactly which fields are incorrect in the uploaded XLSX. Users can correct errors directly through this interface, making the adjustment process faster and more intuitive.
 
 <div align="center">
-<sub>FIGURE X – Review Data Screen</sub><br>
+<sub>FIGURE 12 – Review Data Screen</sub><br>
   <img src="assets/review.png" width="100%" alt="Review data screen"><br>
   <sup>Source: Material produced by the authors, 2026.</sup>
 </div>
 
 <div align="center">
-<sub>FIGURE X – Errors in the forms</sub><br>
+<sub>FIGURE 13 – Errors in the forms</sub><br>
   <img src="assets/error-screen.png" width="100%" alt="Errors forms"><br>
   <sup>Source: Material produced by the authors, 2026.</sup>
 </div>
@@ -635,13 +635,13 @@ Start of Builder Administrator Flow: https://g05-frontend.onrender.com/onboardin
   Previously, the system only listed existing onboardings for Equiem. Now, users can create a new onboarding directly from the interface.
 
 <div align="center">
-<sub>FIGURE X – Create new onboarding button</sub><br>
+<sub>FIGURE 14 – Create new onboarding button</sub><br>
   <img src="assets/create-onboarding.png" width="100%" alt="Create new onboarding button"><br>
   <sup>Source: Material produced by the authors, 2026.</sup>
 </div>
 
 <div align="center">
-<sub>FIGURE X – Configure new onboarding</sub><br>
+<sub>FIGURE 15 – Configure new onboarding</sub><br>
   <img src="assets/create-onboarding.png" width="100%" alt="Configure new onboarding"><br>
   <sup>Source: Material produced by the authors, 2026.</sup>
 </div>
@@ -716,7 +716,7 @@ Detailing the new features implemented during Sprint 5, the most relevant additi
 The review workflow allows Equiem specialists to inspect submitted onboarding data, analyze its content, and request corrections when necessary. This functionality improves the validation and quality control process before onboarding data is finalized.
 
 <div align="center">
-<sub>FIGURE X – Equiem Review Page</sub><br>
+<sub>FIGURE 16 – Equiem Review Page</sub><br>
   <img src="assets/review-all-page.png" width="100%" alt="Equiem Review Page"><br>
   <sup>Source: Material produced by the authors, 2026.</sup>
 </div>
@@ -724,7 +724,7 @@ The review workflow allows Equiem specialists to inspect submitted onboarding da
 From this page, specialists can open a specific onboarding submission to review its details and evaluate the provided information.
 
 <div align="center">
-<sub>FIGURE X – Equiem Review Detail Page</sub><br>
+<sub>FIGURE 17 – Equiem Review Detail Page</sub><br>
   <img src="assets/review-page.png" width="100%" alt="Equiem Review Detail Page"><br>
   <sup>Source: Material produced by the authors, 2026.</sup>
 </div>
@@ -732,7 +732,7 @@ From this page, specialists can open a specific onboarding submission to review 
 If inconsistencies or missing data are identified in one section, the specialist can request modifications from the responsible users through the request changes interface for each section.
 
 <div align="center">
-<sub>FIGURE X – Equiem Request Changes Page</sub><br>
+<sub>FIGURE 18 – Equiem Request Changes Page</sub><br>
   <img src="assets/request-changes.png" width="100%" alt="Equiem Request Changes Page"><br>
   <sup>Source: Material produced by the authors, 2026.</sup>
 </div>
@@ -742,7 +742,7 @@ Another important feature implemented during this sprint was the email-based onb
 When creating a new onboarding instance, the Equiem specialist can specify which email addresses are authorized to access and complete the onboarding form. Only the users whose emails are registered in this list are allowed to log into the system and fill out the onboarding data. 
 
 <div align="center">
-<sub>FIGURE X – Allowed Recipient Emails Field in Create Onboaridng Page</sub><br>
+<sub>FIGURE 19 – Allowed Recipient Emails Field in Create Onboaridng Page</sub><br>
   <img src="assets/allowed-emails.png" width="100%" alt="Allowed Recipient Emails Field in Create Onboaridng Page"><br>
   <sup>Source: Material produced by the authors, 2026.</sup>
 </div>
@@ -752,7 +752,7 @@ After the onboarding instance is created, the selected users receive an email co
 Additionally, when an onboarding process is completed, the Equiem team receives an automatic notification email, allowing them to review the submitted data.
 
 <div align="center">
-<sub>FIGURE X – E-mail sent to Customers with Onboarding Link </sub><br>
+<sub>FIGURE 20 – E-mail sent to Customers with Onboarding Link </sub><br>
   <img src="assets/email-received.png" width="100%" alt="E-mail sent to Customers with Onboarding Link"><br>
   <sup>Source: Material produced by the authors, 2026.</sup>
 </div>
@@ -777,7 +777,7 @@ Sprint 5 delivered substantial functional progress and addressed important workf
 ## 13. MVP Canvas
 
 <div align="center">
-<sub>FIGURE 8 – MVP Canvas</sub><br>
+<sub>FIGURE 21 – MVP Canvas</sub><br>
   <img src="assets/mvpcanvas.jpeg" width="100%" alt="MVP Canvas"><br>
   <sup>Source: Material produced by the authors, 2026.</sup>
 </div>
@@ -825,7 +825,7 @@ The project will be executed in a 10 week cycle. The governance structure includ
 ## 14. Project Risk Matrix and Action Table
 
 <div align="center">
-<sub>FIGURE 9 – Risk Matriz</sub><br>
+<sub>FIGURE 22 – Risk Matriz</sub><br>
   <img src="assets/riskMatrix.jpeg" width="100%" alt="Risk Matrix"><br>
   <sup>Source: Material produced by the authors, 2026.</sup>
 </div>
@@ -1362,7 +1362,7 @@ Evaluate whether users can identify and use the **file upload feature** to autom
 ##### **Karol Barbosa**
 
 <div align="center">
-<sub>FIGURE 10 – Karol Usability Test</sub><br>
+<sub>FIGURE 23 – Karol Usability Test</sub><br>
   <img src="assets/karolusability.jpg" width="100%" alt="Karol Usability Test"><br>
   <sup>Source: Material produced by the authors, 2026.</sup>
 </div>
@@ -1378,7 +1378,7 @@ Evaluate whether users can identify and use the **file upload feature** to autom
 ##### **Mariana**
 
 <div align="center">
-<sub>FIGURE 11 – Mariana Usability Test</sub><br>
+<sub>FIGURE 24 – Mariana Usability Test</sub><br>
   <img src="assets/marianausability.jpg" width="100%" alt="Mariana Usability Test"><br>
   <sup>Source: Material produced by the authors, 2026.</sup>
 </div>
@@ -1396,7 +1396,7 @@ Evaluate whether users can identify and use the **file upload feature** to autom
 ##### **Tobias**
 
 <div align="center">
-<sub>FIGURE 12 – Tobias Usability Test</sub><br>
+<sub>FIGURE 25 – Tobias Usability Test</sub><br>
   <img src="assets/tobiasusability.jpg" width="100%" alt="Tobias Usability Test"><br>
   <sup>Source: Material produced by the authors, 2026.</sup>
 </div>
@@ -1445,7 +1445,7 @@ Evaluate how users interact with the **manual form filling option** when complet
 ##### **Celso**
 
 <div align="center">
-<sub>FIGURE 13 – Celso Usability Test</sub><br>
+<sub>FIGURE 26 – Celso Usability Test</sub><br>
   <img src="assets/celsousability.jpg" width="100%" alt="Celso Usability Test"><br>
   <sup>Source: Material produced by the authors, 2026.</sup>
 </div>
@@ -1466,7 +1466,7 @@ User behavior shows **uncertainty in the overall workflow**, especially in disti
 ##### **Henrique**
 
 <div align="center">
-<sub>FIGURE 14 – Henrique Usability Test</sub><br>
+<sub>FIGURE 27 – Henrique Usability Test</sub><br>
   <img src="assets/ruiusability.jpg" width="100%" alt="Rui Usability Test"><br>
   <sup>Source: Material produced by the authors, 2026.</sup>
 </div>
@@ -1723,7 +1723,7 @@ Recommended evidence groups:
 Template 1 - Full test execution evidence:
 
 <div align="center">
-<sub>FIGURE 15 - Full Test Execution (Sprint 4)</sub><br>
+<sub>FIGURE 28 - Full Test Execution (Sprint 4)</sub><br>
   <img src="assets/sprint4_full_test_execution.png" width="100%" alt="Full Test Execution Sprint 4"><br>
   <sup>Source: Material produced by the authors, 2026.</sup>
 </div>
@@ -1731,7 +1731,7 @@ Template 1 - Full test execution evidence:
 Template 2 - Coverage terminal evidence:
 
 <div align="center">
-<sub>FIGURE 16 - Coverage Summary Output (Sprint 4)</sub><br>
+<sub>FIGURE 29 - Coverage Summary Output (Sprint 4)</sub><br>
   <img src="assets/sprint4_coverage_terminal.png" width="100%" alt="Coverage Summary Sprint 4"><br>
   <sup>Source: Material produced by the authors, 2026.</sup>
 </div>
@@ -1739,7 +1739,7 @@ Template 2 - Coverage terminal evidence:
 Template 3 - Coverage HTML report evidence:
 
 <div align="center">
-<sub>FIGURE 17 - Coverage HTML Report (Sprint 4)</sub><br>
+<sub>FIGURE 30 - Coverage HTML Report (Sprint 4)</sub><br>
   <img src="assets/sprint4_coverage_html.png" width="100%" alt="Coverage HTML Report Sprint 4"><br>
   <sup>Source: Material produced by the authors, 2026.</sup>
 </div>
@@ -1747,7 +1747,7 @@ Template 3 - Coverage HTML report evidence:
 Template 4 - Integration flow execution evidence:
 
 <div align="center">
-<sub>FIGURE 18 - Integration Flow Evidence (Sprint 4)</sub><br>
+<sub>FIGURE 31 - Integration Flow Evidence (Sprint 4)</sub><br>
   <img src="assets/sprint4_integration_flows.png" width="100%" alt="Integration Flow Evidence Sprint 4"><br>
   <sup>Source: Material produced by the authors, 2026.</sup>
 </div>
@@ -1870,7 +1870,7 @@ Figure 15 illustrates the deployment architecture of the onboarding automation p
 For better visualization, please access the following [link](https://drive.google.com/file/d/1jHnyVEm3KI1-ERu1pNhjq-7KT3i-hlVW/view?usp=sharing).
 
 <div align="center">
-<sub>FIGURE 19 – Deployment Architecture Diagram</sub><br>
+<sub>FIGURE 32 – Deployment Architecture Diagram</sub><br>
   <img src="assets/deployment_map.svg" width="100%" alt="Deployment Architecture Diagram"><br>
   <sup>Source: Material produced by the authors, 2026.</sup>
 </div>
@@ -2442,14 +2442,15 @@ This result indicates that the regression surface does not contain a single cont
 
 In practice, the system parameters Batch Size (B) and Worker Count (W) must take integer values, meaning the optimization problem is discrete rather than continuous.
 
-Therefore, the analytical solution identifies the region of highest predicted performance, and the optimal configuration is obtained by selecting the nearest feasible integer values.
+Therefore, because the stationary point is not a maximum, the recommendation must be obtained by evaluating the feasible tested configurations and selecting the best observed result.
 
-The closest operational configuration to the critical point is:
+Within the benchmark grid, the best observed configuration is:
 
-- Batch Size (B) = 6
-- Worker Count (W) = 3
+- Batch Size (B) = 5
+- Worker Count (W) = 4
+- Mean Throughput (T) = 904.10 records/s
 
-This configuration lies within the high-throughput region suggested by the regression surface and therefore represents the recommended operational configuration.
+This boundary-based recommendation is consistent with the Hessian result and with the practical objective of maximizing throughput in the tested domain.
 
 --- 
 
@@ -2457,19 +2458,19 @@ This configuration lies within the high-throughput region suggested by the regre
 
 The analytical model developed in the previous sections provides a mathematical estimate of how system throughput changes as a function of **Batch Size (B)** and **Worker Count (W)**.
 
-By solving the optimization problem in Section 3, the critical point of the throughput function was obtained at:
+By solving the optimization problem in Section 3, the stationary point of the throughput function was obtained at:
 
 - B ≈ 6.49  
 - W ≈ 3.43  
 
-Since the system configuration parameters must be integers, the recommended operational configuration is obtained by rounding to the nearest practical values.
+Because the Hessian test classified this stationary point as a saddle point (not a maximum), the engineering recommendation is selected from the experimental boundary values tested in Section 1.
 
 **Recommended configuration:**
 
-- **Batch Size (B): 6**
-- **Worker Count (W): 3**
+- **Batch Size (B): 5**
+- **Worker Count (W): 4**
 
-This configuration lies in the region where the performance model predicts the highest throughput values and represents a balanced trade-off between parallelism and resource consumption.
+This configuration produced the highest observed mean throughput in the evaluated grid and is therefore the most defensible default for throughput-oriented operation under the tested conditions.
 
 ---
 
@@ -2494,7 +2495,7 @@ Therefore, tuning **worker count** should generally be prioritized when optimizi
 
 #### 4.2. Usage Scenarios
 
-Although the recommended configuration (**B = 6, W = 3**) provides a balanced solution for the tested environment, practical system constraints may require adjustments depending on operational priorities.
+Although the recommended configuration (**B = 5, W = 4**) provides the highest observed throughput in the tested environment, practical system constraints may require adjustments depending on operational priorities.
 
 **Memory-constrained environments**
 
@@ -2512,14 +2513,19 @@ For large onboarding operations or periods of high system load, maintaining a wo
 
 #### 4.3. Engineering Recommendation
 
-Based on the benchmark results, regression analysis, and optimization derivation, the following configuration is recommended as the default operational setup:
+Based on the benchmark results and the Hessian classification, the stationary point obtained from the quadratic model cannot be treated as an internal optimum, because it is a **saddle point**.
 
-- **Batch Size (B): 6**
-- **Worker Count (W): 3**
+Therefore, the engineering recommendation must be selected from the **feasible tested configurations** (experimental boundaries), not from the continuous stationary point.
 
-This configuration provides a balanced level of parallelism while maintaining manageable memory usage and minimizing database contention.
+Within the evaluated grid, the highest observed mean throughput was:
 
-Future deployments may refine this configuration as additional production data becomes available, but the analytical model provides a strong initial guideline for system tuning.
+- **Batch Size (B): 5**
+- **Worker Count (W): 4**
+- **Mean Throughput (T): 904.10 records/s**
+
+For this reason, **(B = 5, W = 4)** is the recommended default configuration for throughput-oriented operation under the tested conditions.
+
+Future deployments should re-run the benchmark whenever infrastructure or workload characteristics change, and then re-select the best boundary configuration from the updated experimental results.
 
 ---
 

@@ -404,6 +404,9 @@ Important for this project:
 ```sh
 npm run stage:up:dev
 ```
+
+Note: the first startup can take a few minutes while Docker pulls images and initializes the containers. If the services or environment values do not appear immediately, wait a bit and refresh before assuming something is broken.
+
 4. **Open the application**
 - http://localhost:4200/login
 
