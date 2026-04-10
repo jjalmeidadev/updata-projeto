@@ -16,6 +16,7 @@ DECLARE
     'onboarding_payload',
     'onboarding_instance',
     'onboarding_batch',
+    'company',
     'user'
   ];
   existing_tables text;
@@ -32,6 +33,15 @@ END
 $$;
 
 -- USERS
+INSERT INTO company (id, name, approved_domains)
+VALUES
+  (gen_random_uuid(), 'Acme Towers', ARRAY['acme.com']),
+  (gen_random_uuid(), 'Globex Offices', ARRAY['globex.com']),
+  (gen_random_uuid(), 'Initech Campus', ARRAY['initech.com']),
+  (gen_random_uuid(), 'Umbrella Business Park', ARRAY['umbrella.com']),
+  (gen_random_uuid(), 'Nova Square', ARRAY['novasquare.com']);
+
+-- USERS
 INSERT INTO "user" (
   id,
   first_name,
@@ -41,13 +51,14 @@ INSERT INTO "user" (
   status,
   user_type,
   auth0_id,
-  member_since
+  member_since,
+  company_id
 )
 VALUES
-  (gen_random_uuid(), 'Alice', 'Johnson', 'alice@acme.com', true, 'active', 'commercial', 'auth0|seed-alice', NOW() - interval '180 days'),
-  (gen_random_uuid(), 'Bruno', 'Silva', 'bruno@globex.com', true, 'active', 'commercial', 'auth0|seed-bruno', NOW() - interval '120 days'),
-  (gen_random_uuid(), 'Camila', 'Mendes', 'camila@initech.com', true, 'pending', 'commercial', 'auth0|seed-camila', NOW() - interval '45 days'),
-  (gen_random_uuid(), 'Diego', 'Ferreira', 'diego@umbrella.com', false, 'inactive', 'commercial', 'auth0|seed-diego', NOW() - interval '20 days');
+  (gen_random_uuid(), 'Alice', 'Johnson', 'alice@acme.com', true, 'active', 'commercial', 'auth0|seed-alice', NOW() - interval '180 days', (SELECT id FROM company WHERE name = 'Acme Towers' LIMIT 1)),
+  (gen_random_uuid(), 'Bruno', 'Silva', 'bruno@globex.com', true, 'active', 'commercial', 'auth0|seed-bruno', NOW() - interval '120 days', (SELECT id FROM company WHERE name = 'Globex Offices' LIMIT 1)),
+  (gen_random_uuid(), 'Camila', 'Mendes', 'camila@initech.com', true, 'pending', 'commercial', 'auth0|seed-camila', NOW() - interval '45 days', (SELECT id FROM company WHERE name = 'Initech Campus' LIMIT 1)),
+  (gen_random_uuid(), 'Diego', 'Ferreira', 'diego@umbrella.com', false, 'inactive', 'commercial', 'auth0|seed-diego', NOW() - interval '20 days', (SELECT id FROM company WHERE name = 'Umbrella Business Park' LIMIT 1));
 
 -- ONBOARDING BATCHES (examples covering key statuses)
 INSERT INTO onboarding_batch (id, source, status, trace_id, file_name, s3_key, created_at, processed_at, error_message)
@@ -93,6 +104,7 @@ VALUES
 INSERT INTO onboarding_instance (
   id,
   batch_id,
+  company_id,
   company_name,
   selected_sections,
   allowed_emails,
@@ -115,6 +127,7 @@ VALUES
   (
     gen_random_uuid(),
     (SELECT id FROM onboarding_batch WHERE trace_id = 'seed-trace-pending' LIMIT 1),
+    (SELECT id FROM company WHERE name = 'Acme Towers' LIMIT 1),
     'Acme Towers',
     ARRAY['company-details', 'building-setup', 'amenity-settings'],
     ARRAY['owner@acme.com', 'ops@acme.com'],
@@ -136,6 +149,7 @@ VALUES
   (
     gen_random_uuid(),
     (SELECT id FROM onboarding_batch WHERE trace_id = 'seed-trace-processing' LIMIT 1),
+    (SELECT id FROM company WHERE name = 'Globex Offices' LIMIT 1),
     'Globex Offices',
     ARRAY['company-details', 'building-setup', 'residential-details'],
     ARRAY['project@globex.com'],
@@ -157,6 +171,7 @@ VALUES
   (
     gen_random_uuid(),
     (SELECT id FROM onboarding_batch WHERE trace_id = 'seed-trace-completed' LIMIT 1),
+    (SELECT id FROM company WHERE name = 'Initech Campus' LIMIT 1),
     'Initech Campus',
     ARRAY['company-details', 'building-setup', 'amenity-settings'],
     ARRAY['admin@initech.com', 'manager@initech.com'],
@@ -178,6 +193,7 @@ VALUES
   (
     gen_random_uuid(),
     (SELECT id FROM onboarding_batch WHERE trace_id = 'seed-trace-failed' LIMIT 1),
+    (SELECT id FROM company WHERE name = 'Umbrella Business Park' LIMIT 1),
     'Umbrella Business Park',
     ARRAY['company-details', 'building-setup', 'amenity-settings'],
     ARRAY['coordinator@umbrella.com'],
@@ -199,6 +215,7 @@ VALUES
   (
     gen_random_uuid(),
     (SELECT id FROM onboarding_batch WHERE trace_id = 'seed-trace-completed' LIMIT 1),
+    (SELECT id FROM company WHERE name = 'Nova Square' LIMIT 1),
     'Nova Square',
     ARRAY['company-details', 'building-setup', 'amenity-settings'],
     ARRAY['owner@novasquare.com', 'ops@novasquare.com'],

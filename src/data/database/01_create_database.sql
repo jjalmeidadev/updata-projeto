@@ -18,6 +18,14 @@ CREATE TYPE user_type_enum AS ENUM ('commercial', 'residential', 'visitor');
 -- CORE TABLES
 -- =========================
 
+CREATE TABLE company (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  name VARCHAR(255) NOT NULL UNIQUE,
+  approved_domains TEXT[] NOT NULL DEFAULT '{}',
+  created_at TIMESTAMPTZ DEFAULT NOW(),
+  updated_at TIMESTAMPTZ DEFAULT NOW()
+);
+
 CREATE TABLE "user" (
   id UUID PRIMARY KEY,
   first_name VARCHAR(100) NOT NULL,
@@ -28,7 +36,8 @@ CREATE TABLE "user" (
   status user_status_enum NOT NULL,
   user_type user_type_enum NOT NULL,
   auth0_id TEXT,
-  member_since TIMESTAMPTZ
+  member_since TIMESTAMPTZ,
+  company_id UUID REFERENCES company(id) ON DELETE SET NULL
 );
 
 -- =========================
@@ -92,6 +101,7 @@ CREATE TABLE processing_log (
 CREATE TABLE onboarding_instance (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   batch_id UUID REFERENCES onboarding_batch(id) ON DELETE SET NULL,
+  company_id UUID REFERENCES company(id) ON DELETE SET NULL,
   company_name VARCHAR(255) NOT NULL,
   selected_sections TEXT[] NOT NULL DEFAULT '{}',
   allowed_emails TEXT[] NOT NULL DEFAULT '{}',
@@ -122,6 +132,7 @@ CREATE INDEX idx_onboarding_batch_trace_id ON onboarding_batch(trace_id);
 
 -- Onboarding instance lookups
 CREATE INDEX idx_onboarding_instance_batch_id ON onboarding_instance(batch_id);
+CREATE INDEX idx_onboarding_instance_company_id ON onboarding_instance(company_id);
 CREATE INDEX idx_onboarding_batch_status ON onboarding_batch(status);
 CREATE INDEX idx_onboarding_batch_created_at ON onboarding_batch(created_at DESC);
 
@@ -144,3 +155,7 @@ CREATE INDEX idx_onboarding_instance_status ON onboarding_instance(status);
 CREATE INDEX idx_onboarding_instance_emails ON onboarding_instance(allowed_emails);
 CREATE INDEX idx_onboarding_instance_status_submitted ON onboarding_instance(status, submitted_at DESC);
 CREATE INDEX idx_onboarding_instance_returned_sections ON onboarding_instance USING GIN(returned_sections);
+
+-- Company lookups
+CREATE INDEX idx_company_name ON company(name);
+CREATE INDEX idx_company_approved_domains ON company USING GIN(approved_domains);
