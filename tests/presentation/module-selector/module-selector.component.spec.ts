@@ -115,6 +115,12 @@ describe('ModuleSelectorComponent', () => {
     expect(routerMock.navigate).not.toHaveBeenCalled();
   });
 
+  it('navigates to /monitoring on goBackToMonitoring()', () => {
+    component.goBackToMonitoring();
+
+    expect(routerMock.navigate).toHaveBeenCalledWith(['/monitoring']);
+  });
+
   it('sets loading=false when getQuestions fails', () => {
     questionServiceMock.getQuestions.mockReturnValue(throwError(() => new Error('load failed')));
 
