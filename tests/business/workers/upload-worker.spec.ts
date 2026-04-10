@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest"
 
 const originalNodeEnv = process.env.NODE_ENV
@@ -27,6 +28,10 @@ vi.mock("../../../src/data/repositories/onboarding-repository.js", () => ({
   saveOnboardingMappings: vi.fn(),
   updateOnboardingBatchStatus: vi.fn(),
   updateProcessingJobStatus: vi.fn(),
+}))
+
+vi.mock("../../../src/data/repositories/onboarding-instance-repository.js", () => ({
+  linkBatchToOnboardingInstanceByLinkToken: vi.fn().mockResolvedValue(null),
 }))
 
 vi.mock("../../../src/data/integrations/equiem-api-client.js", () => ({

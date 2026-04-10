@@ -3,6 +3,7 @@ import { GetObjectCommand } from "@aws-sdk/client-s3"
 import { s3Client } from "../../config/aws-clients.js"
 import {
   createOnboardingInstance,
+  deleteOnboardingInstanceByLinkToken,
   findCompanyByName,
   findOnboardingInstanceByLinkToken,
   findReusableOnboardingInstance,
@@ -16,10 +17,18 @@ import {
   sendOnboardingInviteToAllowedEmails,
   sendOnboardingSubmissionMessageToAdmins,
 } from "./onboarding-email-service.js"
+import { isInternalEmail } from "../../shared/auth-constants.js"
 
 import { findOnboardingBatchById } from "../../data/repositories/onboarding-repository.js"
 
 interface CreateOnboardingInstanceInput {
+  companyName: string
+  selectedSections: string[]
+  allowedEmails: string[]
+  baseUrl: string
+}
+
+interface UpdateOnboardingInstanceInput {
   companyName: string
   selectedSections: string[]
   allowedEmails: string[]
@@ -90,6 +99,24 @@ function ensureOnboardingAccess(record: OnboardingInstanceRecord, authenticatedE
   }
 }
 
+function ensureInternalReviewAccess(authenticatedEmail?: string): void {
+  if (isOnboardingAuthBypassed()) {
+    return
+  }
+
+  const normalizedEmail = authenticatedEmail ? normalizeEmailAddress(authenticatedEmail) : ""
+
+  if (!normalizedEmail) {
+    throw new OnboardingAccessDeniedError("Authenticated email is required to access this review link")
+  }
+
+  if (!isInternalEmail(normalizedEmail)) {
+    throw new OnboardingAccessDeniedError(
+      `You are not allowed to access this review link (authenticated as: ${normalizedEmail})`
+    )
+  }
+}
+
 function normalizeSections(sections: string[]): string[] {
   return Array.from(new Set(sections.map((section) => String(section).trim()).filter(Boolean))).sort()
 }
@@ -130,6 +157,10 @@ function haveSameEmails(a: string[], b: string[]): boolean {
 
 function toPublicLink(baseUrl: string, linkToken: string): string {
   return `${baseUrl.replace(/\/$/, "")}/onboarding/${linkToken}`
+}
+
+function toReviewLink(baseUrl: string, linkToken: string): string {
+  return `${baseUrl.replace(/\/$/, "")}/equiem-review/${linkToken}`
 }
 
 function mapInstance(record: OnboardingInstanceRecord, baseUrl: string) {
@@ -287,6 +318,61 @@ async function createOrReuseOnboardingInstance(input: CreateOnboardingInstanceIn
   }
 }
 
+async function updateOnboardingInstanceDetails(linkToken: string, input: UpdateOnboardingInstanceInput) {
+  const existing = await findOnboardingInstanceByLinkToken(linkToken)
+
+  if (!existing) {
+    return null
+  }
+
+  const selectedSections = normalizeSections(input.selectedSections)
+  const allowedEmails = normalizeAllowedEmails(input.allowedEmails)
+  const companyName = input.companyName.trim()
+
+  if (!companyName) {
+    throw new Error("Company name is required")
+  }
+
+  if (selectedSections.length === 0) {
+    throw new Error("At least one section must be selected")
+  }
+
+  const company = await findCompanyByName(companyName)
+  const updated = await updateOnboardingInstance(existing.id, {
+    companyId: company?.id ?? null,
+    companyName: company?.name ?? companyName,
+    selectedSections,
+    allowedEmails,
+    emailStatus: existing.email_status,
+    emailPayload: existing.email_payload ?? {},
+  })
+
+  if (!updated) {
+    return null
+  }
+
+  const inviteResult = await sendOnboardingInviteToAllowedEmails({
+    companyName: updated.company_name,
+    onboardingLink: toPublicLink(input.baseUrl, updated.link_token),
+    selectedSections,
+    allowedEmails,
+  })
+
+  const invitePayload = {
+    ...(updated.email_payload ?? {}),
+    onboardingInvite: inviteResult,
+  }
+
+  const withInviteStatus = await updateOnboardingInstance(updated.id, {
+    emailStatus: inviteResult.sent ? "invite_sent" : "invite_failed",
+    emailPayload: invitePayload,
+  })
+
+  const persisted = withInviteStatus ?? updated
+
+  return mapInstance(persisted, input.baseUrl)
+}
+
 async function getOnboardingInstanceByLink(linkToken: string, baseUrl: string) {
   const record = await findOnboardingInstanceByLinkToken(linkToken)
 
@@ -309,6 +395,32 @@ async function getOnboardingInstanceByLinkForAuthenticatedUser(
   }
 
   ensureOnboardingAccess(record, authenticatedEmail)
+
+  return mapInstance(record, baseUrl)
+}
+
+async function getOnboardingInstanceByLinkForInternalReview(
+  linkToken: string,
+  baseUrl: string,
+  authenticatedEmail?: string
+) {
+  const record = await findOnboardingInstanceByLinkToken(linkToken)
+
+  if (!record) {
+    return null
+  }
+
+  ensureInternalReviewAccess(authenticatedEmail)
+
+  return mapInstance(record, baseUrl)
+}
+
+async function deleteOnboardingInstance(linkToken: string, baseUrl: string) {
+  const record = await deleteOnboardingInstanceByLinkToken(linkToken)
+
+  if (!record) {
+    return null
+  }
 
   return mapInstance(record, baseUrl)
 }
@@ -437,7 +549,7 @@ async function submitOnboarding(
 
   const notificationResult = await sendOnboardingSubmissionMessageToAdmins({
     companyName: updated.company_name,
-    onboardingLink: toPublicLink(baseUrl, updated.link_token),
+    reviewLink: toReviewLink(baseUrl, updated.link_token),
     selectedSections: updated.selected_sections,
     submittedAt: updated.submitted_at ?? new Date().toISOString(),
   })
@@ -580,6 +692,9 @@ export {
   getDashboardInstances,
   getOnboardingInstanceByLink,
   getOnboardingInstanceByLinkForAuthenticatedUser,
+  getOnboardingInstanceByLinkForInternalReview,
+  deleteOnboardingInstance,
+  updateOnboardingInstanceDetails,
   getOnboardingReviewDataByLink,
   saveOnboardingProgress,
   submitOnboarding,

@@ -5,13 +5,16 @@ import {
   approveOnboardingInstanceHandler,
   completeEquiemReviewHandler,
   createOnboardingInstanceHandler,
+  deleteOnboardingInstanceHandler,
   getOnboardingByLinkHandler,
+  getOnboardingReviewByLinkHandler,
   getOnboardingReviewDataHandler,
   listCompaniesHandler,
   listOnboardingInstancesHandler,
   rejectOnboardingInstanceHandler,
   reviewOnboardingSectionHandler,
   saveOnboardingProgressHandler,
+  updateOnboardingInstanceHandler,
   submitOnboardingHandler,
 } from "../controllers/onboarding-instance-controller.js"
 
@@ -29,7 +32,10 @@ const onboardingAuth: RequestHandler = (req, res, next) => {
 
 router.get("/api/companies", listCompaniesHandler)
 router.get("/api/onboarding-instances", onboardingAuth, listOnboardingInstancesHandler)
+router.get("/api/onboarding-instances/:linkToken", onboardingAuth, getOnboardingReviewByLinkHandler)
 router.post("/api/onboarding-instances", createOnboardingInstanceHandler)
+router.delete("/api/onboarding-instances/:linkToken", onboardingAuth, deleteOnboardingInstanceHandler)
+router.patch("/api/onboarding-instances/:linkToken", onboardingAuth, updateOnboardingInstanceHandler)
 router.post("/api/onboarding-instances/:linkToken/review/complete", onboardingAuth, completeEquiemReviewHandler)
 router.post("/api/onboarding-instances/:linkToken/approve", onboardingAuth, approveOnboardingInstanceHandler)
 router.post("/api/onboarding-instances/:linkToken/reject", onboardingAuth, rejectOnboardingInstanceHandler)

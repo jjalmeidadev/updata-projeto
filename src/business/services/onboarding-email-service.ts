@@ -6,7 +6,7 @@ interface EmailDraftInput {
 
 interface AdminSubmissionMessageInput {
   companyName: string
-  onboardingLink: string
+  reviewLink: string
   selectedSections: string[]
   submittedAt: string
 }
@@ -90,23 +90,34 @@ function buildAdminSubmissionMessage(input: AdminSubmissionMessageInput): {
   text: string
   html: string
 } {
-  const sectionList = input.selectedSections.length > 0 ? input.selectedSections.join(", ") : "No sections selected"
+  const companyName = String(input.companyName || "Unknown company").trim() || "Unknown company"
+  const selectedSections = Array.isArray(input.selectedSections)
+    ? input.selectedSections.map((section) => String(section).trim()).filter(Boolean)
+    : []
+  const submittedAt = String(input.submittedAt || new Date().toISOString())
+  const reviewLink = String(input.reviewLink || "")
+  const sectionList = selectedSections.length > 0 ? selectedSections.join(", ") : "No sections selected"
 
-  const subject = `[Onboarding] Form submitted by ${input.companyName}`
+  const subject = `[Onboarding] Form submitted by ${companyName}`
   const text = [
-    `A user finished the onboarding form for ${input.companyName}.`,
-    `Submitted at: ${input.submittedAt}`,
+    `A user finished the onboarding form for ${companyName}.`,
+    `Submitted at: ${submittedAt}`,
     `Selected sections: ${sectionList}`,
-    `Open onboarding: ${input.onboardingLink}`,
+    `Review onboarding: ${reviewLink || "N/A"}`,
   ].join("\n")
 
-  const html = [
-    "<p>A user finished the onboarding form and it is ready for admin review.</p>",
-    `<p><strong>Company:</strong> ${input.companyName}</p>`,
-    `<p><strong>Submitted at:</strong> ${input.submittedAt}</p>`,
-    `<p><strong>Selected sections:</strong> ${sectionList}</p>`,
-    `<p><a href=\"${input.onboardingLink}\">Open onboarding</a></p>`,
-  ].join("")
+  const html = buildEmailTemplate({
+    title: "Onboarding submitted for review",
+    eyebrow: "Equiem Notification",
+    intro: "A user finished the onboarding form and it is ready for admin review.",
+    details: [
+      { label: "Company", value: companyName },
+      { label: "Submitted at", value: submittedAt },
+      { label: "Selected sections", value: sectionList },
+    ],
+    ctaLabel: "Review onboarding",
+    ctaUrl: "http://localhost:4200/equiem-review",
+  })
 
   return {
     subject,
@@ -176,9 +187,9 @@ async function sendOnboardingSubmissionMessageToAdmins(
     }
   }
 
-  const message = buildAdminSubmissionMessage(input)
-
   try {
+    const message = buildAdminSubmissionMessage(input)
+
     const info = await sendSmtpMessage(config, {
       to: config.adminRecipients,
       subject: message.subject,
@@ -271,7 +282,7 @@ function buildEmailTemplate(input: {
     '<table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="background:#f4f6fb;padding:24px 12px;">',
     '<tr><td align="center">',
     '<table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="max-width:640px;background:#ffffff;border-radius:12px;overflow:hidden;border:1px solid #e2e8f0;">',
-    '<tr><td style="background:linear-gradient(135deg,#d6c5fb,#c4b3f0);padding:20px 24px;">',
+    '<tr><td style="background:#6d28d9;padding:20px 24px;">',
     `<p style="margin:0;color:#ffffff;font-size:12px;letter-spacing:0.08em;text-transform:uppercase;">${escapeHtml(
       input.eyebrow || "Equiem Onboarding"
     )}</p>`,

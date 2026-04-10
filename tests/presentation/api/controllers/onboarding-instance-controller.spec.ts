@@ -3,7 +3,9 @@ import type { Request, Response } from "express"
 
 const serviceMocks = vi.hoisted(() => ({
   createOrReuseOnboardingInstance: vi.fn(),
+  deleteOnboardingInstance: vi.fn(),
   getOnboardingInstanceByLinkForAuthenticatedUser: vi.fn(),
+  getOnboardingInstanceByLinkForInternalReview: vi.fn(),
 }))
 
 const userRepositoryMocks = vi.hoisted(() => ({
@@ -12,8 +14,11 @@ const userRepositoryMocks = vi.hoisted(() => ({
 
 vi.mock("../../../../src/business/services/onboarding-instance-service.js", () => ({
   createOrReuseOnboardingInstance: serviceMocks.createOrReuseOnboardingInstance,
+  deleteOnboardingInstance: serviceMocks.deleteOnboardingInstance,
   getOnboardingInstanceByLinkForAuthenticatedUser:
     serviceMocks.getOnboardingInstanceByLinkForAuthenticatedUser,
+  getOnboardingInstanceByLinkForInternalReview:
+    serviceMocks.getOnboardingInstanceByLinkForInternalReview,
 }))
 
 vi.mock("../../../../src/data/repositories/user-repository.js", () => ({
@@ -22,6 +27,7 @@ vi.mock("../../../../src/data/repositories/user-repository.js", () => ({
 
 import {
   createOnboardingInstanceHandler,
+  deleteOnboardingInstanceHandler,
   getOnboardingByLinkHandler,
 } from "../../../../src/presentation/api/controllers/onboarding-instance-controller.js"
 
@@ -45,6 +51,7 @@ describe("onboarding-instance-controller", () => {
   beforeEach(() => {
     vi.clearAllMocks()
     serviceMocks.createOrReuseOnboardingInstance.mockReset()
+    serviceMocks.deleteOnboardingInstance.mockReset()
     serviceMocks.getOnboardingInstanceByLinkForAuthenticatedUser.mockReset()
     userRepositoryMocks.findUser.mockReset()
   })
@@ -124,6 +131,21 @@ describe("onboarding-instance-controller", () => {
       "http://localhost:4200",
       "stored.user@example.com"
     )
+    expect(res.status).toHaveBeenCalledWith(200)
+  })
+
+  it("deletes onboarding instances by link token", async () => {
+    serviceMocks.deleteOnboardingInstance.mockResolvedValue({
+      linkToken: "token-1",
+      companyName: "Acme",
+    })
+
+    const req = mockReq({ params: { linkToken: "token-1" } })
+    const res = mockRes()
+
+    await deleteOnboardingInstanceHandler(req, res)
+
+    expect(serviceMocks.deleteOnboardingInstance).toHaveBeenCalledWith("token-1", "http://localhost:4200")
     expect(res.status).toHaveBeenCalledWith(200)
   })
 })

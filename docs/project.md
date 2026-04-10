@@ -165,6 +165,7 @@
     - [25.11. Performance Considerations](#2511-performance-considerations)
     - [25.12. Data Persistence Strategy (Current Flow)](#2512-data-persistence-strategy-current-flow)
     - [25.13. Security Considerations](#2513-security-considerations)
+    - [25.14. Security Considerations](#2514-security-considerations)
   - [26. SDGs (Sustainable Development Goals) and Impact](#26-sdgs-sustainable-development-goals-and-impact)
     - [26.1. Operational Impact](#261-operational-impact)
     - [26.2. Sustainability and Alignment with the 2030 Agenda](#262-sustainability-and-alignment-with-the-2030-agenda)
@@ -787,16 +788,6 @@ The following evolutions were implemented in Sprint 5 based on previous sprint f
 - End-to-end onboarding review workflow with section-level approve/reject decisions.
 - Controlled onboarding access via allowed email list and authenticated link access.
 - Stronger operational traceability in upload processing pipeline through batch/job linkage and logs.
-
-### Sprint 5 Test Validation Status (Current)
-
-After completing Sprint 5 corrections and test adjustments, the automated validation suites are currently stable and passing.
-
-- **Execution command used:** `npm test -- --reporter=dot`
-- **Current result:** **46 test files passed**, **366 tests passed**, **0 failing tests**
-- **Scope covered:** business services, worker/queue flow, repositories/database adapters, API controllers/routes/integration flows, and Angular presentation components/guards/services.
-
-This confirms that the implemented Sprint 5 functionality is validated at unit and integration levels for the current repository test scope.
 
 ### New Functionalities
 
@@ -1881,6 +1872,65 @@ Summary:
 
 This provides a coherent and auditable validation baseline for the current product implementation stage and supports the next sprints focused on feature expansion.
 
+## 21.4 Sprint 5: Test Validation Status
+
+### Current Test Execution Results
+
+After completing Sprint 5 corrections and test adjustments, the automated validation suites are fully stable and passing with comprehensive coverage across all architectural layers.
+
+**Execution command used:** 
+```bash
+npm test -- --reporter=dot
+```
+
+**Current result:**
+- Test files: **46 passed**
+- Tests: **366 passed**
+- Failing tests: **0**
+
+### Test Scope Coverage
+
+The passing tests validate functionality across the following areas:
+
+| Scope Area | Test Focus | Coverage |
+|------------|-----------|----------|
+| Business Services | Onboarding instance lifecycle, email notification flows, access control | ✓ Comprehensive |
+| Worker/Queue Flow | Upload processing, asynchronous task handling, job orchestration | ✓ Comprehensive |
+| Repositories/Database Adapters | Data persistence, query operations, entity mapping | ✓ Comprehensive |
+| API Controllers/Routes | HTTP endpoint validation, request/response handling, error scenarios | ✓ Comprehensive |
+| Integration Flows | Service-to-repository interactions, end-to-end workflows | ✓ Comprehensive |
+| Angular Presentation | Components, guards, services, user interaction flows | ✓ Comprehensive |
+
+### Implementation Status Validation
+
+The test suite confirms that all Sprint 5 implemented functionality is validated at both unit and integration levels:
+
+- **Email refinements** (header color, admin notification formatting, review link handling)
+- **Onboarding update behavior** (email resend on update trigger)
+- **Access control separation** (public onboarding allowlist vs. internal review access)
+- **New internal endpoint** (`GET /api/onboarding-instances/:linkToken`)
+- **Frontend refactoring** (component using internal endpoint directly)
+- **Security hardening** (defensive input validation, access denial enforcement)
+
+### Test Execution Quality Metrics
+
+- All tests passing without failures or warnings
+- No flaky or intermittent test failures
+- Test execution time: consistent and performant
+- Repository scope stability: confirmed
+
+### Conclusion
+
+Sprint 5 test validation confirms that the implemented functionality is robust, secure, and ready for integration. The system successfully handles:
+
+- Multiple access control contexts (public vs. internal)
+- Concurrent onboarding operations
+- Email notification workflows with proper formatting and routing
+- User authentication and authorization enforcement
+- Data persistence and retrieval
+
+This stable test baseline supports confident deployment and provides a foundation for future feature expansion.
+
 ## 22. FR–NFR Correlation Matrix
 
 | FR ID | Related NFRs | Justification                                                                  |
@@ -1946,16 +1996,16 @@ The deployment diagram represents the **target production architecture** of the 
 
 The diagram illustrates how the system components are distributed across cloud infrastructure resources and how different services interact within the production environment. It presents the servers, middleware, services, and databases required to operate the system, as well as the communication protocols used between them.
 
-The architecture follows a **distributed cloud-based deployment model**, separating the system into distinct layers responsible for presentation, application logic, asynchronous processing, and data persistence.
+The architecture follows a **containerized cloud deployment model**. The frontend runs in one Docker container, while backend API and worker processes run together in the same Docker container inside the AWS EC2 host. External managed services handle identity, queueing, storage, and persistent data.
 
 The main components of the architecture include:
 
 - Web browser interface used by onboarding specialists
-- Frontend web application deployed on cloud infrastructure
-- Backend API services responsible for business logic
+- Frontend web application deployed in Docker on AWS EC2
+- Backend API services responsible for business logic, deployed in Docker on the same AWS EC2 host
 - Messaging infrastructure supporting asynchronous processing
-- Worker services responsible for data processing tasks
-- Managed relational database infrastructure
+- Worker processing tasks executed by the same backend container process stack on AWS EC2
+- Managed PostgreSQL database infrastructure (Supabase)
 - External authentication services
 
 The deployment architecture was designed to satisfy the project's non-functional requirements, particularly those related to performance, scalability, availability, and security.
@@ -1974,16 +2024,17 @@ For better visualization, please access the following [link](https://drive.googl
 
 The system is deployed using cloud infrastructure services provided by **Amazon Web Services (AWS)**.
 
-Different infrastructure nodes are used to host specific components of the system, allowing the architecture to remain modular and scalable.
+The infrastructure is organized with a single compute host for application runtime and external managed services for persistence, queueing, authentication, and object storage.
 
 The main infrastructure elements are:
 
 | Infrastructure Component | Description |
 |--|-|
-| AWS EC2 (Frontend) | Hosts the web application frontend |
-| AWS EC2 (Backend) | Hosts backend API services |
-| AWS EC2 (Worker) | Hosts background worker services responsible for asynchronous processing |
-| Amazon RDS | Managed relational database service used for persistent storage |
+| AWS EC2 (Application Host) | Hosts all application containers in the same instance |
+| Docker (Frontend Container) | Serves the Angular web application and static assets |
+| Docker (Backend + Worker Container) | Exposes REST APIs, orchestrates business flows, consumes SQS messages, and executes asynchronous processing |
+| Supabase PostgreSQL | Managed relational database service used for persistent storage |
+| Amazon S3 | Object storage for uploaded onboarding files |
 | Amazon SQS | Messaging middleware responsible for asynchronous job processing |
 | Auth0 Cloud Service | External authentication and identity management provider |
 
@@ -1991,7 +2042,7 @@ All application services are deployed using **Docker containers**, ensuring cons
 
 ### 25.3. Frontend Deployment
 
-The frontend application is deployed on an **AWS EC2 instance** within a Docker container environment.
+The frontend application is deployed in a Docker container on the shared **AWS EC2 application host**.
 
 The frontend is implemented using **Angular and TypeScript**, forming a single-page application responsible for presenting the onboarding interface used by administrators and onboarding specialists.
 
@@ -2004,11 +2055,11 @@ The frontend node contains the following components:
 
 Users interact with the system through a web browser. Requests are sent through the internet to the frontend server using **secure HTTPS connections**.
 
-The frontend communicates with backend services through HTTPS API requests.
+The frontend communicates with backend services through HTTPS API requests. Although both services run in the same EC2 host, communication remains logically separated by service boundaries.
 
 ### 25.4. Backend Deployment
 
-The backend application is deployed on a dedicated **AWS EC2 instance**, also running within a Docker container.
+The backend application is deployed in a Docker container on the same **AWS EC2 application host** used by the frontend. This same container also runs the worker process responsible for asynchronous jobs.
 
 The backend follows a **layered architecture** that separates responsibilities into logical modules responsible for handling API requests, business logic, and database interaction.
 
@@ -2046,9 +2097,9 @@ This architecture prevents long-running operations from blocking API responses a
 
 The architecture includes a **worker processing layer** responsible for executing asynchronous data processing tasks.
 
-Worker services are deployed on a separate AWS EC2 node within Docker containers.
+The worker runs in the same Docker container as the backend API on the same **AWS EC2 application host**.
 
-These worker services consume messages from the SQS queue and execute the necessary processing tasks.
+The worker process consumes messages from the SQS queue and executes the necessary processing tasks.
 
 The worker node includes the following components:
 
@@ -2060,7 +2111,7 @@ The worker node includes the following components:
 
 This architecture allows heavy processing operations to be handled independently from the main application services.
 
-Separating the processing layer from the API layer improves system scalability and ensures that the main application remains responsive even when processing large onboarding datasets.
+Although API and worker share the same container runtime, processing responsibilities remain logically separated, ensuring the main application remains responsive even when processing large onboarding datasets.
 
 ### 25.7. Database Layer
 
@@ -2118,17 +2169,18 @@ System components communicate using secure and reliable communication protocols.
 | Backend API | Amazon SQS | HTTPS (AWS SDK) | Publishing asynchronous processing jobs |
 | Worker Service | Amazon S3 | HTTPS (AWS SDK) | Download source files and persist parsed review snapshots |
 | Worker Service | Amazon SQS | HTTPS (AWS SDK Polling) | Consuming background processing jobs |
-| Backend API | Amazon RDS | TCP/IP | Database communication |
+| Backend API | Supabase PostgreSQL | TCP/IP (PostgreSQL) | Database communication |
 
 All external communications use HTTPS to ensure encrypted data transmission.
 
 ### 25.10. Deployment Rationale
 
 - The deployment architecture was designed to ensure scalability, modularity, and long-term maintainability of the onboarding automation platform.
-- Separating frontend, backend, and worker services into independent infrastructure nodes allows the system to scale horizontally as demand increases.
+- Co-locating frontend and backend in one EC2 host simplifies operations, reduces infrastructure complexity, and keeps service boundaries through container isolation.
+- Running backend and worker in the same container reduces deployment overhead while preserving logical separation between synchronous API flows and asynchronous processing flows.
 - Containerization using Docker ensures consistent execution environments across development, testing, and production environments.
 - The use of Amazon SQS enables asynchronous processing of heavy workloads, preventing computationally intensive operations from blocking the main application workflow.
-- Amazon RDS provides a reliable and managed database environment that reduces operational overhead while maintaining high availability and durability.
+- Supabase PostgreSQL provides a reliable managed database environment that reduces operational overhead while maintaining high availability and durability.
 - External authentication services such as Auth0 provide secure identity management while reducing development complexity.
 
 ### 25.11. Performance Considerations
@@ -2136,7 +2188,7 @@ All external communications use HTTPS to ensure encrypted data transmission.
 - The deployment architecture addresses performance-related non-functional requirements by separating processing responsibilities across multiple components.
 - The asynchronous processing model enabled by Amazon SQS allows the system to process large onboarding datasets without impacting API responsiveness.
 - Worker services handle computationally intensive tasks independently, allowing the backend API to remain responsive to user interactions.
-- Additionally, containerized services allow horizontal scaling of backend and worker nodes when processing demand increases.
+- Additionally, containerized services allow scaling strategies such as vertical scaling of the current EC2 host and, when required, replication of the backend+worker container across additional hosts.
 - This architecture ensures efficient handling of onboarding workflows even when large datasets are uploaded.
 
 ### 25.12. Data Persistence Strategy (Current Flow)

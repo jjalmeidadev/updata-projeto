@@ -9,7 +9,7 @@ import {
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { AuthService } from '@auth0/auth0-angular';
 import { map } from 'rxjs/operators';
 import { QuestionService, SECTION_LABELS } from '../../services/question.service';
@@ -29,6 +29,7 @@ export class ModuleSelectorComponent implements OnInit {
   private readonly emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   private readonly questionService = inject(QuestionService);
   private readonly router = inject(Router);
+  private readonly route = inject(ActivatedRoute);
   private readonly auth = inject(AuthService);
   private readonly elRef = inject(ElementRef<HTMLElement>);
   private readonly onboardingService = inject(OnboardingInstanceService);
@@ -69,6 +70,7 @@ export class ModuleSelectorComponent implements OnInit {
   readonly allowedEmailsText = signal('');
   readonly saving = signal(false);
   readonly createdLink = signal('');
+  readonly editLinkToken = signal<string | null>(null);
   readonly sectionLabels = SECTION_LABELS;
   readonly parsedAllowedEmails = computed(() => this.parseAllowedEmails(this.allowedEmailsText()));
   readonly allowedEmails = computed(() => this.parsedAllowedEmails().emails);
@@ -126,10 +128,18 @@ export class ModuleSelectorComponent implements OnInit {
       },
     });
 
+    const linkToken = this.route.snapshot.paramMap.get('linkToken');
+
     this.questionService.getQuestions().subscribe({
       next: (questions: Question[]) => {
         const sections = this.questionService.getSections(questions);
         this.sections.set(sections);
+
+        if (linkToken) {
+          this.editLinkToken.set(linkToken);
+          this.loadEditInstance(linkToken, sections);
+          return;
+        }
 
         const saved = this.readSavedSelection();
         if (saved.length > 0) {
@@ -172,12 +182,25 @@ export class ModuleSelectorComponent implements OnInit {
     this.saveSelection();
     this.saving.set(true);
 
-    this.onboardingService.createInstance({
+    const payload = {
       companyName: this.companyName().trim(),
       selectedSections: Array.from(this.selectedSections()),
       allowedEmails: this.allowedEmails(),
-    }).subscribe({
+    };
+
+    const request$ = this.editLinkToken()
+      ? this.onboardingService.updateInstance(this.editLinkToken() as string, payload)
+      : this.onboardingService.createInstance(payload);
+
+    request$.subscribe({
       next: (response) => {
+        if (this.editLinkToken()) {
+          this.toast.success('Onboarding updated successfully.');
+          this.router.navigate(['/monitoring']);
+          this.saving.set(false);
+          return;
+        }
+
         this.createdLink.set(response.instance.linkUrl);
         this.toast.success(
           response.reusedExistingInstance
@@ -187,7 +210,7 @@ export class ModuleSelectorComponent implements OnInit {
         this.saving.set(false);
       },
       error: () => {
-        this.toast.error('Failed to create the onboarding link.');
+        this.toast.error(this.editLinkToken() ? 'Failed to update the onboarding.' : 'Failed to create the onboarding link.');
         this.saving.set(false);
       },
     });
@@ -248,6 +271,31 @@ export class ModuleSelectorComponent implements OnInit {
       'selectedSections',
       JSON.stringify(Array.from(this.selectedSections()))
     );
+  }
+
+  private loadEditInstance(linkToken: string, sections: string[]): void {
+    this.onboardingService.listInstances().subscribe({
+      next: (instances) => {
+        const found = instances.find((instance) => instance.linkToken === linkToken);
+
+        if (!found) {
+          this.toast.error('Onboarding not found.');
+          this.router.navigate(['/monitoring']);
+          this.loading.set(false);
+          return;
+        }
+
+        this.companyName.set(found.companyName);
+        this.allowedEmailsText.set(found.allowedEmails.join('\n'));
+        this.selectedSections.set(new Set(found.selectedSections.filter((section) => sections.includes(section))));
+        this.loading.set(false);
+      },
+      error: () => {
+        this.toast.error('Failed to load onboarding data for editing.');
+        this.router.navigate(['/monitoring']);
+        this.loading.set(false);
+      },
+    });
   }
 
   private readSavedSelection(): string[] {

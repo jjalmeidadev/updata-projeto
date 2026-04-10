@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { TestBed } from '@angular/core/testing';
 import { Router } from '@angular/router';
 import { AuthService } from '@auth0/auth0-angular';
@@ -117,6 +118,11 @@ describe('HomeComponent', () => {
     expect(routerMock.navigate).toHaveBeenCalledWith(['/module-selector']);
   });
 
+  it('navigates to module selector edit flow on editOnboarding()', () => {
+    component.editOnboarding({ linkToken: 'token-123' } as any);
+    expect(routerMock.navigate).toHaveBeenCalledWith(['/module-selector', 'token-123']);
+  });
+
   it('toggles profile menu and logs out with login return URL', () => {
     const event = { stopPropagation: vi.fn() } as unknown as MouseEvent;
 
@@ -157,12 +163,12 @@ describe('HomeComponent', () => {
     expect(component.profileMenuOpen).toBe(true);
   });
 
-  it('navigates to onboarding token in viewDetails() only for completed instances', () => {
+  it('navigates to equiem review in viewDetails() only for completed instances', () => {
     component.viewDetails({ status: 'in_progress', linkToken: 'abc' } as any);
     expect(routerMock.navigate).not.toHaveBeenCalled();
 
     component.viewDetails({ status: 'completed', linkToken: 'abc' } as any);
-    expect(routerMock.navigate).toHaveBeenCalledWith(['/onboarding', 'abc']);
+    expect(routerMock.navigate).toHaveBeenCalledWith(['/equiem-review', 'abc']);
   });
 
   it('covers optional-chain fallback when initials segment is empty', async () => {

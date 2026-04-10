@@ -154,8 +154,8 @@ describe('UploadComponent', () => {
       target: { files: [csvFile], value: 'C:/fakepath/template.csv' },
     } as unknown as Event;
 
-    vi.spyOn(component as never, 'parseCsvFile').mockResolvedValue({ q1: 'Tower' } as never);
-    vi.spyOn(component as never, 'collectTemplateReviewItems').mockReturnValue([] as never);
+    vi.spyOn(component as any, 'parseCsvFile').mockResolvedValue({ q1: 'Tower' });
+    vi.spyOn(component as any, 'collectTemplateReviewItems').mockReturnValue([]);
 
     await component.onFileSelect(event);
 
@@ -180,8 +180,8 @@ describe('UploadComponent', () => {
       target: { files: [xlsxFile], value: 'C:/fakepath/template.xlsx' },
     } as unknown as Event;
 
-    vi.spyOn(component as never, 'parseExcelTemplate').mockResolvedValue({ q2: 25 } as never);
-    vi.spyOn(component as never, 'collectTemplateReviewItems').mockReturnValue([] as never);
+    vi.spyOn(component as any, 'parseExcelTemplate').mockResolvedValue({ q2: 25 });
+    vi.spyOn(component as any, 'collectTemplateReviewItems').mockReturnValue([]);
 
     await component.onFileSelect(event);
 
@@ -201,7 +201,7 @@ describe('UploadComponent', () => {
       target: { files: [csvFile], value: 'C:/fakepath/template.csv' },
     } as unknown as Event;
 
-    vi.spyOn(component as never, 'parseCsvFile').mockRejectedValue(new Error('bad csv'));
+    vi.spyOn(component as any, 'parseCsvFile').mockRejectedValue(new Error('bad csv'));
 
     await component.onFileSelect(event);
 
@@ -215,7 +215,7 @@ describe('UploadComponent', () => {
       target: { files: [csvFile], value: 'C:/fakepath/template.csv' },
     } as unknown as Event;
 
-    vi.spyOn(component as never, 'parseCsvFile').mockRejectedValue('boom' as never);
+    vi.spyOn(component as any, 'parseCsvFile').mockRejectedValue('boom');
 
     await component.onFileSelect(event);
 
@@ -245,14 +245,15 @@ describe('UploadComponent', () => {
 
   it('clicks hidden input in triggerFileInput()', () => {
     const clickMock = vi.fn();
-    const getElementByIdSpy = vi.spyOn(document, 'getElementById').mockReturnValue({
-      click: clickMock,
-    } as unknown as HTMLInputElement);
+    (component as any).fileInputRef = {
+      nativeElement: {
+        click: clickMock,
+      },
+    };
 
     component.triggerFileInput();
 
     expect(clickMock).toHaveBeenCalled();
-    getElementByIdSpy.mockRestore();
   });
 
   it('normalizes parsed values for boolean, multiselect and file types', () => {

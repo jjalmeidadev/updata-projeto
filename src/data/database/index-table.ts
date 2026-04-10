@@ -18,6 +18,7 @@ const processSafe = (globalThis as { process?: { argv?: string[] } }).process
 const argvFlat = Array.isArray(processSafe?.argv) ? processSafe.argv.join(" ").replace(/\\/g, "/") : ""
 const isUploadWorkerProcess = argvFlat.includes("upload-worker")
 const isBenchmarkThroughputProcess = argvFlat.includes("benchmark-throughput")
+const isTestEnvironment = env.NODE_ENV === "test" || env.VITEST === "true"
 
 function resolvePoolMax(): number {
   const raw = env.DB_POOL_MAX?.trim()
@@ -53,7 +54,9 @@ const pool = new Pool({
 // Add error handlers to prevent silent crashes
 pool.on("error", (error) => {
   console.error("[DATABASE] Pool error:", error)
-  process.exit(1)
+  if (!isTestEnvironment) {
+    process.exit(1)
+  }
 })
 
 pool.on("connect", () => {
@@ -70,7 +73,9 @@ if (isUploadWorkerProcess) {
   pool.query("SELECT 1", (error) => {
     if (error) {
       console.error("[DATABASE] Connection test failed:", error)
-      process.exit(1)
+      if (!isTestEnvironment) {
+        process.exit(1)
+      }
     } else {
       console.log("[DATABASE] Connection test passed ✓")
     }

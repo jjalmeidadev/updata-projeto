@@ -21,6 +21,12 @@ DROP INDEX IF EXISTS idx_processing_job_status CASCADE;
 DROP INDEX IF EXISTS idx_onboarding_instance_link_token CASCADE;
 DROP INDEX IF EXISTS idx_onboarding_instance_status CASCADE;
 DROP INDEX IF EXISTS idx_onboarding_instance_emails CASCADE;
+DROP INDEX IF EXISTS idx_onboarding_instance_batch_id CASCADE;
+DROP INDEX IF EXISTS idx_onboarding_instance_company_id CASCADE;
+DROP INDEX IF EXISTS idx_onboarding_instance_status_submitted CASCADE;
+DROP INDEX IF EXISTS idx_onboarding_instance_returned_sections CASCADE;
+DROP INDEX IF EXISTS idx_company_name CASCADE;
+DROP INDEX IF EXISTS idx_company_approved_domains CASCADE;
 
 -- Drop tables (reverse dependency order)
 
@@ -34,6 +40,9 @@ DROP TABLE IF EXISTS onboarding_instance CASCADE;
 
 -- User table
 DROP TABLE IF EXISTS "user" CASCADE;
+
+-- Company table
+DROP TABLE IF EXISTS company CASCADE;
 
 -- Drop enums
 DROP TYPE IF EXISTS user_status_enum CASCADE;
