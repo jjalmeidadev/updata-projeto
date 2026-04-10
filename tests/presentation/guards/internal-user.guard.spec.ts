@@ -72,7 +72,7 @@ describe('internal-user.guard', () => {
   it('allows internal test email', async () => {
     const createUrlTree = vi.fn(() => ({ redirected: true }));
     const routerMock = { createUrlTree };
-    const authMock = { user$: of({ email: 'yudi@equiem.com' }) };
+    const authMock = { user$: of({ email: 'equiem.onboarding@gmail.com' }) };
 
     vi.doMock('@auth0/auth0-angular', () => ({
       AuthService: class AuthService {},

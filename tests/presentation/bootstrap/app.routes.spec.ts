@@ -49,6 +49,8 @@ describe('app.routes', () => {
       'onboarding/:linkToken/form',
       'onboarding/:linkToken/upload',
       'onboarding/:linkToken/review',
+      'equiem-review',
+      'equiem-review/:linkToken',
       '**',
     ]);
 

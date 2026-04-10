@@ -51,7 +51,10 @@ describe("upload-controller", () => {
 
       await handleUpload(req, res)
 
-      expect(vi.mocked(processUploadFile)).toHaveBeenCalledWith(file, "trace-123")
+      expect(vi.mocked(processUploadFile)).toHaveBeenCalledWith(file, "trace-123", {
+        linkToken: undefined,
+        companyName: undefined,
+      })
       expect(res.json).toHaveBeenCalledWith({
         redirect: "/form",
         s3Key: "uploads/trace-123/data.csv",

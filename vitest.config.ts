@@ -67,6 +67,7 @@ export default defineConfig({
   test: {
     environment: "node",
     setupFiles: ["tests/setup/angular-testbed.ts"],
+    exclude: ["tests/e2e/**/*.spec.ts"],
     environmentMatchGlobs: [
       ["tests/presentation/login/**/*.spec.ts", "jsdom"],
       ["tests/presentation/onboarding/**/*.spec.ts", "jsdom"],

@@ -31,12 +31,15 @@ vi.mock("../../../../src/presentation/api/middleware/auth-middleware.js", () => 
 }))
 
 vi.mock("../../../../src/presentation/api/controllers/onboarding-instance-controller.js", () => ({
+  approveOnboardingInstanceHandler: vi.fn(),
   completeEquiemReviewHandler: completeEquiemReviewMock,
   createOnboardingInstanceHandler: createOnboardingInstanceMock,
   getOnboardingByLinkHandler: getOnboardingByLinkMock,
   getOnboardingReviewDataHandler: getOnboardingReviewDataMock,
   listCompaniesHandler: listCompaniesMock,
   listOnboardingInstancesHandler: listOnboardingInstancesMock,
+  rejectOnboardingInstanceHandler: vi.fn(),
+  reviewOnboardingSectionHandler: vi.fn(),
   saveOnboardingProgressHandler: saveOnboardingProgressMock,
   submitOnboardingHandler: submitOnboardingMock,
 }))
