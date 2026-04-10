@@ -33,10 +33,11 @@ Database: PostgreSQL 13+ <br>
 This document describes the current Supabase/PostgreSQL schema used by the onboarding flow.
 
 Current model highlights:
-- 7 active tables in schema `equiem`
-- Focused on upload lifecycle, payload persistence, processing tracking, and onboarding instance state
+- 8 active tables in schema `equiem`
+- Focused on company management, user authentication, upload lifecycle, payload persistence, processing tracking, and onboarding instance state
 
 Active tables:
+- company
 - user
 - onboarding_batch
 - onboarding_payload
@@ -52,6 +53,7 @@ Active tables:
 This dictionary documents the current physical schema defined in [src/data/database/01_create_database.sql](src/data/database/01_create_database.sql).
 
 Tables covered:
+- company
 - user
 - onboarding_batch
 - onboarding_payload
@@ -80,6 +82,21 @@ Values:
 
 ## 3. Core Tables
 
+### company
+Purpose: represents client companies that undergo onboarding and own onboarding instances.
+
+| Field | Type | Nullable | Default | Notes |
+|---|---|---|---|---|
+| id | UUID | no | gen_random_uuid() | Primary key |
+| name | VARCHAR(255) | no | - | Unique company name |
+| approved_domains | TEXT[] | no | {} | List of authorized email domains for auto-approval |
+| created_at | TIMESTAMPTZ | yes | NOW() | Creation timestamp |
+| updated_at | TIMESTAMPTZ | yes | NOW() | Last update timestamp |
+
+Constraints:
+- PRIMARY KEY (id)
+- UNIQUE (name)
+
 ### user
 Purpose: authenticated users linked to onboarding workflows.
 
@@ -95,10 +112,12 @@ Purpose: authenticated users linked to onboarding workflows.
 | user_type | user_type_enum | no | - | commercial/residential/visitor |
 | auth0_id | TEXT | yes | NULL | External identity id |
 | member_since | TIMESTAMPTZ | yes | NULL | Optional join date |
+| company_id | UUID | yes | NULL | FK to company |
 
 Constraints:
 - PRIMARY KEY (id)
 - UNIQUE (email)
+- FOREIGN KEY (company_id) REFERENCES company(id) ON DELETE SET NULL
 
 ---
 
@@ -196,6 +215,7 @@ Purpose: collaborative onboarding form state and review lifecycle.
 |---|---|---|---|---|
 | id | UUID | no | gen_random_uuid() | Primary key |
 | batch_id | UUID | yes | NULL | FK to onboarding_batch |
+| company_id | UUID | yes | NULL | FK to company |
 | company_name | VARCHAR(255) | no | - | Display company name |
 | selected_sections | TEXT[] | no | {} | Enabled sections |
 | allowed_emails | TEXT[] | no | {} | Invite/access allowlist |

@@ -17,8 +17,9 @@ This folder contains the physical database scripts used by the onboarding backen
 
 ## 1. Overview
 
-The database is organized under schema `equiem` and currently uses a focused model with **7 active tables**:
+The database is organized under schema `equiem` and currently uses a focused model with **8 active tables**:
 
+- `company`
 - `user`
 - `onboarding_batch`
 - `onboarding_payload`
@@ -27,7 +28,7 @@ The database is organized under schema `equiem` and currently uses a focused mod
 - `processing_log`
 - `onboarding_instance`
 
-This model supports onboarding upload lifecycle, payload persistence, processing tracking, and onboarding form/review state.
+This model supports company management, user authentication, onboarding upload lifecycle, payload persistence, processing tracking, and onboarding form/review state.
 
 ---
 
@@ -131,6 +132,7 @@ ORDER BY table_name;
 
 Expected table names:
 
+- `company`
 - `onboarding_batch`
 - `onboarding_instance`
 - `onboarding_mapping`
@@ -143,6 +145,7 @@ Quick row count check:
 
 ```sql
 SELECT
+  (SELECT COUNT(*) FROM equiem.company) AS company_count,
   (SELECT COUNT(*) FROM equiem."user") AS users_count,
   (SELECT COUNT(*) FROM equiem.onboarding_batch) AS batch_count,
   (SELECT COUNT(*) FROM equiem.onboarding_payload) AS payload_count,
