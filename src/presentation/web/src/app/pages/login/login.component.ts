@@ -61,7 +61,7 @@ export class LoginComponent implements OnInit {
           return;
         }
 
-        if (this.isOnboardingLinkRoute(storedTarget)) {
+        if (this.isPostLoginDeepLinkRoute(storedTarget)) {
           this.syncUserProfileAndNavigateToLink(storedTarget);
           return;
         }
@@ -122,8 +122,12 @@ export class LoginComponent implements OnInit {
     this.accessDeniedModalOpen = true;
   }
 
-  private isOnboardingLinkRoute(target: string): boolean {
-    return /^\/onboarding\/[A-Za-z0-9_-]+(?:\/(?:form|upload|review))?$/.test((target || '').trim());
+  private isPostLoginDeepLinkRoute(target: string): boolean {
+    const t = (target || '').trim();
+    if (/^\/onboarding\/[A-Za-z0-9_-]+(?:\/(?:form|upload|review))?$/.test(t)) {
+      return true;
+    }
+    return /^\/equiem-review(?:\/[A-Za-z0-9_-]+)?$/.test(t);
   }
 
   login(): void {

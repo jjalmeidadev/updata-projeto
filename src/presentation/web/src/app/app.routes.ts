@@ -1,5 +1,6 @@
 import { Routes } from '@angular/router';
 import { authGuardFn } from '@auth0/auth0-angular';
+import { deepLinkAuthGuard } from './guards/deep-link-auth.guard';
 import { internalUserGuard } from './guards/internal-user.guard';
 import { instanceLinkAuthGuard } from './guards/instance-link-auth.guard';
 import { LoginComponent } from './pages/login/login.component';
@@ -43,7 +44,15 @@ export const routes: Routes = [
   { path: 'onboarding/:linkToken/form', component: OnboardingFormComponent, canActivate: [instanceLinkAuthGuard] },
   { path: 'onboarding/:linkToken/upload', component: UploadComponent, canActivate: [instanceLinkAuthGuard] },
   { path: 'onboarding/:linkToken/review', component: ReviewComponentsComponent, canActivate: [instanceLinkAuthGuard] },
-  {path: 'equiem-review',component: EquiemReviewComponent,canActivate: [authGuardFn, internalUserGuard]},
-  {path: 'equiem-review/:linkToken',component: EquiemReviewDetailComponent,canActivate: [authGuardFn, internalUserGuard]},
+  {
+    path: 'equiem-review',
+    component: EquiemReviewComponent,
+    canActivate: [deepLinkAuthGuard, internalUserGuard],
+  },
+  {
+    path: 'equiem-review/:linkToken',
+    component: EquiemReviewDetailComponent,
+    canActivate: [deepLinkAuthGuard, internalUserGuard],
+  },
   { path: '**', redirectTo: '/login' },
 ];

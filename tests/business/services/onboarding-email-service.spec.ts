@@ -78,6 +78,11 @@ describe("onboarding-email-service", () => {
         html: expect.stringContaining("Review onboarding"),
       })
     )
+    expect(sendMailMock).toHaveBeenCalledWith(
+      expect.objectContaining({
+        html: expect.stringContaining("http://localhost:4200/equiem-review/token-1"),
+      })
+    )
     expect(result).toMatchObject({
       sent: true,
       provider: "smtp",

@@ -116,7 +116,7 @@ function buildAdminSubmissionMessage(input: AdminSubmissionMessageInput): {
       { label: "Selected sections", value: sectionList },
     ],
     ctaLabel: "Review onboarding",
-    ctaUrl: "http://localhost:4200/equiem-review",
+    ctaUrl: reviewLink,
   })
 
   return {
