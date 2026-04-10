@@ -14,6 +14,7 @@
    3.3 [Normalization (Up to 3NF)](#33-normalization-up-to-3nf)  
    3.4 [Referential Integrity Rules](#34-referential-integrity-rules)  
    3.5 [Conceptual to Logical Transformation](#35-conceptual-to-logical-transformation)  
+   3.6 [Schema Evolution Update (V2 - Current Physical Database)](#36-schema-evolution-update-v2---current-physical-database)
 4. [Conclusion](#4-conclusion)
 
 ---
@@ -1579,6 +1580,234 @@ All attributes -> columns
 All 1:N -> foreign keys  
 All N:M -> junction tables  
 All business rules -> constraints 
+
+---
+
+## 3.6 Schema Evolution Update (V2 - Current Physical Database)
+
+This subsection preserves the legacy logical model above and adds a versioned update aligned with the current physical schema implemented in:
+
+- `src/data/database/01_create_database.sql`
+- `src/data/database/data-dictionary.md`
+
+### 3.6.1 Evolution Context
+
+The original logical model (35 entities) represented a broad domain scope for building operations and compliance.
+
+The current production-oriented schema (V2) was intentionally reduced to support the MVP ingestion pipeline with stronger operational focus on:
+
+- Upload lifecycle control
+- Row-level staging and validation feedback
+- Processing jobs and observability
+- Onboarding instance collaboration and review state
+
+This means the project now uses a bounded persistence model optimized for the delivered onboarding flow.
+
+### 3.6.2 Current Logical Model (V2) - Active Tables
+
+The current logical model contains 7 active tables in schema `equiem`:
+
+1. `user`
+2. `onboarding_batch`
+3. `onboarding_payload`
+4. `onboarding_mapping`
+5. `processing_job`
+6. `processing_log`
+7. `onboarding_instance`
+
+### 3.6.3 V2 Logical Definitions (Aligned with Physical Schema)
+
+#### user
+
+```
+Table user {
+   id UUID [pk]
+   first_name VARCHAR(100) [not null]
+   last_name VARCHAR(100) [not null]
+   email VARCHAR(255) [unique, not null]
+   email_verified BOOLEAN [not null]
+   mobile_number VARCHAR(30)
+   status user_status_enum [not null]
+   user_type user_type_enum [not null]
+   auth0_id TEXT
+   member_since TIMESTAMPTZ
+}
+```
+
+#### onboarding_batch
+
+```
+Table onboarding_batch {
+   id UUID [pk, default: gen_random_uuid()]
+   source VARCHAR(50) [not null]
+   status VARCHAR(50) [not null]
+   trace_id VARCHAR(120) [not null]
+   file_name VARCHAR(255) [not null]
+   s3_key TEXT [not null]
+   error_message TEXT
+   processed_at TIMESTAMPTZ
+   created_at TIMESTAMPTZ [default: now()]
+}
+```
+
+#### onboarding_payload
+
+```
+Table onboarding_payload {
+   id UUID [pk, default: gen_random_uuid()]
+   batch_id UUID [not null, ref: > onboarding_batch.id]
+   row_number INT [not null]
+   entity_type VARCHAR(50) [not null]
+   raw_data JSONB [not null]
+   is_valid BOOLEAN [default: true]
+   validation_errors JSONB [default: '[]']
+
+   indexes {
+      (batch_id, row_number) [unique]
+   }
+}
+```
+
+#### onboarding_mapping
+
+```
+Table onboarding_mapping {
+   id UUID [pk, default: gen_random_uuid()]
+   entity_type VARCHAR(50)
+   external_id VARCHAR(100)
+   internal_id UUID
+   created_at TIMESTAMPTZ [default: now()]
+}
+```
+
+#### processing_job
+
+```
+Table processing_job {
+   id UUID [pk, default: gen_random_uuid()]
+   batch_id UUID [ref: > onboarding_batch.id]
+   type VARCHAR(50)
+   status VARCHAR(50)
+   external_reference VARCHAR(255)
+   error_message TEXT
+   started_at TIMESTAMPTZ
+   finished_at TIMESTAMPTZ
+}
+```
+
+#### processing_log
+
+```
+Table processing_log {
+   id UUID [pk, default: gen_random_uuid()]
+   job_id UUID [ref: > processing_job.id]
+   level VARCHAR(20) [default: 'info']
+   message TEXT
+   created_at TIMESTAMPTZ [default: now()]
+}
+```
+
+#### onboarding_instance
+
+```
+Table onboarding_instance {
+   id UUID [pk, default: gen_random_uuid()]
+   batch_id UUID [ref: > onboarding_batch.id]
+   company_name VARCHAR(255) [not null]
+   selected_sections TEXT[] [not null, default: '{}']
+   allowed_emails TEXT[] [not null, default: '{}']
+   status VARCHAR(50) [not null, default: 'draft']
+   progress_percent INT [not null, default: 0]
+   link_token VARCHAR(120) [unique, not null]
+   form_data JSONB [not null, default: '{}']
+   email_status VARCHAR(50) [not null, default: 'pending_manual_send']
+   email_payload JSONB
+   submitted_at TIMESTAMPTZ
+   reviewed_at TIMESTAMPTZ
+   completed_at TIMESTAMPTZ
+   section_review JSONB [not null, default: '{}']
+   returned_sections TEXT[] [not null, default: '{}']
+   rejection_reason TEXT
+   created_at TIMESTAMPTZ [default: now()]
+   updated_at TIMESTAMPTZ [default: now()]
+}
+```
+
+### 3.6.4 V2 Referential Integrity (Current)
+
+Current foreign key graph:
+
+- `onboarding_payload.batch_id -> onboarding_batch.id` (ON DELETE CASCADE)
+- `processing_job.batch_id -> onboarding_batch.id` (ON DELETE CASCADE)
+- `processing_log.job_id -> processing_job.id` (ON DELETE CASCADE)
+- `onboarding_instance.batch_id -> onboarding_batch.id` (ON DELETE SET NULL)
+
+### 3.6.5 Legacy-to-V2 Mapping Summary
+
+The table below clarifies how the legacy broad model evolved into the current MVP-focused schema.
+
+| Legacy Model Scope | V2 Current Status |
+|---|---|
+| Building/Room/Group/Permits operational entities | Not persisted in the current MVP physical schema |
+| Company_Building/Configuration/Status_Type hierarchy | Replaced by onboarding workflow state in `onboarding_instance` |
+| User + IsEquiem split | Simplified to a single `user` table with typed status/profile |
+| Full operational request management domain | Out of current persistence scope |
+| New onboarding ingestion lifecycle | Implemented via `onboarding_batch`, `onboarding_payload`, `onboarding_mapping`, `processing_job`, `processing_log`, `onboarding_instance` |
+
+### 3.6.6 Documentation Policy for Future Changes
+
+To preserve traceability while avoiding historical loss:
+
+- Keep Sections 2 and 3.1-3.5 as legacy reference baseline.
+- Treat Section 3.6 as the authoritative logical model for current implementation.
+- Update Section 3.6 whenever `01_create_database.sql` changes.
+- Keep `data-dictionary.md` synchronized with all schema updates.
+
+### 3.6.7 Persistence Strategy (Current Implementation)
+
+The current ingestion flow intentionally uses a hybrid persistence strategy across object storage and relational staging.
+
+1. Original file persistence (binary source)
+- The uploaded CSV/XLS/XLSX file is stored in Amazon S3.
+- The S3 object key is persisted in `onboarding_batch.s3_key`.
+- This object is the immutable source for re-download and reproducibility of parsing operations.
+
+2. Structured staging persistence (queryable source)
+- During worker processing, rows are parsed and normalized.
+- Each parsed row is persisted in `onboarding_payload.raw_data` (JSONB), along with `is_valid` and `validation_errors`.
+- This layer is the queryable source for validation status, row-level inspection, and future deterministic reprocessing.
+
+3. Review snapshot persistence (optimized read model)
+- After row mapping, the worker writes a review snapshot JSON to S3 at `<original_s3_key>.parsed.json`.
+- The review endpoint currently reads this S3 snapshot for UI consumption.
+
+### 3.6.8 Source-of-Truth Rules and Operational Rationale
+
+To avoid ambiguity, the system adopts explicit source roles:
+
+- Canonical raw upload: original object in S3 (`onboarding_batch.s3_key`).
+- Canonical normalized staging: `onboarding_payload.raw_data` in PostgreSQL.
+- Review transport artifact: S3 snapshot (`.parsed.json`) for efficient frontend read.
+
+Rationale:
+
+- S3 is optimized for large binary/object retention.
+- PostgreSQL is optimized for indexed row-level validation and lifecycle tracking.
+- The snapshot reduces transformation overhead on read paths for review screens.
+
+Current limitation (important for traceability):
+
+- The review endpoint currently prioritizes S3 snapshot reads and returns an empty list if snapshot is missing/unavailable.
+- There is no active DB fallback in this path yet, even though normalized rows exist in `onboarding_payload`.
+
+### 3.6.9 Consistency and Versioning Notes
+
+- Each upload cycle creates a new `onboarding_batch` record linked to one S3 source key.
+- Parsed rows are linked by `onboarding_payload.batch_id`.
+- Onboarding instance linkage is done by `onboarding_instance.batch_id` after worker association by link token.
+- Processing and failure visibility are captured through `processing_job` and `processing_log`.
+
+This model enables auditable lineage: `link_token -> batch_id -> s3_key + payload rows + processing logs`.
 
 ---
 
