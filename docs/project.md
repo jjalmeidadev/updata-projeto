@@ -41,8 +41,25 @@
     - [Delivered in this sprint:](#delivered-in-this-sprint-3)
   - [Post-MVP Enhancements (Nice-to-Have)](#post-mvp-enhancements-nice-to-have)
   - [12.1 Feature Development Progress and Deviations](#121-feature-development-progress-and-deviations)
+    - [Functional Requirement Coverage in This Artefact (50%)](#functional-requirement-coverage-in-this-artefact-50)
+    - [Summary by Planned Delivery](#summary-by-planned-delivery)
+    - [Architecture and Standards Deviations](#architecture-and-standards-deviations)
+    - [Feature-to-File Traceability (Existing Files)](#feature-to-file-traceability-existing-files)
+    - [How to Run the Project Locally](#how-to-run-the-project-locally)
+    - [12.1.1 Demo Video](#1211-demo-video)
   - [12.2 Feature Development Sprint 4](#122-feature-development-sprint-4)
+    - [Integration and Deployment](#integration-and-deployment)
+    - [User Interface and Experience Improvements](#user-interface-and-experience-improvements)
+    - [New Functionalities](#new-functionalities)
+    - [Feature-to-File Traceability (New Features)](#feature-to-file-traceability-new-features)
+    - [12.2.1 Demo Video](#1221-demo-video)
   - [12.3 Feature Development Sprint 5](#123-feature-development-sprint-5)
+    - [Sprint 5 Development Status (Strict Compliance View)](#sprint-5-development-status-strict-compliance-view)
+    - [Feedback from Sprint 4 Test Results and Implemented Corrections](#feedback-from-sprint-4-test-results-and-implemented-corrections)
+    - [Sprint 5 Test Validation Status (Current)](#sprint-5-test-validation-status-current)
+    - [New Functionalities](#new-functionalities-1)
+    - [Justification for Non-Execution of Remaining Corrections and Evolutions](#justification-for-non-execution-of-remaining-corrections-and-evolutions)
+    - [Sprint 5 Conclusion](#sprint-5-conclusion)
   - [13. MVP Canvas](#13-mvp-canvas)
     - [13.1. MVP Proposal](#131-mvp-proposal)
     - [13.2. Segmented Personas](#132-segmented-personas)
@@ -50,7 +67,7 @@
     - [13.4. Features](#134-features)
     - [13.5. Expected Results](#135-expected-results)
     - [13.6. Metrics to Validate](#136-metrics-to-validate)
-    - [13.7. Cost & Schedule](#137-cost--schedule)
+    - [13.7. Cost \& Schedule](#137-cost--schedule)
   - [14. Project Risk Matrix and Action Table](#14-project-risk-matrix-and-action-table)
     - [14.1. THREATS](#141-threats)
     - [14.2. OPPORTUNITIES](#142-opportunities)
@@ -85,20 +102,49 @@
   - [19. Non-Functional Test Execution Strategy](#19-non-functional-test-execution-strategy)
     - [Execution Method](#execution-method)
   - [20. Testing Tools and Environment](#20-testing-tools-and-environment)
-    - [Automated Test Frameworks](#automated-test-frameworks)
   - [21. Test Coverage Discussion](#21-test-coverage-discussion)
     - [21.1 Unit Tests (Backend): Strategy, Implementation, and Coverage](#211-unit-tests-backend-strategy-implementation-and-coverage)
     - [21.2 Usability Tests](#212-usability-tests)
+    - [Test Responsibility](#test-responsibility)
+      - [Upload Flow Test Team](#upload-flow-test-team)
+      - [Manual Form Flow Test Team](#manual-form-flow-test-team)
+      - [Notes on Test Organization](#notes-on-test-organization)
+      - [Testing Methodology](#testing-methodology)
+      - [Test Setup](#test-setup)
+    - [Test 1 – File Upload Flow (Primary Path)](#test-1--file-upload-flow-primary-path)
+      - [Objective](#objective)
+      - [Task Definition](#task-definition)
+      - [Results Summary](#results-summary)
+      - [Individual User Experiences](#individual-user-experiences)
+        - [**Karol Barbosa**](#karol-barbosa)
+        - [**Mariana**](#mariana)
+        - [**Tobias**](#tobias)
+      - [Key Findings – Upload Flow](#key-findings--upload-flow)
+    - [Test 2 – Manual Form Filling Flow (Secondary Path)](#test-2--manual-form-filling-flow-secondary-path)
+      - [Objective](#objective-1)
+      - [Task Definition](#task-definition-1)
+      - [Results Summary](#results-summary-1)
+      - [Individual User Experiences](#individual-user-experiences-1)
+        - [**Celso**](#celso)
+        - [**Henrique**](#henrique)
+      - [Key Findings – Manual Flow](#key-findings--manual-flow)
+    - [Cross-Test Analysis](#cross-test-analysis)
+      - [Patterns Observed](#patterns-observed)
+      - [Core Usability Issues Identified](#core-usability-issues-identified)
+    - [Actionable Improvements (Current Scope)](#actionable-improvements-current-scope)
+    - [Future Improvements (Post-MVP)](#future-improvements-post-mvp)
+    - [Evaluation of Test Coverage](#evaluation-of-test-coverage)
+      - [Identified Gaps](#identified-gaps)
+    - [Conclusion](#conclusion)
     - [21.3 Sprint 4: Comprehensive Test Execution and Coverage Validation](#213-sprint-4-comprehensive-test-execution-and-coverage-validation)
-      - [21.3.1 Sprint 4 Overview](#2121-sprint-4-overview)
-      - [21.3.2 Functional Test Coverage by Implemented Topics](#2122-functional-test-coverage-by-implemented-topics)
-      - [21.3.3 Non-Functional Test Execution and Results](#2123-non-functional-test-execution-and-results)
-      - [21.3.4 Coverage Analysis by Architectural Layer](#2125-coverage-analysis-by-architectural-layer)
-      - [21.3.5 Test Execution Evidence](#2126-test-execution-evidence)
-      - [21.3.6 Proof of Execution (Images Template)](#2127-proof-of-execution-images-template)
+      - [21.3.1 Sprint 4 Overview](#2131-sprint-4-overview)
+      - [21.3.2 Functional Test Coverage by Implemented Topics](#2132-functional-test-coverage-by-implemented-topics)
+      - [21.3.3 Non-Functional Test Execution and Results](#2133-non-functional-test-execution-and-results)
+      - [21.3.4 Coverage Analysis by Architectural Layer](#2134-coverage-analysis-by-architectural-layer)
+      - [21.3.5 Test Execution Evidence](#2135-test-execution-evidence)
+      - [21.3.6 Proof of Execution](#2136-proof-of-execution)
       - [21.3.7 Improvement Backlog (Features)](#2137-improvement-backlog-features)
-      - [21.3.8 Conclusion: Test Readiness in Sprint 4](#2138-conclusion-test-readiness-in-sprint-4)
-    - [21.4 Sprint 5: Test Validation Status](#214-sprint-5-test-validation-status)
+      - [21.3.8 Conclusion:](#2138-conclusion)
   - [22. FR–NFR Correlation Matrix](#22-frnfr-correlation-matrix)
   - [23. User Stories and Traceability](#23-user-stories-and-traceability)
     - [User Stories](#user-stories)
@@ -124,6 +170,22 @@
     - [26.4. Relationship with the Smart Cities Concept](#264-relationship-with-the-smart-cities-concept)
     - [26.5. Evidence, Expected Impacts and Practical Implications](#265-evidence-expected-impacts-and-practical-implications)
   - [Appendix A: System Configuration and Optimization Report](#appendix-a-system-configuration-and-optimization-report)
+    - [1. Benchmark Data Log](#1-benchmark-data-log)
+      - [1.1. Justification for Benchmark Parameters](#11-justification-for-benchmark-parameters)
+    - [2. The Performance Model](#2-the-performance-model)
+      - [2.1. Model Fit Quality](#21-model-fit-quality)
+      - [2.2. Model Estimation Method](#22-model-estimation-method)
+      - [2.3. Regression Procedure](#23-regression-procedure)
+      - [2.4. Least Squares Solution](#24-least-squares-solution)
+      - [2.5. Surface Visualization](#25-surface-visualization)
+    - [3. Optimization Derivation](#3-optimization-derivation)
+      - [3.1. Gradient Vector](#31-gradient-vector)
+      - [3.2. Critical Point Calculation](#32-critical-point-calculation)
+      - [3.3. Hessian Matrix and Point Classification](#33-hessian-matrix-and-point-classification)
+    - [4. Strategic Recommendation](#4-strategic-recommendation)
+      - [4.1. Sensitivity Analysis](#41-sensitivity-analysis)
+      - [4.2. Usage Scenarios](#42-usage-scenarios)
+      - [4.3. Engineering Recommendation](#43-engineering-recommendation)
   - [References](#references)
     
 ## 1. Introduction
@@ -1910,16 +1972,16 @@ The deployment diagram represents the **target production architecture** of the 
 
 The diagram illustrates how the system components are distributed across cloud infrastructure resources and how different services interact within the production environment. It presents the servers, middleware, services, and databases required to operate the system, as well as the communication protocols used between them.
 
-The architecture follows a **distributed cloud-based deployment model**, separating the system into distinct layers responsible for presentation, application logic, asynchronous processing, and data persistence.
+The architecture follows a **containerized cloud deployment model**. The frontend runs in one Docker container, while backend API and worker processes run together in the same Docker container inside the AWS EC2 host. External managed services handle identity, queueing, storage, and persistent data.
 
 The main components of the architecture include:
 
 - Web browser interface used by onboarding specialists
-- Frontend web application deployed on cloud infrastructure
-- Backend API services responsible for business logic
+- Frontend web application deployed in Docker on AWS EC2
+- Backend API services responsible for business logic, deployed in Docker on the same AWS EC2 host
 - Messaging infrastructure supporting asynchronous processing
-- Worker services responsible for data processing tasks
-- Managed relational database infrastructure
+- Worker processing tasks executed by the same backend container process stack on AWS EC2
+- Managed PostgreSQL database infrastructure (Supabase)
 - External authentication services
 
 The deployment architecture was designed to satisfy the project's non-functional requirements, particularly those related to performance, scalability, availability, and security.
@@ -1938,16 +2000,17 @@ For better visualization, please access the following [link](https://drive.googl
 
 The system is deployed using cloud infrastructure services provided by **Amazon Web Services (AWS)**.
 
-Different infrastructure nodes are used to host specific components of the system, allowing the architecture to remain modular and scalable.
+The infrastructure is organized with a single compute host for application runtime and external managed services for persistence, queueing, authentication, and object storage.
 
 The main infrastructure elements are:
 
 | Infrastructure Component | Description |
 |--|-|
-| AWS EC2 (Frontend) | Hosts the web application frontend |
-| AWS EC2 (Backend) | Hosts backend API services |
-| AWS EC2 (Worker) | Hosts background worker services responsible for asynchronous processing |
-| Amazon RDS | Managed relational database service used for persistent storage |
+| AWS EC2 (Application Host) | Hosts all application containers in the same instance |
+| Docker (Frontend Container) | Serves the Angular web application and static assets |
+| Docker (Backend + Worker Container) | Exposes REST APIs, orchestrates business flows, consumes SQS messages, and executes asynchronous processing |
+| Supabase PostgreSQL | Managed relational database service used for persistent storage |
+| Amazon S3 | Object storage for uploaded onboarding files |
 | Amazon SQS | Messaging middleware responsible for asynchronous job processing |
 | Auth0 Cloud Service | External authentication and identity management provider |
 
@@ -1955,7 +2018,7 @@ All application services are deployed using **Docker containers**, ensuring cons
 
 ### 25.3. Frontend Deployment
 
-The frontend application is deployed on an **AWS EC2 instance** within a Docker container environment.
+The frontend application is deployed in a Docker container on the shared **AWS EC2 application host**.
 
 The frontend is implemented using **Angular and TypeScript**, forming a single-page application responsible for presenting the onboarding interface used by administrators and onboarding specialists.
 
@@ -1968,11 +2031,11 @@ The frontend node contains the following components:
 
 Users interact with the system through a web browser. Requests are sent through the internet to the frontend server using **secure HTTPS connections**.
 
-The frontend communicates with backend services through HTTPS API requests.
+The frontend communicates with backend services through HTTPS API requests. Although both services run in the same EC2 host, communication remains logically separated by service boundaries.
 
 ### 25.4. Backend Deployment
 
-The backend application is deployed on a dedicated **AWS EC2 instance**, also running within a Docker container.
+The backend application is deployed in a Docker container on the same **AWS EC2 application host** used by the frontend. This same container also runs the worker process responsible for asynchronous jobs.
 
 The backend follows a **layered architecture** that separates responsibilities into logical modules responsible for handling API requests, business logic, and database interaction.
 
@@ -2010,9 +2073,9 @@ This architecture prevents long-running operations from blocking API responses a
 
 The architecture includes a **worker processing layer** responsible for executing asynchronous data processing tasks.
 
-Worker services are deployed on a separate AWS EC2 node within Docker containers.
+The worker runs in the same Docker container as the backend API on the same **AWS EC2 application host**.
 
-These worker services consume messages from the SQS queue and execute the necessary processing tasks.
+The worker process consumes messages from the SQS queue and executes the necessary processing tasks.
 
 The worker node includes the following components:
 
@@ -2024,7 +2087,7 @@ The worker node includes the following components:
 
 This architecture allows heavy processing operations to be handled independently from the main application services.
 
-Separating the processing layer from the API layer improves system scalability and ensures that the main application remains responsive even when processing large onboarding datasets.
+Although API and worker share the same container runtime, processing responsibilities remain logically separated, ensuring the main application remains responsive even when processing large onboarding datasets.
 
 ### 25.7. Database Layer
 
@@ -2080,17 +2143,18 @@ System components communicate using secure and reliable communication protocols.
 | Backend API | Auth0 | HTTPS (JWT Validation) | Verification of authentication tokens |
 | Backend API | Amazon SQS | HTTPS (AWS SDK) | Publishing asynchronous processing jobs |
 | Worker Service | Amazon SQS | HTTPS (AWS SDK Polling) | Consuming background processing jobs |
-| Backend API | Amazon RDS | TCP/IP | Database communication |
+| Backend API | Supabase PostgreSQL | TCP/IP (PostgreSQL) | Database communication |
 
 All external communications use HTTPS to ensure encrypted data transmission.
 
 ### 25.10. Deployment Rationale
 
 - The deployment architecture was designed to ensure scalability, modularity, and long-term maintainability of the onboarding automation platform.
-- Separating frontend, backend, and worker services into independent infrastructure nodes allows the system to scale horizontally as demand increases.
+- Co-locating frontend and backend in one EC2 host simplifies operations, reduces infrastructure complexity, and keeps service boundaries through container isolation.
+- Running backend and worker in the same container reduces deployment overhead while preserving logical separation between synchronous API flows and asynchronous processing flows.
 - Containerization using Docker ensures consistent execution environments across development, testing, and production environments.
 - The use of Amazon SQS enables asynchronous processing of heavy workloads, preventing computationally intensive operations from blocking the main application workflow.
-- Amazon RDS provides a reliable and managed database environment that reduces operational overhead while maintaining high availability and durability.
+- Supabase PostgreSQL provides a reliable managed database environment that reduces operational overhead while maintaining high availability and durability.
 - External authentication services such as Auth0 provide secure identity management while reducing development complexity.
 
 ### 25.11. Performance Considerations
@@ -2098,7 +2162,7 @@ All external communications use HTTPS to ensure encrypted data transmission.
 - The deployment architecture addresses performance-related non-functional requirements by separating processing responsibilities across multiple components.
 - The asynchronous processing model enabled by Amazon SQS allows the system to process large onboarding datasets without impacting API responsiveness.
 - Worker services handle computationally intensive tasks independently, allowing the backend API to remain responsive to user interactions.
-- Additionally, containerized services allow horizontal scaling of backend and worker nodes when processing demand increases.
+- Additionally, containerized services allow scaling strategies such as vertical scaling of the current EC2 host and, when required, replication of the backend+worker container across additional hosts.
 - This architecture ensures efficient handling of onboarding workflows even when large datasets are uploaded.
 
 ### 25.12. Security Considerations
