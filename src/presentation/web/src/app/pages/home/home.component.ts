@@ -1,15 +1,17 @@
-import { Component, ElementRef, HostListener, OnInit, inject } from '@angular/core';
+import { Component, ElementRef, HostListener, NgZone, OnInit, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Router } from '@angular/router';
 import { AuthService } from '@auth0/auth0-angular';
 import { map } from 'rxjs/operators';
 import { OnboardingInstance } from '../../models/onboarding-instance.model';
 import { OnboardingInstanceService } from '../../services/onboarding-instance.service';
+import { ToastService } from '../../components/toast/toast.service';
+import { ConfirmModalComponent } from '../../components/confirm-modal/confirm-modal.component';
 
 @Component({
   selector: 'app-home',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, ConfirmModalComponent],
   templateUrl: './home.component.html',
   styleUrls: ['./home.component.css'],
 })
@@ -17,12 +19,17 @@ export class HomeComponent implements OnInit {
   private readonly auth = inject(AuthService);
   private readonly router = inject(Router);
   private readonly onboardingService = inject(OnboardingInstanceService);
+  private readonly toast = inject(ToastService);
+  private readonly ngZone = inject(NgZone);
 
   profileMenuOpen = false;
-  loading = true;
+  loading = signal(true);
   errorMessage = '';
-  instances: OnboardingInstance[] = [];
-  feedbackMessage = '';
+  instances = signal<OnboardingInstance[]>([]);
+  reviewCompletionInFlight = new Set<string>();
+  deleteModalOpen = false;
+  deletingInstanceId: string | null = null;
+  selectedInstanceForDelete: OnboardingInstance | null = null;
 
   readonly userEmail$ = this.auth.user$.pipe(
     map(user => user?.email ?? '')
@@ -61,8 +68,51 @@ export class HomeComponent implements OnInit {
     this.router.navigate(['/module-selector']);
   }
 
-  openOnboarding(instance: OnboardingInstance): void {
-    this.router.navigate(['/onboarding', instance.linkToken]);
+  editOnboarding(instance: OnboardingInstance): void {
+    this.router.navigate(['/module-selector', instance.linkToken]);
+  }
+
+  goToEquiemReview(): void {
+  this.router.navigate(['/equiem-review']);
+}
+
+  openDeleteModal(instance: OnboardingInstance): void {
+    this.selectedInstanceForDelete = instance;
+    this.deleteModalOpen = true;
+  }
+
+  cancelDeleteModal(): void {
+    this.deleteModalOpen = false;
+    this.selectedInstanceForDelete = null;
+  }
+
+  confirmDeleteOnboarding(): void {
+    const instance = this.selectedInstanceForDelete;
+
+    if (!instance || this.deletingInstanceId) {
+      return;
+    }
+
+    this.deletingInstanceId = instance.id;
+    this.onboardingService.deleteInstance(instance.linkToken).subscribe({
+      next: () => {
+        this.runNextTick(() => {
+          this.instances.update((items) =>
+            items.filter((item) => item.linkToken !== instance.linkToken)
+          );
+          this.deleteModalOpen = false;
+          this.selectedInstanceForDelete = null;
+          this.deletingInstanceId = null;
+          this.toast.success(`Onboarding for ${instance.companyName} was deleted.`);
+        });
+      },
+      error: () => {
+        this.runNextTick(() => {
+          this.deletingInstanceId = null;
+          this.toast.error(`Failed to delete onboarding for ${instance.companyName}.`);
+        });
+      },
+    });
   }
 
   viewDetails(instance: OnboardingInstance): void {
@@ -70,23 +120,40 @@ export class HomeComponent implements OnInit {
       return;
     }
 
-    this.router.navigate(['/onboarding', instance.linkToken]);
+    this.router.navigate(['/equiem-review', instance.linkToken]);
   }
 
   copyLink(instance: OnboardingInstance): void {
     navigator.clipboard.writeText(instance.linkUrl).then(() => {
-      this.feedbackMessage = `Link copied for ${instance.companyName}.`;
+      this.toast.success(`Link copied for ${instance.companyName}.`);
+    }).catch(() => {
+      this.toast.error(`Failed to copy link for ${instance.companyName}.`);
     });
   }
 
   completeReview(instance: OnboardingInstance): void {
+    if (this.reviewCompletionInFlight.has(instance.linkToken)) {
+      return;
+    }
+
+    this.reviewCompletionInFlight.add(instance.linkToken);
     this.onboardingService.completeEquiemReview(instance.linkToken).subscribe({
-      next: () => {
-        this.feedbackMessage = `Equiem review completed for ${instance.companyName}.`;
-        this.loadInstances();
+      next: (updatedInstance: OnboardingInstance) => {
+        this.runNextTick(() => {
+          this.instances.update((items) =>
+            items.map((item) =>
+              item.linkToken === instance.linkToken ? updatedInstance : item
+            )
+          );
+          this.toast.success(`Equiem review completed for ${instance.companyName}.`);
+          this.reviewCompletionInFlight.delete(instance.linkToken);
+        });
       },
       error: () => {
-        this.feedbackMessage = 'Failed to complete the Equiem review.';
+        this.runNextTick(() => {
+          this.reviewCompletionInFlight.delete(instance.linkToken);
+          this.toast.error('Failed to complete the Equiem review.');
+        });
       },
     });
   }
@@ -109,16 +176,24 @@ export class HomeComponent implements OnInit {
     return instance.status === 'draft' || instance.status === 'in_progress';
   }
 
+  isCompletingReview(instance: OnboardingInstance): boolean {
+    return this.reviewCompletionInFlight.has(instance.linkToken);
+  }
+
   private loadInstances(): void {
-    this.loading = true;
+    this.loading.set(true);
     this.onboardingService.listInstances().subscribe({
       next: (items: OnboardingInstance[]) => {
-        this.instances = items;
-        this.loading = false;
+        this.ngZone.run(() => {
+          this.instances.set(items);
+          this.loading.set(false);
+        });
       },
       error: () => {
-        this.errorMessage = 'Failed to load onboarding instances.';
-        this.loading = false;
+        this.ngZone.run(() => {
+          this.errorMessage = 'Failed to load onboarding instances.';
+          this.loading.set(false);
+        });
       },
     });
   }
@@ -143,5 +218,11 @@ export class HomeComponent implements OnInit {
         returnTo: window.location.origin + '/login',
       },
     });
+  }
+
+  private runNextTick(updateFn: () => void): void {
+    setTimeout(() => {
+      this.ngZone.run(updateFn);
+    }, 0);
   }
 }

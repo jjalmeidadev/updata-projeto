@@ -143,7 +143,7 @@
 
   <section class="content">
     <div class="selector-panel">
-      <h1 class="page-title">Configure this onboarding</h1>
+      <h1 class="page-title">{{ editLinkToken() ? 'Edit this onboarding' : 'Configure this onboarding' }}</h1>
 
       <section class="page-section company-section" aria-labelledby="company-title">
         <h2 id="company-title" class="section-heading">
@@ -166,6 +166,27 @@
             <option [value]="company.name"></option>
           }
         </datalist>
+      </section>
+
+      <section class="page-section company-section allowlist-section" aria-labelledby="allowed-emails-title">
+          <h2 id="allowed-emails-title" class="section-heading">
+            <span class="section-heading-accent">Allowed recipient </span> emails
+          </h2>
+          <p class="section-subtitle">
+            Add the emails that can open this onboarding link.
+          </p>
+          <textarea
+            class="allowed-emails-input"
+            rows="5"
+            placeholder="One email per line or comma-separated"
+            [ngModel]="allowedEmailsText()"
+            (ngModelChange)="allowedEmailsText.set($event)"
+          ></textarea>
+          @if (allowedEmailsError()) {
+            <p class="feedback error-text">{{ allowedEmailsError() }}</p>
+          } @else if (allowedEmails().length > 0) {
+            <p class="feedback helper-text">{{ allowedEmails().length }} valid recipient email(s)</p>
+          }
       </section>
 
       @if (loading()) {
@@ -259,21 +280,13 @@
         </section>
       }
 
-      @if (successMessage()) {
-        <p class="feedback success-text">{{ successMessage() }}</p>
-      }
-
-      @if (errorMessage()) {
-        <p class="feedback error-text">{{ errorMessage() }}</p>
-      }
-
       @if (createdLink()) {
         <div class="link-preview">
           <p>Generated link</p>
           <code>{{ createdLink() }}</code>
           <div class="link-actions">
             <button type="button" class="btn-secondary" (click)="copyLink()">Copy link</button>
-            <button type="button" class="btn-primary" (click)="openLink()">Open onboarding</button>
+            <button type="button" class="btn-primary" (click)="goBackToMonitoring()">Go back</button>
           </div>
         </div>
       }
@@ -286,7 +299,11 @@
             [disabled]="!canCreate()"
             (click)="createLink()"
           >
-            Create Link
+            @if (saving()) {
+              Creating link...
+            } @else {
+              {{ editLinkToken() ? 'Save changes' : 'Create Link' }}
+            }
           </button>
         </div>
       }

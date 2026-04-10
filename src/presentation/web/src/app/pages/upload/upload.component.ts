@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, ElementRef, OnInit, ViewChild, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { firstValueFrom } from 'rxjs';
@@ -45,6 +45,7 @@ export class UploadComponent implements OnInit {
   readonly fileName = signal<string | null>(null);
   readonly errorMessage = signal<string | null>(null);
   readonly successMessage = signal<string | null>(null);
+  @ViewChild('fileInput') private fileInputRef?: ElementRef<HTMLInputElement>;
 
   ngOnInit(): void {
     const linkToken = this.route.snapshot.paramMap.get('linkToken');
@@ -109,6 +110,9 @@ export class UploadComponent implements OnInit {
           ? await this.parseCsvFile(file)
           : await this.parseExcelTemplate(file);
 
+      const companyName = this.instance()?.companyName;
+      await firstValueFrom(this.onboardingService.uploadFile(file, linkToken ?? undefined, companyName ?? undefined));
+
       const reviewItems = this.collectTemplateReviewItems(parsedValues);
 
       sessionStorage.setItem(UPLOADED_DATA_KEY, JSON.stringify(parsedValues));
@@ -139,8 +143,7 @@ export class UploadComponent implements OnInit {
   }
 
   triggerFileInput(): void {
-    const input = document.getElementById('fileInput') as HTMLInputElement;
-    input?.click();
+    this.fileInputRef?.nativeElement.click();
   }
 
   goToManualForm(): void {
@@ -464,9 +467,18 @@ export class UploadComponent implements OnInit {
       return 'Please enter a valid decimal number.';
     }
 
-    if (type === 'time' && !/^([01]\d|2[0-3]):([0-5]\d)$/.test(textValue)) {
-      return 'Please enter the time in HH:MM format.';
-    }
+if (type === 'time') {
+  // Accept:
+  // HH:MM
+  // HH:MM:SS
+  const timeRegex = /^([01]\d|2[0-3]):([0-5]\d)(:[0-5]\d)?$/;
+
+  if (!timeRegex.test(textValue)) {
+    return 'Please enter the time in HH:MM or HH:MM:SS format.';
+  }
+
+  return '';
+}
 
     if (type === 'date' && Number.isNaN(Date.parse(textValue))) {
       return 'Please enter a valid date.';
@@ -475,37 +487,61 @@ export class UploadComponent implements OnInit {
     return '';
   }
 
-  private normalizeParsedValue(type: QuestionType, rawValue: string): unknown {
-    const value = rawValue.trim();
+private normalizeParsedValue(type: QuestionType, rawValue: string): unknown {
+  const value = rawValue.trim();
 
-    if (type === 'boolean') {
-      const normalized = value.toLowerCase();
-      if (['yes', 'true'].includes(normalized)) {
-        return true;
-      }
-      if (['no', 'false'].includes(normalized)) {
-        return false;
-      }
-      return value;
+  if (type === 'boolean') {
+    const normalized = value.toLowerCase();
+
+    if (['yes', 'true'].includes(normalized)) {
+      return true;
     }
 
-    if (type === 'multi-select') {
-      if (!value) {
-        return [];
-      }
-
-      return value
-        .split(',')
-        .map((item: string) => item.trim())
-        .filter(Boolean);
-    }
-
-    if (type === 'file') {
-      return value;
+    if (['no', 'false'].includes(normalized)) {
+      return false;
     }
 
     return value;
   }
+
+  if (type === 'multi-select') {
+    if (!value) {
+      return [];
+    }
+
+    return value
+      .split(',')
+      .map((item: string) => item.trim())
+      .filter(Boolean);
+  }
+
+  if (type === 'file') {
+    return value;
+  }
+
+  /**
+   * Accept HH:MM OR HH:MM:SS
+   * Always normalize to HH:MM:SS
+   */
+  if (type === 'time') {
+    if (!value) return value;
+
+    const parts = value.split(':');
+
+    if (parts.length === 2) {
+      // HH:MM → HH:MM:00
+      return `${parts[0].padStart(2, '0')}:${parts[1].padStart(2, '0')}:00`;
+    }
+
+    if (parts.length === 3) {
+      return `${parts[0].padStart(2, '0')}:${parts[1].padStart(2, '0')}:${parts[2].padStart(2, '0')}`;
+    }
+
+    return value;
+  }
+
+  return value;
+}
 
   private getQuestionsForWorksheet(sheetName: string): Question[] {
     const normalizedSheetName = this.normalizeText(sheetName);

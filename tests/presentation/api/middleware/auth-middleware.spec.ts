@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import type { Request, Response, NextFunction } from 'express';
 
 const authMock = vi.fn();
 
@@ -40,9 +41,9 @@ describe('Auth Middleware', () => {
         // Act
         const module = await import('../../../../src/presentation/api/middleware/auth-middleware');
 
-        // Assert
-        expect(module.authMiddleware).toBe(middlewareFn);
-        expect(module.default).toBe(middlewareFn);
+        // Assert - now exports wrapper functions, not the raw middlewareFn
+        expect(typeof module.authMiddleware).toBe('function');
+        expect(typeof module.default).toBe('function');
     });
 
     it('delegates request handling to the configured auth middleware function', async () => {
@@ -58,9 +59,9 @@ describe('Auth Middleware', () => {
         const module = await import('../../../../src/presentation/api/middleware/auth-middleware');
         module.default(req as any, res as any, next as any);
 
-        // Assert
+        // Assert - wrapper calls the base middleware
         expect(middlewareFn).toHaveBeenCalledTimes(1);
-        expect(middlewareFn).toHaveBeenCalledWith(req, res, next);
+        expect(middlewareFn).toHaveBeenCalledWith(req, res, expect.any(Function));
         expect(next).toHaveBeenCalledTimes(1);
     });
 
@@ -84,7 +85,7 @@ describe('Auth Middleware', () => {
         module.default(req as any, res as any, next as any);
 
         // Assert
-        expect(middlewareFn).toHaveBeenCalledWith(req, res, next);
+        expect(middlewareFn).toHaveBeenCalledWith(req, res, expect.any(Function));
         expect(next).not.toHaveBeenCalled();
     });
 

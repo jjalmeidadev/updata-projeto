@@ -1,11 +1,12 @@
 import { inject, Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { map, Observable } from 'rxjs';
 import {
   CompanyListResponse,
   CompanyOption,
   CreateOnboardingResponse,
   OnboardingInstance,
+  OnboardingReviewData,
   OnboardingListResponse,
 } from '../models/onboarding-instance.model';
 
@@ -25,15 +26,68 @@ export class OnboardingInstanceService {
     );
   }
 
+  getReviewInstance(linkToken: string): Observable<OnboardingInstance> {
+    return this.http.get<OnboardingInstance>(`/api/onboarding-instances/${linkToken}`);
+  }
+
   createInstance(payload: {
     companyName: string;
     selectedSections: string[];
+    allowedEmails: string[];
   }): Observable<CreateOnboardingResponse> {
     return this.http.post<CreateOnboardingResponse>('/api/onboarding-instances', payload);
   }
 
+  updateInstance(
+    linkToken: string,
+    payload: {
+      companyName: string;
+      selectedSections: string[];
+      allowedEmails: string[];
+    }
+  ): Observable<CreateOnboardingResponse> {
+    return this.http.patch<CreateOnboardingResponse>(`/api/onboarding-instances/${linkToken}`, payload);
+  }
+
+  deleteInstance(linkToken: string): Observable<OnboardingInstance> {
+    return this.http.delete<OnboardingInstance>(`/api/onboarding-instances/${linkToken}`);
+  }
+
   getPublicInstance(linkToken: string): Observable<OnboardingInstance> {
     return this.http.get<OnboardingInstance>(`/api/public/onboarding/${linkToken}`);
+  }
+
+  getPublicReviewData(linkToken: string): Observable<OnboardingReviewData> {
+    return this.http.get<OnboardingReviewData>(`/api/public/onboarding/${linkToken}/review-data`);
+  }
+
+  uploadFile(file: File, linkToken?: string, companyName?: string): Observable<{
+    redirect: string;
+    s3Key: string;
+    fileName: string;
+    traceId: string;
+  }> {
+    const formData = new FormData();
+    formData.append('file', file);
+
+    if (linkToken) {
+      formData.append('linkToken', linkToken);
+    }
+
+    let headers = new HttpHeaders();
+    if (linkToken) {
+      headers = headers.set('x-onboarding-link-token', linkToken);
+    }
+    if (companyName) {
+      headers = headers.set('x-onboarding-company-name', companyName);
+    }
+
+    return this.http.post<{
+      redirect: string;
+      s3Key: string;
+      fileName: string;
+      traceId: string;
+    }>('/api/upload', formData, { headers: headers.keys().length > 0 ? headers : undefined });
   }
 
   saveProgress(linkToken: string, payload: {
@@ -61,4 +115,31 @@ export class OnboardingInstanceService {
       {}
     );
   }
+
+approveInstance(linkToken: string) {
+  return this.http.post<OnboardingInstance>(
+    `/api/onboarding-instances/${linkToken}/approve`,
+    {}
+  );
+}
+
+rejectInstance(linkToken: string, reason: string) {
+  return this.http.post<OnboardingInstance>(
+    `/api/onboarding-instances/${linkToken}/reject`,
+    { reason }
+  );
+}
+
+reviewSection(payload: {
+  linkToken: string;
+  sectionId: string;
+  decision: 'approved' | 'rejected';
+  reason?: string;
+}) {
+  const { linkToken, sectionId, ...body } = payload;
+  return this.http.post<OnboardingInstance>(
+    `/api/onboarding-instances/${linkToken}/sections/${sectionId}/decision`,
+    body
+  );
+}
 }

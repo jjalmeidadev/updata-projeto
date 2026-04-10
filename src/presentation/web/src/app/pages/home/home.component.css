@@ -9,6 +9,26 @@
   color: #363640;
 }
 
+.equiem-review-btn {
+  background: #ffffff;
+  color: #0f3d3e;
+  border: 1px solid #7fc9bc;
+  padding: 0.65rem 1.1rem;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  transition: background-color 0.18s ease, color 0.18s ease, border-color 0.18s ease;
+}
+
+.equiem-review-btn:hover {
+  background: #d8f0ea;
+  border-color: #4cae9b;
+  color: #0b2f2f;
+}
+
 .background-svg {
   position: absolute;
   right: -150px;
@@ -155,6 +175,12 @@
   margin-bottom: 1rem;
 }
 
+.header-actions {
+  display: flex;
+  gap: 0.6rem;
+  align-items: center;
+}
+
 .home-header h1 {
   font-size: 1.6rem;
   margin: 0 0 0.75rem 0;
@@ -178,15 +204,19 @@
   margin-top: 3rem;
   box-shadow: none;
   border: 1px solid #e5e7eb;
-  overflow: hidden;
+  width: 100%;
+  max-width: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
 }
 
 .company-table {
   width: 100%;
+  min-width: 100%;
   border-collapse: collapse;
   font-size: 0.8rem;
   color: #363640;
-  table-layout: fixed;
+  table-layout: auto;
 }
 
 .company-table thead {
@@ -198,9 +228,7 @@
   padding: 0.75rem 1rem;
   text-align: left;
   border-bottom: 1px solid #e3e3e8;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+  vertical-align: middle;
 }
 
 .company-table th {
@@ -219,22 +247,22 @@
 
 .company-table th:nth-child(1),
 .company-table td:nth-child(1) {
-  width: 26%;
+  width: 24%;
 }
 
 .company-table th:nth-child(2),
 .company-table td:nth-child(2) {
-  width: 34%;
+  width: 30%;
 }
 
 .company-table th:nth-child(3),
 .company-table td:nth-child(3) {
-  width: 18%;
+  width: 16%;
 }
 
 .company-table th:nth-child(4),
 .company-table td:nth-child(4) {
-  width: 22%;
+  width: 30%;
 }
 
 /* COMPANY NAME */
@@ -243,6 +271,7 @@
   font-size: 0.9rem;
   font-weight: 600;
   color: #111827;
+  white-space: nowrap;
 }
 
 /* PROGRESS */
@@ -250,20 +279,28 @@
 .progress-container {
   display: flex;
   align-items: center;
-  gap: 0.9rem;
-}
-
-.percent {
-  font-size: 0.7rem;
-  opacity: 0.7;
+  gap: 0.75rem;
+  width: 100%;
+  min-width: 0;
 }
 
 .progress-bar {
   flex: 1;
+  min-width: 120px;
   height: 10px;
   background: #f0eefc;
   border-radius: 6px;
   overflow: hidden;
+}
+
+.progress-value {
+  flex-shrink: 0;
+  min-width: 3rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #6b7280;
+  text-align: right;
+  white-space: nowrap;
 }
 
 .progress-fill {
@@ -299,9 +336,15 @@
 }
 
 .actions-cell {
+  white-space: normal;
+}
+
+.actions-group {
   display: flex;
+  flex-wrap: wrap;
   gap: 0.5rem;
   align-items: center;
+  justify-content: flex-start;
 }
 
 .details-btn {
@@ -310,8 +353,26 @@
   border: 1px solid #d6c5fb;
 }
 
+.danger-btn {
+  border-color: #f5c6cb;
+  color: #721c24;
+  background: #fff7f8;
+}
+
+.danger-btn:hover {
+  background: #f8d7da;
+}
+
 .details-btn:hover {
   background: #d6c5fb;
+}
+
+.details-btn:disabled,
+.start-btn:disabled,
+.icon-btn:disabled,
+.equiem-review-btn:disabled {
+  opacity: 0.65;
+  cursor: not-allowed;
 }
 
 .start-btn {
@@ -333,6 +394,7 @@
 
 .status-pill {
   font-size: 0.7rem;
+  white-space: nowrap;
 }
 
 .status-started {
@@ -363,11 +425,20 @@
   }
 
   .home-panel {
-    padding: 2rem 1.5rem;
+    padding: 0;
   }
 
   .home-header {
     flex-direction: column;
+  }
+
+  .header-actions {
+    width: 100%;
+    justify-content: flex-start;
+  }
+
+  .company-table {
+    min-width: 760px;
   }
 }
 

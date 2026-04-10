@@ -1,5 +1,6 @@
 import { Request, Response } from "express"
 import { resolveUserNavigation } from "../../../business/services/user-service.js"
+import { resolveEmailClaim, resolveNameClaim } from "../auth-claims.js"
 
  // Handles authenticated user routing based on user email and company association.
 export const getPayload = async (
@@ -15,17 +16,37 @@ export const getPayload = async (
 
   try {
 
-    const jwtPayload = req.auth?.payload
+    const jwtPayload = req.auth?.payload as Record<string, unknown> | undefined
 
-    if (!jwtPayload?.sub) {
+    const sub = typeof jwtPayload?.sub === "string" ? jwtPayload.sub : undefined
+
+    if (!sub) {
       console.log(`[FLOW][${traceId}] controller:missing_sub`)
       return res.status(401).json({ error: "Invalid token payload", traceId })
     }
 
+    const safeClaims = jwtPayload ?? {}
+    const headerProfileName = typeof req.headers["x-profile-name"] === "string"
+      ? req.headers["x-profile-name"].trim()
+      : undefined
+    const headerProfileEmail = typeof req.headers["x-profile-email"] === "string"
+      ? req.headers["x-profile-email"].trim().toLowerCase()
+      : undefined
+    
+    console.log(`[FLOW][${traceId}] controller:headers x-profile-name=${headerProfileName || "NOT SET"}, x-profile-email=${headerProfileEmail || "NOT SET"}`)
+    
+    const name = resolveNameClaim(safeClaims) || (headerProfileName && headerProfileName.length > 0 ? headerProfileName : undefined)
+    const claimEmail = resolveEmailClaim(safeClaims)
+    const email = claimEmail || (headerProfileEmail && headerProfileEmail.includes("@") ? headerProfileEmail : undefined)
+
+    console.log(
+      `[FLOW][${traceId}] controller:claims keys=${Object.keys(safeClaims).slice(0, 12).join(",")} hasName=${Boolean(name)} hasEmail=${Boolean(email)}`
+    )
+
     const payload = {
-      sub: jwtPayload.sub,
-      name: typeof jwtPayload.name === "string" ? jwtPayload.name : undefined,
-      email: typeof jwtPayload.email === "string" ? jwtPayload.email : undefined,
+      sub,
+      name,
+      email,
     }
 
     const result = await resolveUserNavigation(payload, traceId)

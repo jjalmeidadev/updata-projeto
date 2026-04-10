@@ -9,13 +9,14 @@ import {
 } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { AuthService } from '@auth0/auth0-angular';
 import { map } from 'rxjs/operators';
 import { QuestionService, SECTION_LABELS } from '../../services/question.service';
 import { Question } from '../../models/question.model';
 import { CompanyOption } from '../../models/onboarding-instance.model';
 import { OnboardingInstanceService } from '../../services/onboarding-instance.service';
+import { ToastService } from '../../components/toast/toast.service';
 
 @Component({
   selector: 'app-module-selector',
@@ -25,11 +26,14 @@ import { OnboardingInstanceService } from '../../services/onboarding-instance.se
   styleUrl: './module-selector.component.css',
 })
 export class ModuleSelectorComponent implements OnInit {
+  private readonly emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
   private readonly questionService = inject(QuestionService);
   private readonly router = inject(Router);
+  private readonly route = inject(ActivatedRoute);
   private readonly auth = inject(AuthService);
   private readonly elRef = inject(ElementRef<HTMLElement>);
   private readonly onboardingService = inject(OnboardingInstanceService);
+  private readonly toast = inject(ToastService);
 
   profileMenuOpen = false;
 
@@ -63,14 +67,22 @@ export class ModuleSelectorComponent implements OnInit {
   readonly selectedSections = signal<Set<string>>(new Set());
   readonly companies = signal<CompanyOption[]>([]);
   readonly companyName = signal('');
+  readonly allowedEmailsText = signal('');
   readonly saving = signal(false);
   readonly createdLink = signal('');
-  readonly successMessage = signal('');
-  readonly errorMessage = signal('');
+  readonly editLinkToken = signal<string | null>(null);
   readonly sectionLabels = SECTION_LABELS;
+  readonly parsedAllowedEmails = computed(() => this.parseAllowedEmails(this.allowedEmailsText()));
+  readonly allowedEmails = computed(() => this.parsedAllowedEmails().emails);
+  readonly allowedEmailsError = computed(() => this.parsedAllowedEmails().error);
 
   readonly canCreate = computed(
-    () => this.selectedSections().size > 0 && this.companyName().trim().length > 0 && !this.saving()
+    () =>
+      this.selectedSections().size > 0 &&
+      this.companyName().trim().length > 0 &&
+      this.allowedEmails().length > 0 &&
+      !this.allowedEmailsError() &&
+      !this.saving()
   );
   readonly canContinueLegacy = computed(() => this.selectedSections().size > 0);
 
@@ -116,10 +128,18 @@ export class ModuleSelectorComponent implements OnInit {
       },
     });
 
+    const linkToken = this.route.snapshot.paramMap.get('linkToken');
+
     this.questionService.getQuestions().subscribe({
       next: (questions: Question[]) => {
         const sections = this.questionService.getSections(questions);
         this.sections.set(sections);
+
+        if (linkToken) {
+          this.editLinkToken.set(linkToken);
+          this.loadEditInstance(linkToken, sections);
+          return;
+        }
 
         const saved = this.readSavedSelection();
         if (saved.length > 0) {
@@ -161,41 +181,56 @@ export class ModuleSelectorComponent implements OnInit {
 
     this.saveSelection();
     this.saving.set(true);
-    this.successMessage.set('');
-    this.errorMessage.set('');
 
-    this.onboardingService.createInstance({
+    const payload = {
       companyName: this.companyName().trim(),
       selectedSections: Array.from(this.selectedSections()),
-    }).subscribe({
+      allowedEmails: this.allowedEmails(),
+    };
+
+    const request$ = this.editLinkToken()
+      ? this.onboardingService.updateInstance(this.editLinkToken() as string, payload)
+      : this.onboardingService.createInstance(payload);
+
+    request$.subscribe({
       next: (response) => {
+        if (this.editLinkToken()) {
+          this.toast.success('Onboarding updated successfully.');
+          this.router.navigate(['/monitoring']);
+          this.saving.set(false);
+          return;
+        }
+
         this.createdLink.set(response.instance.linkUrl);
-        this.successMessage.set(
+        this.toast.success(
           response.reusedExistingInstance
-            ? 'Existing onboarding instance reused for this company and section set.'
+            ? 'Existing onboarding reused for this company and section set.'
             : 'Onboarding link created successfully.'
         );
         this.saving.set(false);
       },
       error: () => {
-        this.errorMessage.set('Failed to create the onboarding link.');
+        this.toast.error(this.editLinkToken() ? 'Failed to update the onboarding.' : 'Failed to create the onboarding link.');
         this.saving.set(false);
       },
     });
   }
 
   copyLink(): void {
-    if (!this.createdLink()) return;
+    if (!this.createdLink()) {
+      this.toast.info('Create the onboarding link first.');
+      return;
+    }
 
     navigator.clipboard.writeText(this.createdLink()).then(() => {
-      this.successMessage.set('Onboarding link copied to clipboard.');
+      this.toast.success('Onboarding link copied to clipboard.');
+    }).catch(() => {
+      this.toast.error('Unable to copy the onboarding link.');
     });
   }
 
-  openLink(): void {
-    if (!this.createdLink()) return;
-    const url = new URL(this.createdLink());
-    this.router.navigateByUrl(url.pathname);
+  goBackToMonitoring(): void {
+    this.router.navigate(['/monitoring']);
   }
 
   continueLegacyFlow(): void {
@@ -238,6 +273,31 @@ export class ModuleSelectorComponent implements OnInit {
     );
   }
 
+  private loadEditInstance(linkToken: string, sections: string[]): void {
+    this.onboardingService.listInstances().subscribe({
+      next: (instances) => {
+        const found = instances.find((instance) => instance.linkToken === linkToken);
+
+        if (!found) {
+          this.toast.error('Onboarding not found.');
+          this.router.navigate(['/monitoring']);
+          this.loading.set(false);
+          return;
+        }
+
+        this.companyName.set(found.companyName);
+        this.allowedEmailsText.set(found.allowedEmails.join('\n'));
+        this.selectedSections.set(new Set(found.selectedSections.filter((section) => sections.includes(section))));
+        this.loading.set(false);
+      },
+      error: () => {
+        this.toast.error('Failed to load onboarding data for editing.');
+        this.router.navigate(['/monitoring']);
+        this.loading.set(false);
+      },
+    });
+  }
+
   private readSavedSelection(): string[] {
     try {
       const raw = localStorage.getItem('selectedSections');
@@ -247,5 +307,26 @@ export class ModuleSelectorComponent implements OnInit {
     } catch {
       return [];
     }
+  }
+
+  private parseAllowedEmails(text: string): { emails: string[]; error: string } {
+    const values = text
+      .split(/[\n,]+/)
+      .map((value) => value.trim().toLowerCase())
+      .filter(Boolean);
+
+    const invalidEmails = values.filter((email) => !this.emailPattern.test(email));
+
+    if (invalidEmails.length > 0) {
+      return {
+        emails: Array.from(new Set(values.filter((email) => this.emailPattern.test(email)))).sort(),
+        error: `Invalid email format: ${Array.from(new Set(invalidEmails)).join(', ')}`,
+      };
+    }
+
+    return {
+      emails: Array.from(new Set(values)).sort(),
+      error: '',
+    };
   }
 }

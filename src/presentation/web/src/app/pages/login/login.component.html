@@ -37,21 +37,40 @@
     <h1>Login to your account</h1>
     <p class="subtitle">Use your company account to continue</p>
 
-    <button type="button" class="btn-login" (click)="login()">
-      Continue with Auth0
+    <button type="button" class="btn-login" (click)="login()" [disabled]="loginLoading">
+      @if (loginLoading) {
+        Signing in...
+      } @else {
+        Continue with Auth0
+      }
     </button>
 
-    <button type="button" class="btn-google" (click)="loginWithGoogle()">
+    <button type="button" class="btn-google" (click)="loginWithGoogle()" [disabled]="loginLoading">
       <img
         src="https://upload.wikimedia.org/wikipedia/commons/thumb/c/c1/Google_%22G%22_logo.svg/500px-Google_%22G%22_logo.svg.png"
         alt="Google"
         class="google-logo">
-      Continue with Google
+      @if (loginLoading) {
+        Signing in...
+      } @else {
+        Continue with Google
+      }
     </button>
 
     <p class="signup-link">
       Don't have an account?
-      <a href="#" (click)="signup(); $event.preventDefault()">Create account</a>
+      <a href="#" (click)="signup(); $event.preventDefault()" [class.link-disabled]="loginLoading">Create account</a>
     </p>
   </div>
+
+  <app-confirm-modal
+    [isOpen]="accessDeniedModalOpen"
+    title="Access denied"
+    [message]="accessDeniedModalMessage"
+    confirmLabel="OK"
+    cancelLabel="Close"
+    tone="primary"
+    (onConfirm)="closeAccessDeniedModal()"
+    (onCancel)="closeAccessDeniedModal()"
+  ></app-confirm-modal>
 </div>

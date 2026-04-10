@@ -68,7 +68,7 @@ describe("auth-service-repo-flow integration", () => {
     mockPool.query.mockReset()
   })
 
-  it("uses real service and repository to create first-login user linked to company", async () => {
+  it("reconciles first-login user and links them to company through existing email", async () => {
     authMiddlewareMock.mockImplementation((req: any, _res: any, next: any) => {
       req.auth = {
         payload: {
@@ -112,7 +112,8 @@ describe("auth-service-repo-flow integration", () => {
     expect(mockPool.query.mock.calls[0][1]).toEqual(["auth0|new"])
     expect(mockPool.query.mock.calls[1][0]).toContain("unnest(approved_domains)")
     expect(mockPool.query.mock.calls[1][1]).toEqual(["acme.com"])
-    expect(mockPool.query.mock.calls[2][0]).toContain("INSERT INTO equiem.\"user\"")
+    expect(mockPool.query.mock.calls[2][0]).toContain("WHERE LOWER(email) = LOWER($1)")
+    expect(mockPool.query.mock.calls[2][1]).toEqual(["jane@acme.com"])
 
     await stopServer(server)
   })

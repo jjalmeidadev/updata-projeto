@@ -1,18 +1,25 @@
 import { describe, it, expect, vi, beforeEach } from "vitest"
 import * as userRepo from "../../../src/data/repositories/user-repository.js"
 import { checkUser, resolveUserNavigation } from "../../../src/business/services/user-service.js"
+import { INTERNAL_TEST_EMAILS } from "../../../src/shared/auth-constants.js"
 
 vi.mock("../../../src/data/repositories/user-repository.js", () => ({
   findUser: vi.fn(),
+  findUserByEmail: vi.fn(),
   createUser: vi.fn(),
   findCompanyByDomain: vi.fn(),
+  linkUserToAuth0ByEmail: vi.fn(),
+  updateUserByAuth0Id: vi.fn(),
 }))
 
 describe("user-service", () => {
   beforeEach(() => {
     vi.mocked(userRepo.findUser).mockReset()
+    vi.mocked(userRepo.findUserByEmail).mockReset()
     vi.mocked(userRepo.createUser).mockReset()
     vi.mocked(userRepo.findCompanyByDomain).mockReset()
+    vi.mocked(userRepo.linkUserToAuth0ByEmail).mockReset()
+    vi.mocked(userRepo.updateUserByAuth0Id).mockReset()
   })
 
   describe("checkUser", () => {
@@ -38,11 +45,114 @@ describe("user-service", () => {
 
       expect(result).toEqual(existing)
       expect(userRepo.findUser).toHaveBeenCalledWith("auth0|1", "trace-1")
+      expect(userRepo.findCompanyByDomain).not.toHaveBeenCalled()
+      expect(userRepo.findUserByEmail).not.toHaveBeenCalled()
       expect(userRepo.createUser).not.toHaveBeenCalled()
+      expect(userRepo.updateUserByAuth0Id).not.toHaveBeenCalled()
+    })
+
+    it("syncs existing user when token has improved email/company attributes", async () => {
+      vi.mocked(userRepo.findUser).mockResolvedValue({
+        user_id: "u-sync",
+        user_name: "Unknown User",
+        user_email: "auth0_sync@auth0.local",
+        auth0_id: "auth0|sync",
+        company_id: null,
+      })
+      vi.mocked(userRepo.findCompanyByDomain).mockResolvedValue("c-sync")
+      vi.mocked(userRepo.updateUserByAuth0Id).mockResolvedValue({
+        user_id: "u-sync",
+        user_name: "Jane",
+        user_email: "jane@co.com",
+        auth0_id: "auth0|sync",
+        company_id: "c-sync",
+      })
+
+      const result = await checkUser(
+        { sub: "auth0|sync", name: "Jane", email: "jane@co.com" },
+        "trace-1"
+      )
+
+      expect(userRepo.findCompanyByDomain).toHaveBeenCalledWith("co.com", "trace-1")
+      expect(userRepo.updateUserByAuth0Id).toHaveBeenCalledWith(
+        {
+          auth0_id: "auth0|sync",
+          name: "Jane",
+          email: "jane@co.com",
+          company_id: "c-sync",
+        },
+        "trace-1"
+      )
+      expect(result).toEqual({
+        user_id: "u-sync",
+        user_name: "Jane",
+        user_email: "jane@co.com",
+        auth0_id: "auth0|sync",
+        company_id: "c-sync",
+      })
+    })
+
+    it("keeps existing user unchanged when email claim is missing", async () => {
+      const existing = {
+        user_id: "u-no-email",
+        user_name: "No Email",
+        user_email: "auth0_no_email@auth0.local",
+        auth0_id: "auth0|no-email",
+        company_id: null,
+      }
+
+      vi.mocked(userRepo.findUser).mockResolvedValue(existing)
+
+      const result = await checkUser({ sub: "auth0|no-email" }, "trace-no-email")
+
+      expect(result).toEqual(existing)
+      expect(userRepo.updateUserByAuth0Id).not.toHaveBeenCalled()
+      expect(userRepo.findCompanyByDomain).not.toHaveBeenCalled()
+    })
+
+    it("syncs existing user name even when email claim is missing", async () => {
+      vi.mocked(userRepo.findUser).mockResolvedValue({
+        user_id: "u-name-sync",
+        user_name: "Unknown User",
+        user_email: "google-oauth2_999@auth0.local",
+        auth0_id: "google-oauth2|999",
+        company_id: null,
+      })
+      vi.mocked(userRepo.updateUserByAuth0Id).mockResolvedValue({
+        user_id: "u-name-sync",
+        user_name: "Jane Realname",
+        user_email: "google-oauth2_999@auth0.local",
+        auth0_id: "google-oauth2|999",
+        company_id: null,
+      })
+
+      const result = await checkUser(
+        { sub: "google-oauth2|999", name: "Jane Realname" },
+        "trace-name-sync"
+      )
+
+      expect(userRepo.findCompanyByDomain).not.toHaveBeenCalled()
+      expect(userRepo.updateUserByAuth0Id).toHaveBeenCalledWith(
+        {
+          auth0_id: "google-oauth2|999",
+          name: "Jane Realname",
+          email: "google-oauth2_999@auth0.local",
+          company_id: undefined,
+        },
+        "trace-name-sync"
+      )
+      expect(result).toEqual({
+        user_id: "u-name-sync",
+        user_name: "Jane Realname",
+        user_email: "google-oauth2_999@auth0.local",
+        auth0_id: "google-oauth2|999",
+        company_id: null,
+      })
     })
 
     it("calls createUser and returns new user when findUser returns null", async () => {
       vi.mocked(userRepo.findUser).mockResolvedValue(null)
+      vi.mocked(userRepo.findUserByEmail).mockResolvedValue(null)
       vi.mocked(userRepo.findCompanyByDomain).mockResolvedValue(5)
       const newUser = {
         user_id: 2,
@@ -60,6 +170,7 @@ describe("user-service", () => {
 
       expect(result).toEqual(newUser)
       expect(userRepo.findCompanyByDomain).toHaveBeenCalledWith("acme.com", "trace-1")
+      expect(userRepo.findUserByEmail).toHaveBeenCalledWith("john@acme.com", "trace-1")
       expect(userRepo.createUser).toHaveBeenCalledWith(
         {
           auth0_id: "auth0|2",
@@ -73,6 +184,7 @@ describe("user-service", () => {
 
     it("creates user without company_id when findCompanyByDomain returns null", async () => {
       vi.mocked(userRepo.findUser).mockResolvedValue(null)
+      vi.mocked(userRepo.findUserByEmail).mockResolvedValue(null)
       vi.mocked(userRepo.findCompanyByDomain).mockResolvedValue(null)
       const newUser = {
         user_id: 3,
@@ -100,14 +212,14 @@ describe("user-service", () => {
       expect(result).toEqual(newUser)
     })
 
-    it("falls back to empty name/email when claims are missing", async () => {
+    it("falls back to synthetic email when token email claim is missing", async () => {
       vi.mocked(userRepo.findUser).mockResolvedValue(null)
       vi.mocked(userRepo.findCompanyByDomain).mockResolvedValue(null)
 
       const newUser = {
         user_id: "4",
         user_name: "Unknown User",
-        user_email: "",
+        user_email: "auth0_4@auth0.local",
         auth0_id: "auth0|4",
         company_id: null,
       }
@@ -116,12 +228,13 @@ describe("user-service", () => {
 
       const result = await checkUser({ sub: "auth0|4" }, "trace-empty")
 
-      expect(userRepo.findCompanyByDomain).toHaveBeenCalledWith("", "trace-empty")
+      expect(userRepo.findCompanyByDomain).not.toHaveBeenCalled()
+      expect(userRepo.findUserByEmail).not.toHaveBeenCalled()
       expect(userRepo.createUser).toHaveBeenCalledWith(
         {
           auth0_id: "auth0|4",
           name: "",
-          email: "",
+          email: "auth0_4@auth0.local",
           company_id: undefined,
         },
         "trace-empty"
@@ -131,6 +244,7 @@ describe("user-service", () => {
 
     it("returns null when repository create returns null", async () => {
       vi.mocked(userRepo.findUser).mockResolvedValue(null)
+      vi.mocked(userRepo.findUserByEmail).mockResolvedValue(null)
       vi.mocked(userRepo.findCompanyByDomain).mockResolvedValue(null)
       vi.mocked(userRepo.createUser).mockResolvedValue(null as never)
 
@@ -140,6 +254,48 @@ describe("user-service", () => {
       )
 
       expect(result).toBeNull()
+    })
+
+    it("links existing DB user by email instead of inserting duplicate", async () => {
+      vi.mocked(userRepo.findUser).mockResolvedValue(null)
+      vi.mocked(userRepo.findCompanyByDomain).mockResolvedValue("c-5")
+      vi.mocked(userRepo.findUserByEmail).mockResolvedValue({
+        user_id: "u-existing",
+        user_name: "Legacy User",
+        user_email: "legacy@acme.com",
+        auth0_id: "",
+        company_id: null,
+      })
+      vi.mocked(userRepo.linkUserToAuth0ByEmail).mockResolvedValue({
+        user_id: "u-existing",
+        user_name: "Legacy User",
+        user_email: "legacy@acme.com",
+        auth0_id: "auth0|legacy",
+        company_id: "c-5",
+      })
+
+      const result = await checkUser(
+        { sub: "auth0|legacy", name: "Legacy User", email: "legacy@acme.com" },
+        "trace-link-email"
+      )
+
+      expect(userRepo.linkUserToAuth0ByEmail).toHaveBeenCalledWith(
+        {
+          auth0_id: "auth0|legacy",
+          name: "Legacy User",
+          email: "legacy@acme.com",
+          company_id: "c-5",
+        },
+        "trace-link-email"
+      )
+      expect(userRepo.createUser).not.toHaveBeenCalled()
+      expect(result).toEqual({
+        user_id: "u-existing",
+        user_name: "Legacy User",
+        user_email: "legacy@acme.com",
+        auth0_id: "auth0|legacy",
+        company_id: "c-5",
+      })
     })
   })
 
@@ -157,6 +313,30 @@ describe("user-service", () => {
         { sub: "auth0|internal", email: "internal@getequiem.com" },
         "trace-nav-internal"
       )
+
+      expect(result).toEqual({
+        outcome: "monitoring",
+      })
+    })
+
+    it("returns monitoring route for allowlisted admin test email", async () => {
+      const adminEmail = "equiem.onboarding@gmail.com"
+      INTERNAL_TEST_EMAILS.add(adminEmail)
+
+      vi.mocked(userRepo.findUser).mockResolvedValue({
+        user_id: "u-admin-test",
+        user_name: "Yudi",
+        user_email: adminEmail,
+        auth0_id: "auth0|admin-test",
+        company_id: null,
+      })
+
+      const result = await resolveUserNavigation(
+        { sub: "auth0|admin-test", email: adminEmail },
+        "trace-nav-admin-test"
+      )
+
+      INTERNAL_TEST_EMAILS.delete(adminEmail)
 
       expect(result).toEqual({
         outcome: "monitoring",
@@ -204,6 +384,7 @@ describe("user-service", () => {
 
     it("returns 404 when user cannot be resolved", async () => {
       vi.mocked(userRepo.findUser).mockResolvedValue(null)
+      vi.mocked(userRepo.findUserByEmail).mockResolvedValue(null)
       vi.mocked(userRepo.findCompanyByDomain).mockResolvedValue(null)
       vi.mocked(userRepo.createUser).mockResolvedValue(null as never)
 

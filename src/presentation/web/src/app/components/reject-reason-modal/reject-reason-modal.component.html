@@ -1,0 +1,60 @@
+<div class="modal-overlay" *ngIf="isOpen" (click)="cancel()">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h2>Reject Onboarding</h2>
+      <button class="close-btn" type="button" (click)="cancel()" [disabled]="isLoading">
+        ✕
+      </button>
+    </div>
+
+    <div class="modal-body">
+      <p class="company-info">
+        You are rejecting the onboarding for <strong>{{ companyName }}</strong>
+      </p>
+
+      <label for="reason-textarea" class="label">
+        Rejection Reason *
+      </label>
+      <textarea
+        id="reason-textarea"
+        class="reason-textarea"
+        [(ngModel)]="reason"
+        placeholder="Explain why this should be sent back (minimum 10 characters)..."
+        rows="6"
+        [disabled]="isLoading"
+        maxlength="500"
+      ></textarea>
+
+      <div class="char-counter">
+        <span class="char-count">{{ charCount }}/500</span>
+        <span class="char-remaining" *ngIf="charRemaining < 100">
+          {{ charRemaining }} characters remaining
+        </span>
+      </div>
+
+      <p *ngIf="errorMessage" class="error-message">
+        {{ errorMessage }}
+      </p>
+    </div>
+
+    <div class="modal-footer">
+      <button
+        class="cancel-btn"
+        type="button"
+        (click)="cancel()"
+        [disabled]="isLoading"
+      >
+        Cancel
+      </button>
+      <button
+        class="reject-btn"
+        type="button"
+        (click)="confirm()"
+        [disabled]="isLoading || !reason.trim()"
+      >
+        <span *ngIf="!isLoading">Confirm Rejection</span>
+        <span *ngIf="isLoading">Processing...</span>
+      </button>
+    </div>
+  </div>
+</div>

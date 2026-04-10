@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { describe, it, expect, beforeEach, afterEach, vi } from "vitest"
 
 const originalNodeEnv = process.env.NODE_ENV
@@ -27,6 +28,10 @@ vi.mock("../../../src/data/repositories/onboarding-repository.js", () => ({
   saveOnboardingMappings: vi.fn(),
   updateOnboardingBatchStatus: vi.fn(),
   updateProcessingJobStatus: vi.fn(),
+}))
+
+vi.mock("../../../src/data/repositories/onboarding-instance-repository.js", () => ({
+  linkBatchToOnboardingInstanceByLinkToken: vi.fn().mockResolvedValue(null),
 }))
 
 vi.mock("../../../src/data/integrations/equiem-api-client.js", () => ({
@@ -857,8 +862,12 @@ describe("upload-worker", () => {
       // Arrange
       vi.resetModules()
       const previousNodeEnv = process.env.NODE_ENV
+      const previousVitest = process.env.VITEST
       const previousExit = process.exit
+      const previousArgv = process.argv
       process.env.NODE_ENV = "development"
+      process.env.VITEST = "false"
+      process.argv = ["node", "upload-worker"]
       process.env.AWS_SQS_QUEUE_URL = "https://sqs.us-east-1.amazonaws.com/123/queue"
       process.env.AWS_S3_BUCKET = "upload-bucket"
 
@@ -883,6 +892,8 @@ describe("upload-worker", () => {
 
       setTimeoutSpy.mockRestore()
       process.env.NODE_ENV = previousNodeEnv
+      process.env.VITEST = previousVitest
+      process.argv = previousArgv
       ;(process as any).exit = previousExit
     })
   })

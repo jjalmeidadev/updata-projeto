@@ -1,6 +1,6 @@
 import dotenv from "dotenv"
 import { ReceiveMessageCommand, DeleteMessageCommand, type ReceiveMessageCommandOutput } from "@aws-sdk/client-sqs"
-import { GetObjectCommand } from "@aws-sdk/client-s3"
+import { GetObjectCommand, PutObjectCommand } from "@aws-sdk/client-s3"
 import { s3Client, sqsClient } from "../../config/aws-clients.ts"
 import { parseUploadFile } from "../services/upload-file-parser-service.ts"
 import { mapRowsForProcessing, buildEquiemPayload } from "../services/upload-payload-mapper-service.ts"
@@ -13,6 +13,7 @@ import {
   updateOnboardingBatchStatus,
   updateProcessingJobStatus,
 } from "../../data/repositories/onboarding-repository.js"
+import { linkBatchToOnboardingInstanceByLinkToken } from "../../data/repositories/onboarding-instance-repository.js"
 import { sendToEquiemApi } from "../../data/integrations/equiem-api-client.js"
 
 dotenv.config({ path: "config/.env" })
@@ -43,6 +44,7 @@ interface UploadJobMessage {
   traceId: string
   s3Key: string
   fileName: string
+  linkToken?: string
 }
 
 interface QueueEnvelope {
@@ -59,16 +61,35 @@ interface EquiemResponseRecord {
   internalId: string
 }
 
+interface SnapshotReviewItem {
+  rowNumber: number
+  rawData: Record<string, unknown>
+}
+
+interface S3ReviewSnapshot {
+  linkToken?: string
+  traceId: string
+  batchId: string
+  sourceS3Key: string
+  fileName: string
+  createdAt: string
+  items: SnapshotReviewItem[]
+}
+
 function isObject(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null
 }
 
 function isUploadJobMessage(value: unknown): value is UploadJobMessage {
+  const isLinkTokenValid =
+    !isObject(value) || value.linkToken === undefined || typeof value.linkToken === "string"
+
   return Boolean(
     isObject(value) &&
       typeof value.traceId === "string" &&
       typeof value.s3Key === "string" &&
-      typeof value.fileName === "string"
+      typeof value.fileName === "string" &&
+      isLinkTokenValid
   )
 }
 
@@ -90,6 +111,37 @@ function parseIncomingUploadMessage(body: string): UploadJobMessage | null {
   }
 
   return null
+}
+
+async function saveReviewSnapshotToS3(input: {
+  bucketName: string
+  sourceS3Key: string
+  fileName: string
+  traceId: string
+  batchId: string
+  linkToken?: string
+  items: SnapshotReviewItem[]
+}): Promise<string> {
+  const snapshotKey = `${input.sourceS3Key}.parsed.json`
+  const snapshot: S3ReviewSnapshot = {
+    linkToken: input.linkToken,
+    traceId: input.traceId,
+    batchId: input.batchId,
+    sourceS3Key: input.sourceS3Key,
+    fileName: input.fileName,
+    createdAt: new Date().toISOString(),
+    items: input.items,
+  }
+
+  const putCommand = new PutObjectCommand({
+    Bucket: input.bucketName,
+    Key: snapshotKey,
+    Body: JSON.stringify(snapshot),
+    ContentType: "application/json",
+  })
+
+  await s3Client.send(putCommand)
+  return snapshotKey
 }
 
 export async function processMessage(message: UploadJobMessage): Promise<void> {
@@ -116,6 +168,16 @@ export async function processMessage(message: UploadJobMessage): Promise<void> {
       type: "upload_ingestion",
       status: "processing",
     })
+
+    if (message.linkToken) {
+      const linkedInstance = await linkBatchToOnboardingInstanceByLinkToken(message.linkToken, batchId)
+
+      if (linkedInstance) {
+        await createProcessingLog(jobId, "info", `Batch linked to onboarding instance via linkToken=${message.linkToken}`)
+      } else {
+        await createProcessingLog(jobId, "warn", `No onboarding instance found for linkToken=${message.linkToken}`)
+      }
+    }
 
     await createProcessingLog(jobId, "info", "Upload message received by worker")
     await updateOnboardingBatchStatus(batchId, "processing")
@@ -155,6 +217,23 @@ export async function processMessage(message: UploadJobMessage): Promise<void> {
         validationErrors: record.validationErrors,
       }))
     )
+
+    const snapshotItems = records.map((record) => ({
+      rowNumber: record.rowNumber,
+      rawData: record.rawData,
+    }))
+
+    const snapshotKey = await saveReviewSnapshotToS3({
+      bucketName,
+      sourceS3Key: message.s3Key,
+      fileName: message.fileName,
+      traceId,
+      batchId,
+      linkToken: message.linkToken,
+      items: snapshotItems,
+    })
+
+    await createProcessingLog(jobId, "info", `Review snapshot saved to S3 key=${snapshotKey}`)
 
     const validRecords = records.filter((record) => record.isValid)
     const invalidRecords = records.filter((record) => !record.isValid)

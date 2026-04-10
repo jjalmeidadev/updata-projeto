@@ -1,5 +1,5 @@
 import { TestBed } from '@angular/core/testing';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { AuthService } from '@auth0/auth0-angular';
 import { of, throwError } from 'rxjs';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
@@ -26,6 +26,14 @@ describe('ModuleSelectorComponent', () => {
     navigate: vi.fn(),
   };
 
+  const activatedRouteMock = {
+    snapshot: {
+      paramMap: {
+        get: vi.fn().mockReturnValue(null),
+      },
+    },
+  };
+
   const questionServiceMock = {
     getQuestions: vi.fn(),
     getSections: vi.fn(),
@@ -33,6 +41,7 @@ describe('ModuleSelectorComponent', () => {
 
   const onboardingServiceMock = {
     listCompanies: vi.fn(),
+    listInstances: vi.fn(),
     createInstance: vi.fn(),
   };
 
@@ -45,9 +54,12 @@ describe('ModuleSelectorComponent', () => {
     vi.clearAllMocks();
     localStorage.clear();
 
+    activatedRouteMock.snapshot.paramMap.get.mockReturnValue(null);
+
     questionServiceMock.getQuestions.mockReturnValue(of(mockQuestions));
     questionServiceMock.getSections.mockReturnValue(['building-setup', 'company-details']);
     onboardingServiceMock.listCompanies.mockReturnValue(of([]));
+    onboardingServiceMock.listInstances.mockReturnValue(of([]));
 
     await resolveAngularResources();
 
@@ -55,6 +67,7 @@ describe('ModuleSelectorComponent', () => {
       imports: [ModuleSelectorComponent],
       providers: [
         { provide: Router, useValue: routerMock },
+        { provide: ActivatedRoute, useValue: activatedRouteMock },
         { provide: QuestionService, useValue: questionServiceMock },
         { provide: OnboardingInstanceService, useValue: onboardingServiceMock },
         { provide: AuthService, useValue: { user$: of({ email: 'user@test.com', name: 'Test User' }), logout: vi.fn() } },
@@ -113,6 +126,32 @@ describe('ModuleSelectorComponent', () => {
     component.continueLegacyFlow();
 
     expect(routerMock.navigate).not.toHaveBeenCalled();
+  });
+
+  it('navigates to /monitoring on goBackToMonitoring()', () => {
+    component.goBackToMonitoring();
+
+    expect(routerMock.navigate).toHaveBeenCalledWith(['/monitoring']);
+  });
+
+  it('loads existing onboarding data when editing', () => {
+    activatedRouteMock.snapshot.paramMap.get.mockReturnValue('token-1');
+    onboardingServiceMock.listInstances.mockReturnValueOnce(of([
+      {
+        linkToken: 'token-1',
+        companyName: 'Acme',
+        allowedEmails: ['admin@acme.com'],
+        selectedSections: ['company-details'],
+      },
+    ]));
+
+    component.ngOnInit();
+
+    expect(component.editLinkToken()).toBe('token-1');
+    expect(component.companyName()).toBe('Acme');
+    expect(component.allowedEmailsText()).toBe('admin@acme.com');
+    expect(Array.from(component.selectedSections())).toEqual(['company-details']);
+    expect(component.loading()).toBe(false);
   });
 
   it('sets loading=false when getQuestions fails', () => {

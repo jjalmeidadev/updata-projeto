@@ -2,9 +2,12 @@
   "extends": "../src/presentation/web/tsconfig.json",
   "compilerOptions": {
     "baseUrl": ".",
+    "ignoreDeprecations": "6.0",
     "types": [],
     "paths": {
+      "@angular/compiler": ["../src/presentation/web/node_modules/@angular/compiler"],
       "@angular/core/testing": ["../src/presentation/web/node_modules/@angular/core/types/testing.d.ts"],
+      "@angular/platform-browser/testing": ["../src/presentation/web/node_modules/@angular/platform-browser/types/testing.d.ts"],
       "@angular/common/http": ["../src/presentation/web/node_modules/@angular/common/types/http.d.ts"],
       "@angular/common/http/testing": ["../src/presentation/web/node_modules/@angular/common/types/http-testing.d.ts"],
       "@angular/router": ["../src/presentation/web/node_modules/@angular/router"],
@@ -16,6 +19,7 @@
     }
   },
   "include": [
+    "setup/**/*.ts",
     "presentation/**/*.spec.ts",
     "business/**/*.spec.ts",
     "data/**/*.spec.ts"

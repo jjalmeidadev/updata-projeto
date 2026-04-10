@@ -19,6 +19,7 @@ async function resolveAngularResources(): Promise<void> {
 
 describe('InputMethodComponent', () => {
   let component: InputMethodComponent;
+  let activeLinkToken: string | null;
 
   const routerMock = {
     navigate: vi.fn(),
@@ -27,6 +28,7 @@ describe('InputMethodComponent', () => {
   beforeEach(async () => {
     vi.clearAllMocks();
     localStorage.clear();
+    activeLinkToken = null;
 
     await resolveAngularResources();
 
@@ -39,7 +41,7 @@ describe('InputMethodComponent', () => {
           useValue: {
             snapshot: {
               paramMap: {
-                get: () => null,
+                get: () => activeLinkToken,
               },
             },
           },
@@ -71,5 +73,21 @@ describe('InputMethodComponent', () => {
     component.choose('manual');
 
     expect(routerMock.navigate).toHaveBeenCalledWith(['/form']);
+  });
+
+  it('navigates to onboarding upload route when link token is present', () => {
+    activeLinkToken = 'token-123';
+
+    component.choose('upload');
+
+    expect(routerMock.navigate).toHaveBeenCalledWith(['/onboarding', 'token-123', 'upload']);
+  });
+
+  it('navigates to onboarding form route when link token is present', () => {
+    activeLinkToken = 'token-123';
+
+    component.choose('manual');
+
+    expect(routerMock.navigate).toHaveBeenCalledWith(['/onboarding', 'token-123', 'form']);
   });
 });

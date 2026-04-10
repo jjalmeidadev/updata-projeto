@@ -1,0 +1,186 @@
+<div class="home-container">
+  <header class="navbar">
+    <button class="back-link" type="button" (click)="backToMonitoring()">← Back to Monitoring</button>
+    <h2>Equiem Review</h2>
+  </header>
+
+  <section class="content">
+    <div class="home-panel">
+      <div class="home-header">
+        <div>
+          <h1>Onboarding Waiting for Review</h1>
+          <p class="subtitle">Approve or send back submitted onboardings.</p>
+        </div>
+      </div>
+
+      <!-- Feedback Message -->
+      <div *ngIf="feedback()" class="feedback-message" [ngClass]="'feedback-' + feedbackType()">
+        <span class="feedback-icon">
+          {{ feedbackType() === 'success' ? '✓' : '⚠' }}
+        </span>
+        {{ feedback() }}
+        <button class="close-feedback" type="button" (click)="feedback.set('')">✕</button>
+      </div>
+
+      <!-- Search and Filters -->
+      <div class="search-and-filters">
+        <div class="search-wrapper">
+          <input
+            type="text"
+            class="search-input"
+            placeholder="Search by company or token..."
+            [value]="searchQuery()"
+            (input)="onSearchInput($event)"
+          />
+          <span class="search-icon">🔍︎​</span>
+        </div>
+
+        <div class="sort-buttons">
+          <button
+            class="sort-btn"
+            [class.active]="sortBy() === 'company'"
+            (click)="onSortChange('company')"
+            type="button"
+          >
+            Company
+            <span *ngIf="sortBy() === 'company'">
+              {{ sortOrder() === 'asc' ? '↑' : '↓' }}
+            </span>
+          </button>
+          <button
+            class="sort-btn"
+            [class.active]="sortBy() === 'submitted'"
+            (click)="onSortChange('submitted')"
+            type="button"
+          >
+            Submitted
+            <span *ngIf="sortBy() === 'submitted'">
+              {{ sortOrder() === 'asc' ? '↑' : '↓' }}
+            </span>
+          </button>
+          <button
+            class="sort-btn"
+            [class.active]="sortBy() === 'updated'"
+            (click)="onSortChange('updated')"
+            type="button"
+          >
+            Updated
+            <span *ngIf="sortBy() === 'updated'">
+              {{ sortOrder() === 'asc' ? '↑' : '↓' }}
+            </span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Loading State -->
+      <div *ngIf="loading()" class="loading-state">
+        <div class="spinner"></div>
+        <p>Loading onboardings...</p>
+      </div>
+
+      <!-- Empty State -->
+      <div *ngIf="!loading() && displayedInstances().length === 0" class="empty-state">
+        <div class="empty-icon">📋</div>
+        <h3>No onboardings to review</h3>
+        <p>There are no onboardings waiting for review right now.</p>
+      </div>
+
+      <!-- Review Cards -->
+      <div class="review-cards" *ngIf="!loading() && displayedInstances().length > 0">
+        <div class="review-card" *ngFor="let instance of displayedInstances()">
+          <div class="card-header">
+            <div class="company-info">
+              <h3 class="company-name">{{ instance.companyName }}</h3>
+              <div class="meta-info">
+                <span class="meta-item">
+                  <strong>Submitted:</strong> {{ formatDate(instance.submittedAt) }}
+                </span>
+              </div>
+            </div>
+            <span class="status-badge status-review">In Review</span>
+          </div>
+
+          <div class="card-body">
+            <div class="sections-info">
+              <strong>Sections:</strong>
+              <div class="sections-list">
+                <span class="section-tag" *ngFor="let section of instance.selectedSections">
+                  {{ section }}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <div class="card-footer">
+            <button
+              class="action-btn review-btn"
+              type="button"
+              (click)="open(instance)"
+            >
+               Review
+            </button>
+                <button
+                  class="action-btn approve-btn"
+                  type="button"
+                  (click)="approve(instance)"
+                >
+              ✓ Approve
+            </button>
+            <button
+              class="action-btn reject-btn"
+              type="button"
+              (click)="openRejectModal(instance)"
+              [disabled]="rejectingInstanceId() === instance.id"
+            >
+              ✕ Reject
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Pagination -->
+      <div class="pagination" *ngIf="!loading() && totalPages > 1 && displayedInstances().length > 0">
+        <button
+          class="pagination-btn"
+          (click)="goToPage(currentPage() - 1)"
+          [disabled]="!hasPrevPage"
+          type="button"
+        >
+          ← Previous
+        </button>
+        <span class="pagination-info">
+          Page {{ currentPage() }} of {{ totalPages }}
+        </span>
+        <button
+          class="pagination-btn"
+          (click)="goToPage(currentPage() + 1)"
+          [disabled]="!hasNextPage"
+          type="button"
+        >
+          Next →
+        </button>
+      </div>
+    </div>
+  </section>
+</div>
+
+<!-- Reject Modal -->
+<app-reject-reason-modal
+  [isOpen]="rejectModalOpen()"
+  [companyName]="selectedInstanceForReject()?.companyName ?? ''"
+  [isLoading]="rejectingInstanceId() !== null"
+  (onConfirm)="onRejectConfirm($event)"
+  (onCancel)="onRejectCancel()"
+></app-reject-reason-modal>
+
+<app-confirm-modal
+  [isOpen]="approveModalOpen()"
+  title="Approve onboarding"
+  [message]="'Approve onboarding for ' + (selectedInstanceForApprove()?.companyName ?? '') + '? This will move it out of review.'"
+  confirmLabel="Approve"
+  cancelLabel="Cancel"
+  [isLoading]="approvingInstanceId() !== null"
+  tone="primary"
+  (onConfirm)="onApproveConfirm()"
+  (onCancel)="onApproveCancel()"
+></app-confirm-modal>

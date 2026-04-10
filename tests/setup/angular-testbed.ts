@@ -16,3 +16,5 @@ if (typeof window !== "undefined") {
     ;(globalThis as { __angularTestBedInitialized?: boolean }).__angularTestBedInitialized = true
   }
 }
+
+export {}
