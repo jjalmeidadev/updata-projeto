@@ -11,7 +11,8 @@ describe('index-table', () => {
     process.env.DB_PORT = '5432';
     process.env.DB_SSL = 'false';
 
-    const poolCtor = vi.fn();
+    const poolInstance = { on: vi.fn(), query: vi.fn() };
+    const poolCtor = vi.fn(() => poolInstance);
 
     vi.doMock('dotenv', () => ({
       default: { config: vi.fn() },
@@ -31,6 +32,7 @@ describe('index-table', () => {
         ssl: false,
       }),
     );
+    expect(poolInstance.on).toHaveBeenCalledWith('error', expect.any(Function));
   });
 
   it('creates pool with ssl object when DB_SSL is true', async () => {
@@ -39,7 +41,8 @@ describe('index-table', () => {
     process.env.DB_SSL = 'true';
     process.env.DB_PORT = '5433';
 
-    const poolCtor = vi.fn();
+    const poolInstance = { on: vi.fn(), query: vi.fn() };
+    const poolCtor = vi.fn(() => poolInstance);
 
     vi.doMock('dotenv', () => ({ default: { config: vi.fn() } }));
     vi.doMock('pg', () => ({ Pool: poolCtor }));
@@ -52,6 +55,7 @@ describe('index-table', () => {
         ssl: { rejectUnauthorized: false },
       }),
     );
+    expect(poolInstance.on).toHaveBeenCalledWith('error', expect.any(Function));
   });
 
   it('falls back safely when global process.env is undefined', async () => {
@@ -64,7 +68,8 @@ describe('index-table', () => {
       writable: true,
     });
 
-    const poolCtor = vi.fn();
+    const poolInstance = { on: vi.fn(), query: vi.fn() };
+    const poolCtor = vi.fn(() => poolInstance);
 
     vi.doMock('dotenv', () => ({ default: { config: vi.fn() } }));
     vi.doMock('pg', () => ({ Pool: poolCtor }));
@@ -80,5 +85,6 @@ describe('index-table', () => {
     }
 
     expect(poolCtor).toHaveBeenCalled();
+    expect(poolInstance.on).toHaveBeenCalledWith('error', expect.any(Function));
   });
 });

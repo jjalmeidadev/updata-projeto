@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from "vitest"
 import * as userRepo from "../../../src/data/repositories/user-repository.js"
 import { checkUser, resolveUserNavigation } from "../../../src/business/services/user-service.js"
+import { INTERNAL_TEST_EMAILS } from "../../../src/shared/auth-constants.js"
 
 vi.mock("../../../src/data/repositories/user-repository.js", () => ({
   findUser: vi.fn(),
@@ -319,18 +320,23 @@ describe("user-service", () => {
     })
 
     it("returns monitoring route for allowlisted admin test email", async () => {
+      const adminEmail = "equiem.onboarding@gmail.com"
+      INTERNAL_TEST_EMAILS.add(adminEmail)
+
       vi.mocked(userRepo.findUser).mockResolvedValue({
         user_id: "u-admin-test",
         user_name: "Yudi",
-        user_email: "yudi@equiem.com",
+        user_email: adminEmail,
         auth0_id: "auth0|admin-test",
         company_id: null,
       })
 
       const result = await resolveUserNavigation(
-        { sub: "auth0|admin-test", email: "yudi@equiem.com" },
+        { sub: "auth0|admin-test", email: adminEmail },
         "trace-nav-admin-test"
       )
+
+      INTERNAL_TEST_EMAILS.delete(adminEmail)
 
       expect(result).toEqual({
         outcome: "monitoring",

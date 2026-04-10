@@ -91,6 +91,7 @@ describe('UploadComponent', () => {
           provide: OnboardingInstanceService,
           useValue: {
             getPublicInstance: vi.fn().mockReturnValue(of(null)),
+            uploadFile: vi.fn().mockReturnValue(of({})),
           },
         },
       ],
@@ -277,7 +278,7 @@ describe('UploadComponent', () => {
     expect(validate('text', '')).toBe('This field is required.');
     expect(validate('integer', '1.2')).toBe('Please use whole numbers only.');
     expect(validate('decimal', 'abc')).toBe('Please enter a valid decimal number.');
-    expect(validate('time', '30:90')).toBe('Please enter the time in HH:MM format.');
+    expect(validate('time', '30:90')).toBe('Please enter the time in HH:MM or HH:MM:SS format.');
     expect(validate('date', 'not-a-date')).toBe('Please enter a valid date.');
     expect(validate('text', 'ok')).toBe('');
   });
