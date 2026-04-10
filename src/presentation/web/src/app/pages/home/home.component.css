@@ -353,6 +353,16 @@
   border: 1px solid #d6c5fb;
 }
 
+.danger-btn {
+  border-color: #f5c6cb;
+  color: #721c24;
+  background: #fff7f8;
+}
+
+.danger-btn:hover {
+  background: #f8d7da;
+}
+
 .details-btn:hover {
   background: #d6c5fb;
 }

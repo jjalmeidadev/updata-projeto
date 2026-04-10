@@ -64,7 +64,7 @@
                 <div class="upload-box" (click)="triggerFileInput()" [class.disabled]="uploading()">
                   <input
                     type="file"
-                    id="fileInput"
+                    #fileInput
                     accept=".csv,.xlsx,.xls"
                     (change)="onFileSelect($event)"
                     hidden

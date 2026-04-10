@@ -3,13 +3,16 @@ import {
   approveOnboardingInstance,
   completeEquiemReview,
   createOrReuseOnboardingInstance,
+  deleteOnboardingInstance,
   getCompanies,
   getDashboardInstances,
   getOnboardingReviewDataByLink,
   getOnboardingInstanceByLinkForAuthenticatedUser,
+  getOnboardingInstanceByLinkForInternalReview,
   rejectOnboardingInstance,
   reviewOnboardingSection,
   saveOnboardingProgress,
+  updateOnboardingInstanceDetails,
   submitOnboarding,
 } from "../../../business/services/onboarding-instance-service.js"
 import { findUser } from "../../../data/repositories/user-repository.js"
@@ -108,6 +111,62 @@ export async function createOnboardingInstanceHandler(
   }
 }
 
+export async function deleteOnboardingInstanceHandler(
+  req: Request,
+  res: Response
+): Promise<Response> {
+  try {
+    const linkToken = String(req.params["linkToken"] || "")
+    const deleted = await deleteOnboardingInstance(linkToken, resolveBaseUrl(req))
+
+    if (!deleted) {
+      return res.status(404).json({ error: "Onboarding instance not found" })
+    }
+
+    return res.status(200).json(deleted)
+  } catch (error) {
+    console.error("deleteOnboardingInstanceHandler", error)
+    return res.status(500).json({ error: "Failed to delete onboarding instance" })
+  }
+}
+
+export async function updateOnboardingInstanceHandler(
+  req: Request,
+  res: Response
+): Promise<Response> {
+  try {
+    const linkToken = String(req.params["linkToken"] || "")
+    const companyName = String(req.body?.companyName || "")
+    const selectedSections = Array.isArray(req.body?.selectedSections) ? req.body.selectedSections : []
+    const allowedEmailsInput = req.body?.allowedEmails
+
+    if (allowedEmailsInput !== undefined) {
+      if (
+        !Array.isArray(allowedEmailsInput) ||
+        !allowedEmailsInput.every((email) => typeof email === "string")
+      ) {
+        return res.status(400).json({ error: "allowedEmails must be an array of strings" })
+      }
+    }
+
+    const result = await updateOnboardingInstanceDetails(linkToken, {
+      companyName,
+      selectedSections,
+      allowedEmails: Array.isArray(allowedEmailsInput) ? allowedEmailsInput : [],
+      baseUrl: resolveBaseUrl(req),
+    })
+
+    if (!result) {
+      return res.status(404).json({ error: "Onboarding instance not found" })
+    }
+
+    return res.status(200).json(result)
+  } catch (error) {
+    const message = error instanceof Error ? error.message : "Failed to update onboarding instance"
+    return res.status(400).json({ error: message })
+  }
+}
+
 export async function getOnboardingByLinkHandler(req: Request, res: Response): Promise<Response> {
   try {
     const linkToken = String(req.params["linkToken"] || "")
@@ -131,6 +190,32 @@ export async function getOnboardingByLinkHandler(req: Request, res: Response): P
 
     console.error("getOnboardingByLinkHandler", error)
     return res.status(500).json({ error: "Failed to load onboarding instance" })
+  }
+}
+
+export async function getOnboardingReviewByLinkHandler(req: Request, res: Response): Promise<Response> {
+  try {
+    const linkToken = String(req.params["linkToken"] || "")
+    const authenticatedEmail = await resolveAuthenticatedEmail(req)
+    const instance = await getOnboardingInstanceByLinkForInternalReview(
+      linkToken,
+      resolveBaseUrl(req),
+      authenticatedEmail
+    )
+
+    if (!instance) {
+      return res.status(404).json({ error: "Onboarding instance not found" })
+    }
+
+    return res.status(200).json(instance)
+  } catch (error) {
+    if (isOnboardingAccessDeniedError(error)) {
+      const message = error instanceof Error ? error.message : "Access denied to this onboarding link"
+      return res.status(403).json({ error: message })
+    }
+
+    console.error("getOnboardingReviewByLinkHandler", error)
+    return res.status(500).json({ error: "Failed to load onboarding review instance" })
   }
 }
 

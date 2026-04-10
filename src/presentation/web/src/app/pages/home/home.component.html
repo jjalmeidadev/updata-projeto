@@ -167,10 +167,10 @@
             </tr>
           </thead>
           <tbody>
-            <tr *ngIf="loading">
+            <tr *ngIf="loading()">
               <td colspan="4">Loading onboarding instances...</td>
             </tr>
-            <tr *ngFor="let instance of instances">
+            <tr *ngFor="let instance of instances()">
               <td class="company-name">
                 {{ instance.companyName }}
               </td>
@@ -207,9 +207,17 @@
                     *ngIf="showContinue(instance)"
                     class="start-btn"
                     type="button"
-                    (click)="openOnboarding(instance)"
+                    (click)="editOnboarding(instance)"
                   >
-                    Continue
+                    Edit Onboarding
+                  </button>
+                  <button
+                    class="details-btn danger-btn"
+                    type="button"
+                    [disabled]="deletingInstanceId === instance.id"
+                    (click)="openDeleteModal(instance)"
+                  >
+                    {{ deletingInstanceId === instance.id ? 'Deleting...' : 'Delete' }}
                   </button>
                   <button
                     *ngIf="instance.status === 'equiem_review'"
@@ -231,7 +239,7 @@
                 </div>
               </td>
             </tr>
-            <tr *ngIf="!loading && instances.length === 0">
+            <tr *ngIf="!loading() && instances().length === 0">
               <td colspan="4">No onboarding instances found.</td>
             </tr>
           </tbody>
@@ -240,3 +248,15 @@
     </div>
   </section>
 </div>
+
+<app-confirm-modal
+  [isOpen]="deleteModalOpen"
+  title="Delete onboarding"
+  [message]="'This will permanently delete the onboarding for ' + (selectedInstanceForDelete?.companyName ?? '') + '. This action cannot be undone.'"
+  confirmLabel="Delete"
+  cancelLabel="Cancel"
+  [isLoading]="deletingInstanceId !== null"
+  tone="danger"
+  (onConfirm)="confirmDeleteOnboarding()"
+  (onCancel)="cancelDeleteModal()"
+></app-confirm-modal>

@@ -4,10 +4,12 @@ import express from "express"
 const routerGetMock = vi.fn()
 const routerPatchMock = vi.fn()
 const routerPostMock = vi.fn()
+const routerDeleteMock = vi.fn()
 const routerMock = {
   get: routerGetMock,
   patch: routerPatchMock,
   post: routerPostMock,
+  delete: routerDeleteMock,
 }
 
 const authMiddlewareMock = vi.fn()
@@ -34,7 +36,9 @@ vi.mock("../../../../src/presentation/api/controllers/onboarding-instance-contro
   approveOnboardingInstanceHandler: vi.fn(),
   completeEquiemReviewHandler: completeEquiemReviewMock,
   createOnboardingInstanceHandler: createOnboardingInstanceMock,
+  deleteOnboardingInstanceHandler: vi.fn(),
   getOnboardingByLinkHandler: getOnboardingByLinkMock,
+  getOnboardingReviewByLinkHandler: vi.fn(),
   getOnboardingReviewDataHandler: getOnboardingReviewDataMock,
   listCompaniesHandler: listCompaniesMock,
   listOnboardingInstancesHandler: listOnboardingInstancesMock,
@@ -42,6 +46,7 @@ vi.mock("../../../../src/presentation/api/controllers/onboarding-instance-contro
   reviewOnboardingSectionHandler: vi.fn(),
   saveOnboardingProgressHandler: saveOnboardingProgressMock,
   submitOnboardingHandler: submitOnboardingMock,
+  updateOnboardingInstanceHandler: vi.fn(),
 }))
 
 describe("onboarding-instance-routes", () => {
@@ -58,6 +63,8 @@ describe("onboarding-instance-routes", () => {
     expect(routerGetMock).toHaveBeenCalledWith("/api/companies", listCompaniesMock)
 
     const dashboardRoute = routerGetMock.mock.calls.find((call) => call[0] === "/api/onboarding-instances")
+    const editRoute = routerPatchMock.mock.calls.find((call) => call[0] === "/api/onboarding-instances/:linkToken")
+    const deleteRoute = routerDeleteMock.mock.calls.find((call) => call[0] === "/api/onboarding-instances/:linkToken")
     const completeRoute = routerPostMock.mock.calls.find(
       (call) => call[0] === "/api/onboarding-instances/:linkToken/review/complete"
     )
@@ -73,6 +80,8 @@ describe("onboarding-instance-routes", () => {
     )
 
     expect(dashboardRoute?.[2]).toBe(listOnboardingInstancesMock)
+    expect(editRoute?.[2]).toBeDefined()
+    expect(deleteRoute?.[2]).toBeDefined()
     expect(completeRoute?.[2]).toBe(completeEquiemReviewMock)
     expect(publicGetRoute?.[2]).toBe(getOnboardingByLinkMock)
     expect(publicReviewRoute?.[2]).toBe(getOnboardingReviewDataMock)

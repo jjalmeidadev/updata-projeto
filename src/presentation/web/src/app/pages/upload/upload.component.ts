@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import { Component, ElementRef, OnInit, ViewChild, inject, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { firstValueFrom } from 'rxjs';
@@ -45,6 +45,7 @@ export class UploadComponent implements OnInit {
   readonly fileName = signal<string | null>(null);
   readonly errorMessage = signal<string | null>(null);
   readonly successMessage = signal<string | null>(null);
+  @ViewChild('fileInput') private fileInputRef?: ElementRef<HTMLInputElement>;
 
   ngOnInit(): void {
     const linkToken = this.route.snapshot.paramMap.get('linkToken');
@@ -142,8 +143,7 @@ export class UploadComponent implements OnInit {
   }
 
   triggerFileInput(): void {
-    const input = document.getElementById('fileInput') as HTMLInputElement;
-    input?.click();
+    this.fileInputRef?.nativeElement.click();
   }
 
   goToManualForm(): void {

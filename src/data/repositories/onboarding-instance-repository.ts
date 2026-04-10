@@ -16,6 +16,10 @@ interface OnboardingInstanceUpdateInput {
   formData?: Record<string, unknown>
   progressPercent?: number
   status?: string
+  companyId?: string | null
+  companyName?: string
+  selectedSections?: string[]
+  allowedEmails?: string[]
   submittedAt?: string | null
   reviewedAt?: string | null
   completedAt?: string | null
@@ -244,14 +248,18 @@ async function updateOnboardingInstance(
       form_data = COALESCE($2::jsonb, form_data),
       progress_percent = COALESCE($3, progress_percent),
       status = COALESCE($4, status),
-      submitted_at = CASE WHEN $5::timestamptz IS NULL THEN submitted_at ELSE $5::timestamptz END,
-      reviewed_at = CASE WHEN $6::timestamptz IS NULL THEN reviewed_at ELSE $6::timestamptz END,
-      completed_at = CASE WHEN $7::timestamptz IS NULL THEN completed_at ELSE $7::timestamptz END,
-      email_status = COALESCE($8, email_status),
-      email_payload = COALESCE($9::jsonb, email_payload),
-      rejection_reason = CASE WHEN $10::text IS NULL THEN rejection_reason ELSE $10::text END,
-      section_review = COALESCE($11::jsonb, section_review),
-      returned_sections = COALESCE($12::text[], returned_sections),
+      company_id = COALESCE($5::uuid, company_id),
+      company_name = COALESCE($6::text, company_name),
+      selected_sections = COALESCE($7::text[], selected_sections),
+      allowed_emails = COALESCE($8::text[], allowed_emails),
+      submitted_at = CASE WHEN $9::timestamptz IS NULL THEN submitted_at ELSE $9::timestamptz END,
+      reviewed_at = CASE WHEN $10::timestamptz IS NULL THEN reviewed_at ELSE $10::timestamptz END,
+      completed_at = CASE WHEN $11::timestamptz IS NULL THEN completed_at ELSE $11::timestamptz END,
+      email_status = COALESCE($12, email_status),
+      email_payload = COALESCE($13::jsonb, email_payload),
+      rejection_reason = CASE WHEN $14::text IS NULL THEN rejection_reason ELSE $14::text END,
+      section_review = COALESCE($15::jsonb, section_review),
+      returned_sections = COALESCE($16::text[], returned_sections),
       updated_at = NOW()
     WHERE id = $1
     RETURNING
@@ -282,6 +290,10 @@ async function updateOnboardingInstance(
     input.formData ? JSON.stringify(input.formData) : null,
     input.progressPercent ?? null,
     input.status ?? null,
+    input.companyId ?? null,
+    input.companyName ?? null,
+    input.selectedSections ?? null,
+    input.allowedEmails ?? null,
     input.submittedAt ?? null,
     input.reviewedAt ?? null,
     input.completedAt ?? null,
@@ -292,6 +304,39 @@ async function updateOnboardingInstance(
     input.returnedSections ?? null,
   ])
 
+  return (result.rows[0] as OnboardingInstanceRecord | undefined) ?? null
+}
+
+async function deleteOnboardingInstanceByLinkToken(
+  linkToken: string
+): Promise<OnboardingInstanceRecord | null> {
+  const query = `
+    DELETE FROM equiem.onboarding_instance
+    WHERE link_token = $1
+    RETURNING
+      id,
+      company_id,
+      batch_id,
+      company_name,
+      selected_sections,
+      allowed_emails,
+      status,
+      progress_percent,
+      link_token,
+      form_data,
+      email_status,
+      email_payload,
+      submitted_at,
+      reviewed_at,
+      completed_at,
+      section_review,
+      returned_sections,
+      rejection_reason,
+      created_at,
+      updated_at
+  `
+
+  const result = await pool.query(query, [linkToken])
   return (result.rows[0] as OnboardingInstanceRecord | undefined) ?? null
 }
 
@@ -340,5 +385,6 @@ export {
   listCompanies,
   createOnboardingInstance,
   updateOnboardingInstance,
+  deleteOnboardingInstanceByLinkToken,
   linkBatchToOnboardingInstanceByLinkToken,
 }

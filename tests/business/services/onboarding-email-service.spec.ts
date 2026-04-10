@@ -28,7 +28,7 @@ describe("onboarding-email-service", () => {
   it("returns missing configuration when SMTP settings are not provided", async () => {
     const result = await sendOnboardingSubmissionMessageToAdmins({
       companyName: "Company 1",
-      onboardingLink: "http://localhost:4200/onboarding/token-1",
+      reviewLink: "http://localhost:4200/equiem-review/token-1",
       selectedSections: ["company-details"],
       submittedAt: "2026-04-06T12:00:00.000Z",
     })
@@ -57,7 +57,7 @@ describe("onboarding-email-service", () => {
 
     const result = await sendOnboardingSubmissionMessageToAdmins({
       companyName: "Company 1",
-      onboardingLink: "http://localhost:4200/onboarding/token-1",
+      reviewLink: "http://localhost:4200/equiem-review/token-1",
       selectedSections: ["company-details", "building-setup"],
       submittedAt: "2026-04-06T12:00:00.000Z",
     })
@@ -75,6 +75,7 @@ describe("onboarding-email-service", () => {
       expect.objectContaining({
         to: ["admin1@mail.local", "admin2@mail.local"],
         from: "bot@mail.local",
+        html: expect.stringContaining("Review onboarding"),
       })
     )
     expect(result).toMatchObject({

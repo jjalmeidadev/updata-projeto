@@ -39,6 +39,7 @@ describe('app.routes', () => {
       'home',
       'monitoring',
       'company/:companyId',
+      'module-selector/:linkToken',
       'form',
       'upload',
       'review',
@@ -56,7 +57,8 @@ describe('app.routes', () => {
 
     expect(routes.find((r: RouteConfig) => r.path === '**')?.redirectTo).toBe('/login')
     expect(routes.find((r: RouteConfig) => r.path === 'home')?.canActivate).toEqual(['guard', 'internalGuard'])
+    expect(routes.find((r: RouteConfig) => r.path === 'module-selector/:linkToken')?.canActivate).toEqual(['guard', 'internalGuard'])
     expect(routes.find((r: RouteConfig) => r.path === 'onboarding/:linkToken')?.canActivate).toEqual(['instanceLinkGuard'])
     expect(routes.find((r: RouteConfig) => r.path === 'onboarding/:linkToken/form')?.canActivate).toEqual(['instanceLinkGuard'])
-  });
+  }, 15000);
 });

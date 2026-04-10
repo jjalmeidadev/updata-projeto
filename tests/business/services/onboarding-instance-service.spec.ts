@@ -2,6 +2,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest"
 
 vi.mock("../../../src/data/repositories/onboarding-instance-repository.js", () => ({
   createOnboardingInstance: vi.fn(),
+  deleteOnboardingInstanceByLinkToken: vi.fn(),
   findCompanyByName: vi.fn(),
   findOnboardingInstanceByLinkToken: vi.fn(),
   findReusableOnboardingInstance: vi.fn(),
@@ -18,6 +19,7 @@ vi.mock("../../../src/business/services/onboarding-email-service.js", () => ({
 
 import {
   createOnboardingInstance,
+  deleteOnboardingInstanceByLinkToken,
   findCompanyByName,
   findOnboardingInstanceByLinkToken,
   findReusableOnboardingInstance,
@@ -32,7 +34,9 @@ import {
 import {
   OnboardingAccessDeniedError,
   createOrReuseOnboardingInstance,
+  updateOnboardingInstanceDetails,
   getOnboardingInstanceByLinkForAuthenticatedUser,
+  deleteOnboardingInstance,
   submitOnboarding,
 } from "../../../src/business/services/onboarding-instance-service.js"
 
@@ -105,7 +109,7 @@ describe("onboarding-instance-service submitOnboarding", () => {
 
     expect(sendOnboardingSubmissionMessageToAdmins).toHaveBeenCalledWith({
       companyName: "Company 1",
-      onboardingLink: "http://localhost:4200/onboarding/token-1",
+      reviewLink: "http://localhost:4200/equiem-review/token-1",
       selectedSections: ["company-details"],
       submittedAt: "2026-04-06T12:00:00.000Z",
     })
@@ -175,6 +179,7 @@ describe("onboarding-instance-service allowlist handling", () => {
     vi.mocked(findOnboardingInstanceByLinkToken).mockReset()
     vi.mocked(listCompanies).mockReset()
     vi.mocked(listOnboardingInstances).mockReset()
+    vi.mocked(deleteOnboardingInstanceByLinkToken).mockReset()
     vi.mocked(sendOnboardingInviteToAllowedEmails).mockReset()
     vi.mocked(sendOnboardingInviteToAllowedEmails).mockResolvedValue({
       sent: true,
@@ -272,6 +277,36 @@ describe("onboarding-instance-service allowlist handling", () => {
     ).rejects.toBeInstanceOf(OnboardingAccessDeniedError)
   })
 
+  it("keeps onboarding links private even for Equiem emails unless allowlisted", async () => {
+    vi.mocked(findOnboardingInstanceByLinkToken).mockResolvedValue({
+      id: "instance-1",
+      company_id: null,
+      batch_id: null,
+      company_name: "Acme",
+      selected_sections: ["company-details"],
+      allowed_emails: ["owner@acme.com"],
+      status: "draft",
+      progress_percent: 0,
+      link_token: "token-1",
+      form_data: {},
+      email_status: "pending_manual_send",
+      email_payload: null,
+      submitted_at: null,
+      reviewed_at: null,
+      completed_at: null,
+      created_at: "2026-04-07T00:00:00.000Z",
+      updated_at: "2026-04-07T00:00:00.000Z",
+    } as never)
+
+    await expect(
+      getOnboardingInstanceByLinkForAuthenticatedUser(
+        "token-1",
+        "http://localhost:4200",
+        "equiem.onboarding@gmail.com"
+      )
+    ).rejects.toBeInstanceOf(OnboardingAccessDeniedError)
+  })
+
   it("creates a new onboarding instance when allowedEmails differs from a reusable one", async () => {
     vi.mocked(findReusableOnboardingInstance).mockResolvedValue({
       id: "instance-reusable",
@@ -325,5 +360,91 @@ describe("onboarding-instance-service allowlist handling", () => {
     expect(createOnboardingInstance).toHaveBeenCalledWith(
       expect.objectContaining({ allowedEmails: ["new-owner@acme.com"] })
     )
+  })
+
+  it("deletes an onboarding instance by link token", async () => {
+    vi.mocked(deleteOnboardingInstanceByLinkToken).mockResolvedValue(makeRecord({
+      link_token: "token-delete",
+    }) as never)
+
+    const result = await deleteOnboardingInstance("token-delete", "http://localhost:4200")
+
+    expect(deleteOnboardingInstanceByLinkToken).toHaveBeenCalledWith("token-delete")
+    expect(result).toMatchObject({
+      linkToken: "token-delete",
+    })
+  })
+})
+
+describe("onboarding-instance-service update flow", () => {
+  beforeEach(() => {
+    vi.mocked(findOnboardingInstanceByLinkToken).mockReset()
+    vi.mocked(findCompanyByName).mockReset()
+    vi.mocked(updateOnboardingInstance).mockReset()
+    vi.mocked(sendOnboardingInviteToAllowedEmails).mockReset()
+  })
+
+  it("resends onboarding invite and stores invite status when updating onboarding details", async () => {
+    vi.mocked(findOnboardingInstanceByLinkToken).mockResolvedValue(
+      makeRecord({ link_token: "token-update", company_name: "Old Co" }) as never
+    )
+    vi.mocked(findCompanyByName).mockResolvedValue({ id: "company-9", name: "New Co" } as never)
+
+    const updatedRecord = makeRecord({
+      id: "instance-1",
+      company_id: "company-9",
+      company_name: "New Co",
+      selected_sections: ["company-details"],
+      allowed_emails: ["owner@newco.com"],
+      link_token: "token-update",
+      email_status: "pending_manual_send",
+      email_payload: { provider: "manual" },
+    })
+
+    const withInviteStatus = makeRecord({
+      ...updatedRecord,
+      email_status: "invite_sent",
+      email_payload: {
+        provider: "manual",
+        onboardingInvite: { sent: true, provider: "smtp", to: ["owner@newco.com"] },
+      },
+    })
+
+    vi.mocked(updateOnboardingInstance)
+      .mockResolvedValueOnce(updatedRecord as never)
+      .mockResolvedValueOnce(withInviteStatus as never)
+
+    vi.mocked(sendOnboardingInviteToAllowedEmails).mockResolvedValue({
+      sent: true,
+      provider: "smtp",
+      to: ["owner@newco.com"],
+    } as never)
+
+    const result = await updateOnboardingInstanceDetails("token-update", {
+      companyName: "New Co",
+      selectedSections: ["company-details"],
+      allowedEmails: ["owner@newco.com"],
+      baseUrl: "http://localhost:4200",
+    })
+
+    expect(sendOnboardingInviteToAllowedEmails).toHaveBeenCalledWith({
+      companyName: "New Co",
+      onboardingLink: "http://localhost:4200/onboarding/token-update",
+      selectedSections: ["company-details"],
+      allowedEmails: ["owner@newco.com"],
+    })
+
+    expect(updateOnboardingInstance).toHaveBeenNthCalledWith(
+      2,
+      "instance-1",
+      expect.objectContaining({
+        emailStatus: "invite_sent",
+      })
+    )
+
+    expect(result).toMatchObject({
+      linkToken: "token-update",
+      emailStatus: "invite_sent",
+    })
   })
 })

@@ -26,12 +26,31 @@ export class OnboardingInstanceService {
     );
   }
 
+  getReviewInstance(linkToken: string): Observable<OnboardingInstance> {
+    return this.http.get<OnboardingInstance>(`/api/onboarding-instances/${linkToken}`);
+  }
+
   createInstance(payload: {
     companyName: string;
     selectedSections: string[];
     allowedEmails: string[];
   }): Observable<CreateOnboardingResponse> {
     return this.http.post<CreateOnboardingResponse>('/api/onboarding-instances', payload);
+  }
+
+  updateInstance(
+    linkToken: string,
+    payload: {
+      companyName: string;
+      selectedSections: string[];
+      allowedEmails: string[];
+    }
+  ): Observable<CreateOnboardingResponse> {
+    return this.http.patch<CreateOnboardingResponse>(`/api/onboarding-instances/${linkToken}`, payload);
+  }
+
+  deleteInstance(linkToken: string): Observable<OnboardingInstance> {
+    return this.http.delete<OnboardingInstance>(`/api/onboarding-instances/${linkToken}`);
   }
 
   getPublicInstance(linkToken: string): Observable<OnboardingInstance> {

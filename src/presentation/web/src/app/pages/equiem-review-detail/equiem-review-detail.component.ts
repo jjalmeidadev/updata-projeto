@@ -85,15 +85,9 @@ export class EquiemReviewDetailComponent implements OnInit {
       return;
     }
 
-    this.service.listInstances().subscribe({
-      next: (items) => {
-        const found = items.find(item => item.linkToken === linkToken) ?? null;
+    this.service.getReviewInstance(linkToken).subscribe({
+      next: (found) => {
         this.instance.set(found);
-
-        if (!found) {
-          this.loading.set(false);
-          return;
-        }
 
         this.questionService.getQuestions().subscribe({
           next: (questions) => {
@@ -107,6 +101,7 @@ export class EquiemReviewDetailComponent implements OnInit {
         });
       },
       error: () => {
+        this.instance.set(null);
         this.loading.set(false);
       }
     });
@@ -258,13 +253,10 @@ export class EquiemReviewDetailComponent implements OnInit {
     const current = this.instance();
     if (!current) return;
 
-    this.service.listInstances().subscribe({
-      next: (items) => {
-        const found = items.find((item) => item.linkToken === current.linkToken) ?? null;
+    this.service.getReviewInstance(current.linkToken).subscribe({
+      next: (found) => {
         this.instance.set(found);
-        if (found) {
-          this.buildSectionReview(found, this.allQuestions());
-        }
+        this.buildSectionReview(found, this.allQuestions());
       }
     });
   }

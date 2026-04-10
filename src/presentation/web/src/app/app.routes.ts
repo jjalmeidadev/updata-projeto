@@ -22,6 +22,7 @@ export const routes: Routes = [
   { path: 'home', component: HomeComponent, canActivate: [authGuardFn, internalUserGuard] },
   { path: 'monitoring', component: HomeComponent, canActivate: [authGuardFn, internalUserGuard] },
   { path: 'company/:companyId', component: ModuleSelectorComponent, canActivate: [authGuardFn, internalUserGuard] },
+  { path: 'module-selector/:linkToken', component: ModuleSelectorComponent, canActivate: [authGuardFn, internalUserGuard] },
   {
     path: 'form',
     component: OnboardingFormComponent,
