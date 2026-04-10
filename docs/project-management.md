@@ -32,15 +32,43 @@
    - [Risk Analysis and Tracking](#354-risk-analysis-and-tracking)
 
 4. [Sprint 4 Planning](#4-sprint-4-planning)
+   - [Objectives](#41-objectives)
+   - [Backlog and Task Allocation](#42-backlog-and-task-allocation)
+   - [Sprint 4 Analysis](#43-sprint-4-analysis)
+   - [Strengths](#431-strengths)
+   - [Weaknesses](#432-weaknesses)
+   - [Improvement Backlog for Sprint 5](#433-improvement-backlog-for-sprint-5)
+   - [Risk Analysis and Tracking](#434-risk-analysis-and-tracking)
+   - [Sprint 5 Planning](#44-sprint-5-planning)
+   - [Objectives](#441-objectives)
+   - [Backlog and Task Allocation](#442-backlog-and-task-allocation)
+   - [Execution Strategy](#443-execution-strategy)
+   - [Sprint 5 Analysis](#45-sprint-5-analysis)
+   - [Strengths](#451-strengths)
+   - [Weaknesses](#452-weaknesses)
+   - [Improvement Backlog for Future Work](#453-improvement-backlog-for-future-work)
+   - [Risk Analysis and Tracking](#454-risk-analysis-and-tracking)
 
-5. [Group Development Process Management](#5-group-development-process-management)
-   - [Daily Meetings Policy](#51-daily-meetings-policy)
-   - [Development and Collaboration Policies](#52-development-and-collaboration-policies)
+5. [Metrics Analysis](#5-metrics-analysis)
+   - [Metrics Evolution](#51-metrics-evolution)
+   - [Insights and Decision Support](#52-insights-and-decision-support)
 
-6. [Cost Analysis and Effort Estimation](#6-cost-analysis-and-effort-estimation)
-   - [Effort and Labor Scope](#61-effort-and-labor-scope)
-   - [Infrastructure and Tools](#62-infrastructure-and-tools)
-   - [Financial Summary](#63-financial-summary)
+6. [Post-Mortem Analysis](#6-post-mortem-analysis)
+   - [Key Achievements](#61-key-achievements)
+   - [Main Challenges](#62-main-challenges)
+   - [Root Causes](#63-root-causes)
+   - [Lessons Learned](#64-lessons-learned)
+   - [Recommendations for Future Projects](#65-recommendations-for-future-projects)
+   - [Systemic View](#66-systemic-view)
+
+7. [Group Development Process Management](#7-group-development-process-management)
+   - [Daily Meetings Policy](#71-daily-meetings-policy)
+   - [Development and Collaboration Policies](#72-development-and-collaboration-policies)
+
+8. [Cost Analysis and Effort Estimation](#8-cost-analysis-and-effort-estimation)
+   - [Effort and Labor Scope](#81-effort-and-labor-scope)
+   - [Infrastructure and Tools](#82-infrastructure-and-tools)
+   - [Financial Summary](#83-financial-summary)
 
 ---
 
@@ -441,19 +469,194 @@ This section evaluates the execution of Sprint 4, focusing on feature developmen
 
 - **Risk Tracking:** Risks are continuously reviewed during Sprint Planning, Mid-Sprint Checkpoints, and Sprint Retrospectives.  
 - **Status definitions:** Open, Mitigating, Closed.  
-- **Trend:** Increasing, Stable, Decreasing.
+- **Trend:** Increasing, Stable, Decreasing.  
 
 
 --- 
-## 5. Group Development Process Management
+## 4.4 Sprint 5 Planning
 
-### 5.1 Daily Meetings Policy
+### 4.4.1 Objectives
+- **Resolve Sprint 4 backlog issues** by reducing the time Merge Requests remain in review and by closing the main pending database optimization actions.
+- **Improve backend and database efficiency** through targeted stabilization, query refinement, and reduction of avoidable processing bottlenecks.
+- **Refine asynchronous processing flow** to improve worker reliability and reduce execution variability during onboarding processing.
+- **Conduct final validation and delivery readiness checks** to ensure the MVP is stable, documented, and ready for academic evaluation.
+
+### 4.4.2 Backlog and Task Allocation
+| Task ID | Task Name | Type | Size | Owner | DoR | DoD |
+| ------- | --------- | ---- | ---- | ----- | --- | --- |
+| S5-01 | MR Review Flow Optimization | Process | S | Tech Lead | Sprint 4 review bottlenecks identified | Review routine adjusted and MR waiting time reduced in practice |
+| S5-02 | Database Optimization Refinement | Feature | M | Backend Dev Team | Query hotspots identified from previous tests | Main high-cost queries reviewed and performance improved in validation runs |
+| S5-03 | Backend Stabilization | Feature | M | Backend Dev Team | Critical failure points mapped | Error handling and validation flow refined with fewer recurring failures |
+| S5-04 | Async Worker Refinement | Feature | M | Backend Dev Team | SQS worker already operational | Queue consumption and processing flow adjusted for greater stability |
+| S5-05 | Final Testing and Validation | Test | M | QA Team | Main Sprint 5 features integrated | Final execution reports produced for critical flows and load scenarios |
+| S5-06 | Documentation and Delivery Refinement | Docs | S | Review Team | Technical and management artifacts updated | Final documentation reviewed and aligned for delivery |
+
+### 4.4.3 Execution Strategy
+- **Parallel work:** Backend stabilization, database optimization, and documentation refinement were organized in parallel to reduce idle time between dependencies.
+- **Early validation:** Review, testing, and integration checks were brought forward where possible to avoid concentrating verification only at the end of the sprint.
+- **Reducing bottlenecks:** The team prioritized the Sprint 4 backlog issues first, especially MR review time and stability constraints that could affect final delivery.
+- **Improving delivery flow:** The sprint was conducted with a stronger focus on short feedback loops, enabling faster correction of issues before final validation.
+
+---
+
+## 4.5 Sprint 5 Analysis
+
+This section evaluates the execution of Sprint 5, focusing on performance improvements, system stability, and workflow maturity.
+
+### 4.5.1 Strengths
+
+- **Improvement backlog execution increased workflow predictability**  
+  - The team addressed the Sprint 4 backlog by reducing Merge Request review time and prioritizing database optimization tasks early in the sprint, as observed in the GitLab MR logs and sprint board follow-up.  
+  - **Impact:** Improved delivery predictability and reduced the accumulation of unfinished technical tasks.
+
+- **Faster Merge Request reviews reduced delivery bottlenecks**  
+  - Review cycles became more consistent due to closer coordination between developers and reviewers during daily follow-ups.  
+  - **Impact:** Features moved to validation faster, allowing earlier integration and reducing idle time in the workflow.
+
+- **Backend stability improvements increased operational reliability**  
+  - The backend processing flow was stabilized through better exception handling, more consistent validation flows, and reduced failure recurrence in onboarding processing, as reflected in final test execution reports.  
+  - **Impact:** Improved reliability of the MVP under repeated execution scenarios and reduced rework caused by unstable behavior.
+
+- **Database optimization and asynchronous processing improved system performance**  
+  - Query execution and asynchronous worker coordination were refined to reduce contention during file processing and data consolidation.  
+  - **Impact:** Improved response stability, reduced performance bottlenecks, and supported more efficient onboarding execution under concurrent usage.
+
+---
+
+### 4.5.2 Weaknesses
+
+- **Some integration bottlenecks remained during final validations**  
+  - Final adjustments still depended on coordination between backend processing, exports, and frontend status feedback.  
+  - **Effect:** A portion of integration effort remained concentrated near the end of the sprint.  
+  - **Action for future work:** Introduce earlier end-to-end validation checkpoints for all critical user flows.
+
+- **Time available for deep optimization was limited**  
+  - Although relevant performance improvements were implemented, the sprint did not allow a broader cycle of fine-grained tuning and comparative benchmarking.  
+  - **Effect:** Some optimization opportunities remained at an MVP level rather than being fully industrialized.  
+  - **Action for future work:** Reserve dedicated technical refinement windows for load tuning and benchmark comparison.
+
+- **Testing execution still depended partially on feature completion**  
+  - Some final validation scenarios could only be executed after the last integrated changes were available.  
+  - **Effect:** The feedback loop for a subset of tests remained shorter than ideal.  
+  - **Action for future work:** Expand automated regression coverage to allow continuous validation before complete feature closure.
+
+---
+
+### 4.5.3 Improvement Backlog for Future Work
+
+| Action | Owner | Target Sprint | Metric | Evidence | Status | Observed Result |
+|------|------|------|------|------|------|------|
+| Optimize processing performance under higher concurrency | Backend Dev Team | Future Iteration | Average processing time per onboarding batch under load | Load test reports | Planned | Baseline improved in Sprint 5, but additional tuning is still recommended |
+| Increase automation for regression and integration testing | QA Team | Future Iteration | % of critical flows covered by automated tests | Test suite execution logs | Planned | Manual validation effort was reduced, but automation remains partial |
+| Expand monitoring and structured logging for asynchronous flows | Tech Lead | Future Iteration | Number of critical events traceable end-to-end | Application logs and monitoring dashboards | Planned | Operational visibility improved, but observability is not yet comprehensive |
+| Strengthen CI/CD validation gates before deployment | DevOps / Tech Lead | Future Iteration | Number of pipeline validations executed before release | CI/CD pipeline logs | Planned | Delivery flow became more stable, but release validation can still be standardized further |
+
+---
+
+### 4.5.4 Risk Analysis and Tracking
+
+#### Risk Register
+
+| Risk | Description | Probability | Impact | Owner | Status | Trend | Mitigation |
+|-----|-----|-----|-----|-----|-----|-----|-----|
+| Scalability under higher load | Increased submission volume may exceed the validated MVP processing threshold | Medium | High | Tech Lead | Mitigating | Stable | Extend stress testing scenarios and refine worker scaling parameters |
+| Data inconsistency during asynchronous processing | Failures across queue consumption and persistence may generate incomplete or duplicated records | Medium | High | Backend Dev Team | Mitigating | Stable | Strengthen idempotency rules, validation checkpoints, and transactional safeguards |
+| Dependency on asynchronous workers | Worker interruption or queue-consumer instability may delay onboarding completion | Medium | Medium | Backend Dev Team | Open | Stable | Improve worker health monitoring and define restart/retry procedures |
+| System performance degradation over time | Growing data volume and heavier queries may reduce response stability in future iterations | Medium | Medium | Tech Lead | Open | Increasing | Continue database optimization and introduce monitoring for processing latency trends |
+
+- **Risk Tracking:** Risks are continuously reviewed during Sprint Planning, Mid-Sprint Checkpoints, and Sprint Retrospectives.  
+- **Status definitions:** Open, Mitigating, Closed.  
+- **Trend:** Increasing, Stable, Decreasing.  
+
+
+---
+
+## 5. Metrics Analysis
+
+### 5.1 Metrics Evolution
+
+| Metric | Sprint 3 | Sprint 4 | Sprint 5 | Trend | Analysis |
+|------|------|------|------|------|------|
+| Tasks completed vs planned | Most planned tasks completed | Most planned tasks completed, with a small carryover | Planned scope substantially completed | Increasing | Based on sprint board tracking, delivery predictability improved as backlog scope became more focused and dependencies were managed earlier. |
+| Average MR review time | Around 2 to 3 days | Around 2 days | Around 1 day, with fewer outliers | Decreasing | Based on GitLab MR logs, review discipline improved after the Sprint 4 bottleneck was made explicit and tracked by the team. |
+| Blocked tasks | Several temporary blockers | A smaller number of blockers | Isolated blockers only | Decreasing | Based on sprint board tracking and retrospective discussions, earlier follow-up on dependencies reduced workflow interruptions. |
+| Test execution coverage | Partial coverage of critical flows | Broader coverage of core flows | Broad coverage of core and final validation flows | Increasing | As reflected in test execution reports, testing became more consistent across the sprint and covered a larger portion of the MVP flow. |
+| Integration issues identified late in the sprint | Several late integration findings | Some late integration findings | Few late integration findings | Decreasing | Based on retrospective discussions and defect tracking, earlier coordination reduced the number of issues found only near sprint closure. |
+| Delivery predictability | Medium | Medium to High | High | Increasing | Sprint planning and review records indicate that improved planning discipline, shorter review cycles, and a more stable backend increased commitment reliability. |
+
+The observed metric evolution indicates a progressive improvement in both technical execution and team coordination. Based on GitLab MR logs and sprint board monitoring, the reduction in review time and blocked tasks suggests that the team improved its collaboration routines by making bottlenecks more visible during daily meetings and mid-sprint checkpoints.
+
+From a technical perspective, the broader test coverage and the reduction in late integration issues are associated with more stable backend behavior, better synchronization between asynchronous processing components, and more disciplined validation practices. As reflected in test execution reports, these improvements contributed directly to the increase in delivery predictability observed in Sprint 5.
+
+The metrics also show that workflow improvements had a measurable operational effect. As coordination improved, dependencies were resolved faster, reviews became less of a bottleneck, and final integrations required less corrective effort. This demonstrates that project performance was influenced not only by technical decisions, but also by the team's evolving process discipline, as reinforced in retrospective discussions.
+
+### 5.2 Insights and Decision Support
+
+- Earlier alignment on priorities and dependencies improved execution efficiency during the final sprint.
+- Shorter Merge Request review cycles reduced idle time and allowed testing and integration activities to start sooner.
+- The decision to reinforce backend stability and database optimization was validated by the reduction in blocked tasks and late integration issues.
+- The adoption of asynchronous processing was validated by the improvement in delivery predictability and overall system responsiveness under more demanding scenarios.
+- Future projects should introduce broader automation and observability earlier to sustain gains in performance and validation speed.
+
+---
+
+## 6. Post-Mortem Analysis
+
+### 6.1 Key Achievements
+
+- The Equiem Onboarding MVP was delivered with the core flow for file submission, validation, processing, and data export aligned with the defined business objective.
+- The asynchronous architecture using Amazon SQS was successfully incorporated to support more scalable onboarding processing and to reduce blocking behavior in the application flow.
+- The project evolved toward a more scalable processing model, improving stability for larger files and concurrent execution scenarios.
+- Documentation and project management artifacts remained consistent with PMO expectations, ensuring traceability across planning, execution, testing, and delivery.
+
+### 6.2 Main Challenges
+
+- Task estimation was not fully accurate in the earlier sprints, particularly for backend integration and stabilization activities.
+- Merge Request review time became a relevant bottleneck before corrective process adjustments were adopted.
+- Some testing activities still occurred late because they depended on the completion of integrated features.
+- Integration dependencies between backend, frontend, database, and asynchronous processing required more coordination effort than initially expected.
+
+### 6.3 Root Causes
+
+The main issues observed throughout the project were largely associated with the maturity level of an early-stage MVP. Since the solution was being structured while implementation decisions were still being validated, technical uncertainties directly affected estimation accuracy and execution flow, which helps explain the estimation deviations and integration adjustments identified in the earlier sprints.
+
+Another root cause was the dependency on sequential validations. Several critical tests and integrations depended on prior completion of backend, database, or asynchronous processing components; when those deliveries slipped, the available time for feedback cycles became compressed, which contributed to the testing timing issues and late integration findings observed across Sprint 3 and Sprint 4.
+
+In addition, the project started without established performance benchmarks for batch size, worker behavior, and throughput under load. As a result, part of the optimization effort had to be discovered and validated during execution rather than being guided by pre-existing technical baselines, which delayed deeper tuning until the final sprint.
+
+### 6.4 Lessons Learned
+
+- Introduce testing checkpoints earlier in each sprint so that critical flows can be validated before full feature completion.
+- Establish continuous integration checkpoints during implementation to expose incompatibilities before they evolve into late-stage integration problems.
+- Use historical sprint data systematically when sizing tasks in order to calibrate estimates with observed team capacity.
+- Define and monitor Merge Request review discipline as an explicit delivery practice, including response expectations and review ownership.
+
+### 6.5 Recommendations for Future Projects
+
+- Introduce CI/CD pipelines earlier in the project lifecycle to standardize validation and reduce manual release effort.
+- Automate regression and integration testing earlier so that critical workflows can be validated continuously.
+- Define review SLAs for Merge Requests to prevent workflow stagnation in "Waiting Review" stages.
+- Improve monitoring and observability from the start, especially for asynchronous processing, database behavior, and error traceability.
+
+### 6.6 Systemic View
+
+The project results were shaped by the interaction between technical, organizational, and human factors. Technical decisions such as adopting asynchronous processing and optimizing database behavior improved system performance, but these gains only became effective when supported by better communication, clearer review discipline, and more structured planning behavior.
+
+From an organizational perspective, structured daily meetings, backlog visibility, and explicit risk tracking helped the team identify bottlenecks and react more quickly. Human factors also had a clear influence, particularly in review responsiveness, coordination between roles, and the team's ability to convert retrospective learning into concrete process improvements during Sprint 5.
+
+Overall, the project demonstrated that delivery quality in an MVP context depends on the combined effect of technical choices, team behavior, process improvements, and data-informed decision-making rather than on isolated implementation effort alone.
+
+---
+
+## 7. Group Development Process Management
+
+### 7.1 Daily Meetings Policy
 - **Frequency:** Daily during sprint execution  
 - **Objective:** Share progress, blockers, next actions  
 - **Duration:** Short, time-boxed  
 - **Participation:** Entire team  
 
-### 5.2 Development and Collaboration Policies
+### 7.2 Development and Collaboration Policies
 
 - **GitLab usage rules:** Version all code and documentation; follow GitFlow for branching.  
 - **Commit conventions:** Conventional Commits for traceability.  
@@ -473,11 +676,11 @@ This section evaluates the execution of Sprint 4, focusing on feature developmen
 
 - **Configuration management documentation:** See [configuration-management.md](configuration-management.md) for branch naming, MR templates, and commit rules.
 
-## 6. Cost Analysis and Effort Estimation
+## 8. Cost Analysis and Effort Estimation
 
 This section presents the financial assessment for the development of the Equiem Onboarding MVP under an Australian market scenario. Rather than applying a direct BRL-to-AUD currency conversion, the estimate was adapted to reflect local labor and operational conditions in Australia, especially for entry-level technology professionals and cloud-based MVP deployment.
 
-### 6.1. Effort and Labor Scope
+### 8.1. Effort and Labor Scope
 
 The team is composed of entry-level professionals (Interns/Juniors). The effort estimation is based on a 10-week development cycle (structured into 5 sprints, with each sprint lasting exactly 2 weeks), with an average dedication of 16 hours per sprint per member.
 
@@ -492,7 +695,7 @@ For the Australian scenario, the Technical Hourly Rate was adjusted to **A$ 35.0
 | Designer | 1 | 16 | 80 | A$ 35.00 | A$ 2,800.00 |
 | **Total Labor** | **7** | **-** | **560** | **-** | **A$ 19,600.00** |
 
-### 6.2. Infrastructure and Tools
+### 8.2. Infrastructure and Tools
 
 The infrastructure costs reflect the environments required to support the proposed deployment architecture, using AWS services and Auth0 during the MVP development and testing phase (approximately 2.5 months). It also includes project management and design tools to represent the complete operational ecosystem.
 
@@ -510,7 +713,7 @@ For this Australian version, infrastructure was also adapted to a local operatin
 | **Figma** | UI/UX Prototyping (Free Tier) | A$ 0.00 | A$ 0.00 |
 | **Total Infrastructure** | - | **A$ 175.28** | **A$ 438.20** |
 
-### 6.3. Financial Summary
+### 8.3. Financial Summary
 
 The table below consolidates the total estimated production cost for the development of the Equiem onboarding MVP in the Australian scenario. It includes a 10% contingency margin to account for unforeseen technical events or cloud traffic spikes. Furthermore, a symbolic tax rate of 6% is applied as an inclusive tax to simulate a basic tax burden.
 
