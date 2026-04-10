@@ -19,6 +19,7 @@
     - [5.4. Threat of Substitute Products (Medium)](#54-threat-of-substitute-products-medium)
     - [5.5. Competitive Rivalry (Medium–High)](#55-competitive-rivalry-mediumhigh)
   - [6. Product Vision](#6-product-vision)
+    - [6.1. Strategic Ownership and Accountability](#61-strategic-ownership-and-accountability)
   - [7. What the Product Does / Does Not Do (Scope)](#7-what-the-product-does--does-not-do-scope)
     - [7.1 What the Product DOES](#71-what-the-product-does)
     - [7.2 What the Product DOES NOT](#72-what-the-product-does-not)
@@ -41,8 +42,25 @@
     - [Delivered in this sprint:](#delivered-in-this-sprint-3)
   - [Post-MVP Enhancements (Nice-to-Have)](#post-mvp-enhancements-nice-to-have)
   - [12.1 Feature Development Progress and Deviations](#121-feature-development-progress-and-deviations)
+    - [Functional Requirement Coverage in This Artefact (50%)](#functional-requirement-coverage-in-this-artefact-50)
+    - [Summary by Planned Delivery](#summary-by-planned-delivery)
+    - [Architecture and Standards Deviations](#architecture-and-standards-deviations)
+    - [Feature-to-File Traceability (Existing Files)](#feature-to-file-traceability-existing-files)
+    - [How to Run the Project Locally](#how-to-run-the-project-locally)
+    - [12.1.1 Demo Video](#1211-demo-video)
   - [12.2 Feature Development Sprint 4](#122-feature-development-sprint-4)
+    - [Integration and Deployment](#integration-and-deployment)
+    - [User Interface and Experience Improvements](#user-interface-and-experience-improvements)
+    - [New Functionalities](#new-functionalities)
+    - [Feature-to-File Traceability (New Features)](#feature-to-file-traceability-new-features)
+    - [12.2.1 Demo Video](#1221-demo-video)
   - [12.3 Feature Development Sprint 5](#123-feature-development-sprint-5)
+    - [Sprint 5 Development Status (Strict Compliance View)](#sprint-5-development-status-strict-compliance-view)
+    - [Feedback from Sprint 4 Test Results and Implemented Corrections](#feedback-from-sprint-4-test-results-and-implemented-corrections)
+    - [Sprint 5 Test Validation Status (Current)](#sprint-5-test-validation-status-current)
+    - [New Functionalities](#new-functionalities-1)
+    - [Justification for Non-Execution of Remaining Corrections and Evolutions](#justification-for-non-execution-of-remaining-corrections-and-evolutions)
+    - [Sprint 5 Conclusion](#sprint-5-conclusion)
   - [13. MVP Canvas](#13-mvp-canvas)
     - [13.1. MVP Proposal](#131-mvp-proposal)
     - [13.2. Segmented Personas](#132-segmented-personas)
@@ -50,7 +68,7 @@
     - [13.4. Features](#134-features)
     - [13.5. Expected Results](#135-expected-results)
     - [13.6. Metrics to Validate](#136-metrics-to-validate)
-    - [13.7. Cost & Schedule](#137-cost--schedule)
+    - [13.7. Cost \& Schedule](#137-cost--schedule)
   - [14. Project Risk Matrix and Action Table](#14-project-risk-matrix-and-action-table)
     - [14.1. THREATS](#141-threats)
     - [14.2. OPPORTUNITIES](#142-opportunities)
@@ -85,24 +103,54 @@
   - [19. Non-Functional Test Execution Strategy](#19-non-functional-test-execution-strategy)
     - [Execution Method](#execution-method)
   - [20. Testing Tools and Environment](#20-testing-tools-and-environment)
-    - [Automated Test Frameworks](#automated-test-frameworks)
   - [21. Test Coverage Discussion](#21-test-coverage-discussion)
     - [21.1 Unit Tests (Backend): Strategy, Implementation, and Coverage](#211-unit-tests-backend-strategy-implementation-and-coverage)
     - [21.2 Usability Tests](#212-usability-tests)
+    - [Test Responsibility](#test-responsibility)
+      - [Upload Flow Test Team](#upload-flow-test-team)
+      - [Manual Form Flow Test Team](#manual-form-flow-test-team)
+      - [Notes on Test Organization](#notes-on-test-organization)
+      - [Testing Methodology](#testing-methodology)
+      - [Test Setup](#test-setup)
+    - [Test 1 – File Upload Flow (Primary Path)](#test-1--file-upload-flow-primary-path)
+      - [Objective](#objective)
+      - [Task Definition](#task-definition)
+      - [Results Summary](#results-summary)
+      - [Individual User Experiences](#individual-user-experiences)
+        - [**Karol Barbosa**](#karol-barbosa)
+        - [**Mariana**](#mariana)
+        - [**Tobias**](#tobias)
+      - [Key Findings – Upload Flow](#key-findings--upload-flow)
+    - [Test 2 – Manual Form Filling Flow (Secondary Path)](#test-2--manual-form-filling-flow-secondary-path)
+      - [Objective](#objective-1)
+      - [Task Definition](#task-definition-1)
+      - [Results Summary](#results-summary-1)
+      - [Individual User Experiences](#individual-user-experiences-1)
+        - [**Celso**](#celso)
+        - [**Henrique**](#henrique)
+      - [Key Findings – Manual Flow](#key-findings--manual-flow)
+    - [Cross-Test Analysis](#cross-test-analysis)
+      - [Patterns Observed](#patterns-observed)
+      - [Core Usability Issues Identified](#core-usability-issues-identified)
+    - [Actionable Improvements (Current Scope)](#actionable-improvements-current-scope)
+    - [Future Improvements (Post-MVP)](#future-improvements-post-mvp)
+    - [Evaluation of Test Coverage](#evaluation-of-test-coverage)
+      - [Identified Gaps](#identified-gaps)
+    - [Conclusion](#conclusion)
     - [21.3 Sprint 4: Comprehensive Test Execution and Coverage Validation](#213-sprint-4-comprehensive-test-execution-and-coverage-validation)
-      - [21.3.1 Sprint 4 Overview](#2121-sprint-4-overview)
-      - [21.3.2 Functional Test Coverage by Implemented Topics](#2122-functional-test-coverage-by-implemented-topics)
-      - [21.3.3 Non-Functional Test Execution and Results](#2123-non-functional-test-execution-and-results)
-      - [21.3.4 Coverage Analysis by Architectural Layer](#2125-coverage-analysis-by-architectural-layer)
-      - [21.3.5 Test Execution Evidence](#2126-test-execution-evidence)
-      - [21.3.6 Proof of Execution (Images Template)](#2127-proof-of-execution-images-template)
-      - [21.3.7 Improvement Backlog (Features)](#2128-improvement-backlog-features)
-      - [21.3.8 Conclusion: Test Readiness in Sprint 4](#2129-conclusion-test-readiness-in-sprint-4)
+      - [21.3.1 Sprint 4 Overview](#2131-sprint-4-overview)
+      - [21.3.2 Functional Test Coverage by Implemented Topics](#2132-functional-test-coverage-by-implemented-topics)
+      - [21.3.3 Non-Functional Test Execution and Results](#2133-non-functional-test-execution-and-results)
+      - [21.3.4 Coverage Analysis by Architectural Layer](#2134-coverage-analysis-by-architectural-layer)
+      - [21.3.5 Test Execution Evidence](#2135-test-execution-evidence)
+      - [21.3.6 Proof of Execution](#2136-proof-of-execution)
+      - [21.3.7 Improvement Backlog (Features)](#2137-improvement-backlog-features)
+      - [21.3.8 Conclusion:](#2138-conclusion)
   - [22. FR–NFR Correlation Matrix](#22-frnfr-correlation-matrix)
   - [23. User Stories and Traceability](#23-user-stories-and-traceability)
     - [User Stories](#user-stories)
     - [User Stories and FR Traceability](#user-stories-and-fr-traceability)
-    - [24. Revision of the Proposed Solution](#24-Revision-of-the-Proposed-Solution)
+  - [24. Revision of the Proposed Solution](#24-revision-of-the-proposed-solution)
   - [25. Deployment Architecture](#25-deployment-architecture)
     - [25.1. Overview](#251-overview)
     - [25.2. System Infrastructure](#252-system-infrastructure)
@@ -115,8 +163,8 @@
     - [25.9. Communication Protocols](#259-communication-protocols)
     - [25.10. Deployment Rationale](#2510-deployment-rationale)
     - [25.11. Performance Considerations](#2511-performance-considerations)
-    - [25.12. Security Considerations](#2512-security-considerations)
-    - [Appendix A: System Configuration and Optimization Report](#appendix-a-system-configuration-and-optimization-report)
+    - [25.12. Data Persistence Strategy (Current Flow)](#2512-data-persistence-strategy-current-flow)
+    - [25.13. Security Considerations](#2513-security-considerations)
   - [26. SDGs (Sustainable Development Goals) and Impact](#26-sdgs-sustainable-development-goals-and-impact)
     - [26.1. Operational Impact](#261-operational-impact)
     - [26.2. Sustainability and Alignment with the 2030 Agenda](#262-sustainability-and-alignment-with-the-2030-agenda)
@@ -124,6 +172,22 @@
     - [26.4. Relationship with the Smart Cities Concept](#264-relationship-with-the-smart-cities-concept)
     - [26.5. Evidence, Expected Impacts and Practical Implications](#265-evidence-expected-impacts-and-practical-implications)
   - [Appendix A: System Configuration and Optimization Report](#appendix-a-system-configuration-and-optimization-report)
+    - [1. Benchmark Data Log](#1-benchmark-data-log)
+      - [1.1. Justification for Benchmark Parameters](#11-justification-for-benchmark-parameters)
+    - [2. The Performance Model](#2-the-performance-model)
+      - [2.1. Model Fit Quality](#21-model-fit-quality)
+      - [2.2. Model Estimation Method](#22-model-estimation-method)
+      - [2.3. Regression Procedure](#23-regression-procedure)
+      - [2.4. Least Squares Solution](#24-least-squares-solution)
+      - [2.5. Surface Visualization](#25-surface-visualization)
+    - [3. Optimization Derivation](#3-optimization-derivation)
+      - [3.1. Gradient Vector](#31-gradient-vector)
+      - [3.2. Critical Point Calculation](#32-critical-point-calculation)
+      - [3.3. Hessian Matrix and Point Classification](#33-hessian-matrix-and-point-classification)
+    - [4. Strategic Recommendation](#4-strategic-recommendation)
+      - [4.1. Sensitivity Analysis](#41-sensitivity-analysis)
+      - [4.2. Usage Scenarios](#42-usage-scenarios)
+      - [4.3. Engineering Recommendation](#43-engineering-recommendation)
   - [References](#references)
     
 ## 1. Introduction
@@ -236,6 +300,17 @@ The product is intentionally positioned as a self-service intake layer and proof
 
 Ultimately, the product exists to accelerate time-to-launch, reduce rework, and enable scalable onboarding operations. By supporting asynchronous data submission, automated validation, and parallel onboarding flows, it allows Equiem to grow onboarding capacity without a proportional increase in manual workload. In doing so, it strengthens collaboration between Equiem and its customers and delivers a more transparent, predictable, and efficient onboarding experience, benefiting both operational performance and customer perception.
 
+Strategic success for this product is measured through business outcomes rather than only feature completion. The most relevant indicators are onboarding cycle time, re-submission rate, time-to-first-valid batch, and the ability to process multiple onboarding instances in parallel without increasing manual effort at the same rate. In practice, the product is meant to prove that onboarding can become a faster and more reliable entry point for Equiem’s platform, reinforcing value perception, reducing implementation friction, and supporting competitive positioning in the PropTech market.
+
+### 6.1. Strategic Ownership and Accountability
+
+For this artifact, strategic accountability is shared across two layers.
+
+- **Equiem stakeholders** validate business scope, confirm whether the product direction matches onboarding priorities, and approve major scope changes.
+- **The project team** owns feature prioritization inside the MVP, translates business goals into delivery decisions, and documents deviations when implementation trade-offs are required.
+
+This structure keeps the business direction anchored to market and operational needs while leaving execution prioritization explicit and auditable.
+
 ## 7. What the Product Does / Does Not Do (Scope)
 
 ### 7.1 What the Product DOES
@@ -260,6 +335,8 @@ Ultimately, the product exists to accelerate time-to-launch, reduce rework, and 
 
 - Make clean, onboarding-ready data available through exportable CSV/JSON outputs
 
+- Preserve raw upload files in object storage and normalized row data in the relational staging layer to support auditing, reprocessing, and review
+
 ### 7.2 What the Product DOES NOT
 
 - Generate, infer, or enrich business data beyond what users explicitly submit
@@ -273,6 +350,8 @@ Ultimately, the product exists to accelerate time-to-launch, reduce rework, and 
 - Include advanced analytics, dashboards, charts, or decision-support tools
 
 - Perform complex cross-system data reconciliation or bidirectional synchronization
+
+- Act as a full provisioning engine or replace Equiem’s internal onboarding specialists
 
 - Store or expose restricted customer Help Center content
 
@@ -930,6 +1009,8 @@ The project will be executed in a 10 week cycle. The governance structure includ
 - Stores multiple submission versions
 - Prevents premature consolidation
 - Enables inspection and reprocessing
+- Current implementation uses hybrid persistence: original file in S3 (`onboarding_batch.s3_key`) plus normalized row staging in PostgreSQL (`onboarding_payload.raw_data`)
+- Batch linkage to onboarding lifecycle is persisted through `onboarding_instance.batch_id`, enabling traceability from onboarding link to source upload and staged rows
 
 #### FR04 – Data Validation and Conflict Detection
 
@@ -985,13 +1066,13 @@ The project will be executed in a 10 week cycle. The governance structure includ
 
   | ID   | Test                    | Pre-condition            | Procedure                | Positive Scenario | Expected Result                                                                 | Post-condition           |
   | ---- | ----------------------- | ------------------------ | ------------------------ | ------------------------------------------------------------------------------ | ------------------------ | -- |
-  | FR01 | Upload onboarding files | User authenticated       | Upload CSV/XLSX files ≤ size defined in NFR02 | A user uploads a valid 50MB CSV file containing correctly structured onboarding data. | File stored in staging layer and submission record created                     | Files stored in staging  | 
+  | FR01 | Upload onboarding files | User authenticated       | Upload CSV/XLSX files ≤ size defined in NFR02 | A user uploads a valid 50MB CSV file containing correctly structured onboarding data. | API returns HTTP 200/201 with trace ID and file metadata; one `onboarding_batch` record is created with non-null `s3_key` and status in (`queued`,`processing`,`completed`). | Files stored in staging  | 
   | FR02 | Standardize data        | Files uploaded           | Trigger transformation   | The system processes a dataset with raw headers and varying date formats, successfully mapping them to the correct internal structure. |Output matches predefined internal schema without structural deviations        | Ready for validation     |
-  | FR03 | Persist staging data    | Standardized data exists | Save to staging          | The user saves a standardized dataset, and the system stores it without overwriting any other data. |New version record created without overwriting previous versions               | Available for correction |
-  | FR04 | Validate data           | Data in staging          | Run validation           | The system scans a dataset where all mandatory fields are present, types match, and no duplicate identifiers exist. | Validation report generated listing schema, format, or uniqueness violations   | Report generated         |
+  | FR03 | Persist staging data    | Standardized data exists | Save to staging          | The user saves a standardized dataset, and the system stores it without overwriting any other data. | New `onboarding_payload` rows are persisted for the new `batch_id`; prior batch rows remain unchanged; each row includes persisted `raw_data`, `is_valid`, and `validation_errors`. | Available for correction |
+  | FR04 | Validate data           | Data in staging          | Run validation           | The system scans a dataset where all mandatory fields are present, types match, and no duplicate identifiers exist. | Validation output is persisted per row: valid rows have `is_valid=true`; invalid rows have `is_valid=false` and at least one explicit message in `validation_errors`. | Report generated         |
   | FR05 | Re-submit data          | Errors exist             | Upload corrected version | The user uploads a corrected file fixing previous errors; the system matches the natural identifiers and safely updates those specific records. |Records replaced only where natural identifiers match                          | Updated dataset stored   |
   | FR06 | Compare submissions     | Multiple versions        | Open comparison          | The user selects Version 1 and Version 2 of a dataset to review recent corrections. |System displays field-level differences between selected versions               | Review complete          |
-  | FR07 | Resume onboarding       | Progress saved           | Reopen system            | A user logs out halfway through section completion and logs back in to resume their work. | Previously saved state restored without data loss                              | Flow continues           |
+  | FR07 | Resume onboarding       | Progress saved           | Reopen system            | A user logs out halfway through section completion and logs back in to resume their work. | API returns persisted `form_data` and `progress_percent` for the same `link_token`; restored values match the latest successful save payload. | Flow continues           |
   | FR08 | Dynamic sections        | Modules set              | Open onboarding          | A client with only the "Tenant Experience" module activated logs in to view their required onboarding tasks. |Only sections mapped to active modules are rendered                            | Correct scope            |
   | FR09 | Enforce dependencies    | Parent not "Completed"   | Attempt child submission | A user successfully submits the "Building Info" parent section and attempts to access the "Space Info" child section. | System blocks submission and returns dependency validation message             | Flow maintained          |
   | FR10 | Assign contributors     | Admin authenticated      | Assign sections          | An admin assigns the "User Roles" section to a specific contributor, who logs in to edit it simultaneously. |Section assignment persisted and visible to assigned users                     | Parallel work enabled    |
@@ -1039,6 +1120,7 @@ The project will be executed in a 10 week cycle. The governance structure includ
 - File processing must occur without application crashes or unhandled exceptions.
 - Uploading a large file must not terminate or block other active user sessions.
 - Files exceeding 100 MB must be rejected with a clear validation message.
+- For files up to 100 MB, the upload API must return an acceptance response (2xx) in <= 5 seconds under nominal load.
 
 #### NFR03 – Processing Reliability
 
@@ -1046,6 +1128,8 @@ The project will be executed in a 10 week cycle. The governance structure includ
 - All ingestion, validation, and consolidation operations must execute within transactional boundaries.
 - Incomplete or failed operations must be automatically rolled back.
 - No partial writes shall persist in the database after a failure.
+- Recovery objective for worker interruption: processing retry or explicit failure state registration must occur within <= 60 seconds after service restart.
+- On failure, `onboarding_batch.status` and `processing_job.status` must converge to a terminal state (`failed` or `invalid`) with a persisted error message.
 
 #### NFR04 – Security
 
@@ -1056,19 +1140,20 @@ The project will be executed in a 10 week cycle. The governance structure includ
 
 #### NFR05 – Concurrent Submission Handling
 
-- The system must support at least 10 multiple concurrent onboarding submissions.
+- The system must support at least 10 concurrent onboarding submissions.
 - Each submission must be processed independently.
 - Concurrent processing must not cause data mixing between submissions.
+- Under a 10-concurrent-submission test, 100% of batches must preserve unique traceability (`trace_id`, `batch_id`) without cross-batch row contamination.
 
 ### 17.2. Non-Functional Requirements Validation Tests
 
 | ID    | Test                                            | Pre-condition                                            | Procedure                                                          | Positive Scenario |Expected Result                                                                                                        | Post-condition                               |
 | ----- | ----------------------------------------------- | -------------------------------------------------------- | -----| ------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------- | -------------------------------------------- |
 | NFR01 | Strict Data Integrity and Consistency                   | System is active with a predefined schema; a dataset containing valid and invalid records. | Execute schema validation process                                  | A dataset with 500 valid records and 5 schema-violating records is ingested; the system successfully identifies and filters the corrupted data automatically. | 100% of invalid records are blocked                                            | System remains in a 100% consistent state with no corrupted data.              |
-| NFR02 | Maximum file size handling                      | User authenticated                                       | Upload file ≤ 100 MB and upload file > 100 MB                      | A user uploads a dense, 98 MB .xlsx file containing thousands of rows, and the system processes it seamlessly. |Files ≤ 100 MB are processed successfully; files > 100 MB are rejected with validation message; no system crash occurs | Valid file ingested; oversized file rejected |
-| NFR03 | Transaction rollback verification               | Processing operation active                              | Force system interruption during database write operation          | A database connection is intentionally interrupted mid-write, and the system successfully triggers its automated rollback protocol to protect the dataset. |  100% of interrupted transactions are rolled back; no partial writes persist in database                                | Database remains in consistent state         |
+| NFR02 | Maximum file size handling                      | User authenticated                                       | Upload file ≤ 100 MB and upload file > 100 MB                      | A user uploads a dense, 98 MB .xlsx file containing thousands of rows, and the system processes it seamlessly. | Upload <= 100 MB returns 2xx within <= 5 seconds (nominal load); upload > 100 MB is rejected with 4xx and explicit limit message; no process crash is observed in logs. | Valid file ingested; oversized file rejected |
+| NFR03 | Transaction rollback verification               | Processing operation active                              | Force system interruption during database write operation          | A database connection is intentionally interrupted mid-write, and the system successfully triggers its automated rollback protocol to protect the dataset. | After restart, interrupted batch reaches terminal status (`failed`/`invalid`) within <= 60 seconds; no orphan rows exist without parent `batch_id`; error is persisted in job/batch logs. | Database remains in consistent state         |
 | NFR04 | Data encryption and access control verification | System deployed in production configuration              | Inspect storage configuration and attempt unauthorized data access | An authorized internal security tool audits the database and network layers to verify that all active encryption protocols are functioning correctly. | Data is encrypted at rest (AES-256); communication occurs via TLS 1.2+; unauthorized access attempt is denied          | Data remains protected                       |
-| NFR05 | Concurrent submission handling                  | At least 10 users authenticated                          | Simulate 10 concurrent onboarding submissions                      | Ten independent customer administrators trigger massive dataset validations at the exact same second, and the system routes them safely into separate processing queues. | All 10 submissions are processed independently without data mixing or processing errors                                | All submissions completed correctly          |
+| NFR05 | Concurrent submission handling                  | At least 10 users authenticated                          | Simulate 10 concurrent onboarding submissions                      | Ten independent customer administrators trigger massive dataset validations at the exact same second, and the system routes them safely into separate processing queues. | 10/10 submissions create distinct `batch_id` and `trace_id`; no row in `onboarding_payload` is linked to an incorrect batch; all submissions reach non-hanging final/observable states. | All submissions completed correctly          |
 
 ### 17.3. Non-Functional Negative Test Scenarios
 | ID | Non-Functional Requirement | Negative Scenario | Expected Result (Negative) |
@@ -1820,8 +1905,8 @@ This provides a coherent and auditable validation baseline for the current produ
 | ID   | User Story                                                                                                                 |
 | ---- | -------------------------------------------------------------------------------------------------------------------------- |
 | US01 | As a client project manager, I want to upload onboarding data files so that I can submit required information efficiently. |
-| US02 | As a user, I want my data standardized so that validation is consistent.                                                   |
-| US03 | As an analyst, I want submitted data staged safely before production.                                                      |
+| US02 | As a user, I want my uploaded data interpreted in a consistent format so that I receive clear and predictable validation feedback. |
+| US03 | As an onboarding analyst, I want submitted data saved safely before final integration so that I can review and correct issues without losing previous submissions. |
 | US04 | As a user, I want validation feedback to correct errors early.                                                             |
 | US05 | As a user, I want to re-submit corrected data safely.                                                                      |
 | US06 | As an analyst, I want to compare submissions easily.                                                                       |
@@ -2029,7 +2114,9 @@ System components communicate using secure and reliable communication protocols.
 | Frontend Application | Backend API | HTTPS | Communication with backend services |
 | Frontend Application | Auth0 | HTTPS (OAuth2 / OpenID Connect) | User authentication and login flow |
 | Backend API | Auth0 | HTTPS (JWT Validation) | Verification of authentication tokens |
+| Backend API | Amazon S3 | HTTPS (AWS SDK) | Store uploaded source files and read/write onboarding review snapshots |
 | Backend API | Amazon SQS | HTTPS (AWS SDK) | Publishing asynchronous processing jobs |
+| Worker Service | Amazon S3 | HTTPS (AWS SDK) | Download source files and persist parsed review snapshots |
 | Worker Service | Amazon SQS | HTTPS (AWS SDK Polling) | Consuming background processing jobs |
 | Backend API | Amazon RDS | TCP/IP | Database communication |
 
@@ -2052,7 +2139,29 @@ All external communications use HTTPS to ensure encrypted data transmission.
 - Additionally, containerized services allow horizontal scaling of backend and worker nodes when processing demand increases.
 - This architecture ensures efficient handling of onboarding workflows even when large datasets are uploaded.
 
-### 25.12. Security Considerations
+### 25.12. Data Persistence Strategy (Current Flow)
+
+The current implementation follows a hybrid persistence strategy designed for both auditability and processing efficiency.
+
+1. Raw source persistence in object storage
+- The uploaded source file is stored in Amazon S3.
+- Its key is persisted in `onboarding_batch.s3_key` and used as the canonical raw source for reproducibility.
+
+2. Structured staging persistence in PostgreSQL
+- The worker parses and normalizes row-level data and persists it into `onboarding_payload.raw_data` (JSONB), including validation flags and errors.
+- This table is the relational staging layer for inspection, lifecycle tracking, and downstream mapping.
+
+3. Read-optimized review artifact in S3
+- The worker also writes a review snapshot (`<s3_key>.parsed.json`) to S3.
+- The review endpoint currently reads this snapshot to supply frontend review data.
+
+Operational note:
+
+- If the review snapshot is unavailable, the current behavior is to return an empty review set (no active DB fallback yet in this endpoint path).
+
+This decision prioritizes simpler and faster review reads while preserving both raw and normalized representations.
+
+### 25.13. Security Considerations
 
 - Security is a fundamental aspect of the deployment architecture.
 - All communication between system components occurs through **HTTPS**, ensuring encrypted data transmission across the network.
