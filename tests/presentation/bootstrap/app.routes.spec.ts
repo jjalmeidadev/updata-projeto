@@ -17,6 +17,9 @@ describe('app.routes', () => {
     vi.doMock('../../../src/presentation/web/src/app/guards/instance-link-auth.guard', () => ({
       instanceLinkAuthGuard: 'instanceLinkGuard',
     }))
+    vi.doMock('../../../src/presentation/web/src/app/guards/deep-link-auth.guard', () => ({
+      deepLinkAuthGuard: 'deepLinkGuard',
+    }))
 
     vi.doMock('../../../src/presentation/web/src/app/pages/login/login.component', () => ({ LoginComponent: class {} }))
     vi.doMock('../../../src/presentation/web/src/app/pages/signup/signup.component', () => ({ SignupComponent: class {} }))
@@ -60,5 +63,10 @@ describe('app.routes', () => {
     expect(routes.find((r: RouteConfig) => r.path === 'module-selector/:linkToken')?.canActivate).toEqual(['guard', 'internalGuard'])
     expect(routes.find((r: RouteConfig) => r.path === 'onboarding/:linkToken')?.canActivate).toEqual(['instanceLinkGuard'])
     expect(routes.find((r: RouteConfig) => r.path === 'onboarding/:linkToken/form')?.canActivate).toEqual(['instanceLinkGuard'])
+    expect(routes.find((r: RouteConfig) => r.path === 'equiem-review')?.canActivate).toEqual(['deepLinkGuard', 'internalGuard'])
+    expect(routes.find((r: RouteConfig) => r.path === 'equiem-review/:linkToken')?.canActivate).toEqual([
+      'deepLinkGuard',
+      'internalGuard',
+    ])
   }, 15000);
 });

@@ -129,6 +129,21 @@ describe('LoginComponent', () => {
     expect(sessionStorage.getItem('post_login_link_target')).toBeNull();
   });
 
+  it('returns to stored equiem review detail after authentication', () => {
+    setUrlSearch('');
+    sessionStorage.setItem('post_login_link_target', '/equiem-review/token-xyz');
+    httpMock.get.mockReturnValue(of({ next: '/home' }));
+
+    component.ngOnInit();
+    authState$.next(true);
+
+    expect(httpMock.get).toHaveBeenCalledWith('/api/users', expect.objectContaining({
+      headers: expect.anything(),
+    }));
+    expect(routerMock.navigateByUrl).toHaveBeenCalledWith('/equiem-review/token-xyz');
+    expect(sessionStorage.getItem('post_login_link_target')).toBeNull();
+  });
+
   it('forces account selection when onboarding access denial flag is present', () => {
     // Arrange
     setUrlSearch('');
