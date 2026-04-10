@@ -42,6 +42,7 @@
   - [Post-MVP Enhancements (Nice-to-Have)](#post-mvp-enhancements-nice-to-have)
   - [12.1 Feature Development Progress and Deviations](#121-feature-development-progress-and-deviations)
   - [12.2 Feature Development Sprint 4](#122-feature-development-sprint-4)
+  - [12.3 Feature Development Sprint 5](#123-feature-development-sprint-5)
   - [13. MVP Canvas](#13-mvp-canvas)
     - [13.1. MVP Proposal](#131-mvp-proposal)
     - [13.2. Segmented Personas](#132-segmented-personas)
@@ -752,7 +753,7 @@ Additionally, when an onboarding process is completed, the Equiem team receives 
 
 <div align="center">
 <sub>FIGURE X – E-mail sent to Customers with Onboarding Link </sub><br>
-  <img src="assets/ADD LATER" width="100%" alt="E-mail sent to Customers with Onboarding Link"><br>
+  <img src="assets/email-received.png" width="100%" alt="E-mail sent to Customers with Onboarding Link"><br>
   <sup>Source: Material produced by the authors, 2026.</sup>
 </div>
 
@@ -1968,7 +1969,7 @@ Separating the processing layer from the API layer improves system scalability a
 
 ### 25.7. Database Layer
 
-The system uses **Amazon Relational Database Service (RDS)** as the primary database infrastructure.
+The system uses **Supabase (PostgreSQL)** as the primary database infrastructure.
 
 The database is responsible for storing all persistent system data, including:
 
@@ -1978,9 +1979,9 @@ The database is responsible for storing all persistent system data, including:
 - processing states
 - system metadata
 
-The backend communicates with the database using **TCP/IP connections**, following standard relational database communication protocols.
+The backend communicates with the database through **PostgreSQL over secure TCP/IP connections**, following standard relational database communication protocols.
 
-Using a managed database service provides operational advantages such as:
+Using a managed database platform provides operational advantages such as:
 
 - automated backups
 - improved reliability
