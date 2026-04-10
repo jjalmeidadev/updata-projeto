@@ -88,7 +88,7 @@
   - [21. Test Coverage Discussion](#21-test-coverage-discussion)
     - [21.1 Unit Tests (Backend): Strategy, Implementation, and Coverage](#211-unit-tests-backend-strategy-implementation-and-coverage)
     - [21.2 Usability Tests](#212-usability-tests)
-    - [21.3 Sprint 4: Comprehensive Test Execution and Coverage Validation](#212-sprint-4-comprehensive-test-execution-and-coverage-validation)
+    - [21.3 Sprint 4: Comprehensive Test Execution and Coverage Validation](#213-sprint-4-comprehensive-test-execution-and-coverage-validation)
       - [21.3.1 Sprint 4 Overview](#2121-sprint-4-overview)
       - [21.3.2 Functional Test Coverage by Implemented Topics](#2122-functional-test-coverage-by-implemented-topics)
       - [21.3.3 Non-Functional Test Execution and Results](#2123-non-functional-test-execution-and-results)
@@ -707,6 +707,16 @@ The following evolutions were implemented in Sprint 5 based on previous sprint f
 - End-to-end onboarding review workflow with section-level approve/reject decisions.
 - Controlled onboarding access via allowed email list and authenticated link access.
 - Stronger operational traceability in upload processing pipeline through batch/job linkage and logs.
+
+### Sprint 5 Test Validation Status (Current)
+
+After completing Sprint 5 corrections and test adjustments, the automated validation suites are currently stable and passing.
+
+- **Execution command used:** `npm test -- --reporter=dot`
+- **Current result:** **46 test files passed**, **366 tests passed**, **0 failing tests**
+- **Scope covered:** business services, worker/queue flow, repositories/database adapters, API controllers/routes/integration flows, and Angular presentation components/guards/services.
+
+This confirms that the implemented Sprint 5 functionality is validated at unit and integration levels for the current repository test scope.
 
 ### New Functionalities
 
