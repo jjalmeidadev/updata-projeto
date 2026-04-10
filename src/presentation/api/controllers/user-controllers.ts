@@ -32,6 +32,9 @@ export const getPayload = async (
     const headerProfileEmail = typeof req.headers["x-profile-email"] === "string"
       ? req.headers["x-profile-email"].trim().toLowerCase()
       : undefined
+    
+    console.log(`[FLOW][${traceId}] controller:headers x-profile-name=${headerProfileName || "NOT SET"}, x-profile-email=${headerProfileEmail || "NOT SET"}`)
+    
     const name = resolveNameClaim(safeClaims) || (headerProfileName && headerProfileName.length > 0 ? headerProfileName : undefined)
     const claimEmail = resolveEmailClaim(safeClaims)
     const email = claimEmail || (headerProfileEmail && headerProfileEmail.includes("@") ? headerProfileEmail : undefined)
