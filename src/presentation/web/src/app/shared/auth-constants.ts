@@ -1,29 +1,47 @@
+/**
+ * AUTO-GENERATED FILE. Do not edit directly.
+ * Source: src/shared/auth-constants.ts
+ */
+/**
+ * Centralized authentication configuration
+ * Single source of truth for auth allowlists and constants
+ */
+
 export const INTERNAL_EMAIL_DOMAIN = '@getequiem.com';
 export const AUTH_ROLE_STORAGE_KEY = 'resolved_auth_role';
 export const AUTH_ROLE_INTERNAL = 'internal';
 export const AUTH_ROLE_EXTERNAL = 'external';
 
-export const INTERNAL_TEST_EMAILS = new Set([
-  'yudi@equiem.com',
-  'jaime.almeida@sou.inteli.edu.br',
-  'ana.jardim@sou.inteli.edu.br',
-  'matheus.silva@sou.inteli.edu.br'
-]);
-
-function normalizeEmail(email: string): string {
-  return (email || '').trim().toLowerCase();
+function readEnv(name: string): string | undefined {
+  return (globalThis as { process?: { env?: Record<string, string | undefined> } }).process?.env?.[name];
 }
 
+function resolveAdminEmail(): string {
+  return "equiem.onboarding@gmail.com";
+}
+
+const internalTestEmailValues = [resolveAdminEmail()].filter(
+  (email): email is string => Boolean(email)
+);
+
+export const INTERNAL_TEST_EMAILS = new Set(internalTestEmailValues);
 
 
-export function isInternalTestEmail(email: string): boolean {
-  return INTERNAL_TEST_EMAILS.has(normalizeEmail(email));
+function normalizeEmail(email: string): string {
+  return (email || '').trim().toLowerCase();
 }
 
 /**
- * Internal users are Equiem domain users or explicit allowlisted test emails.
- */
+ * Check if an email is marked as an internal allowlisted email
+ */
+export function isInternalTestEmail(email: string): boolean {
+  return INTERNAL_TEST_EMAILS.has(normalizeEmail(email));
+}
+
+/**
+ * Internal users are Equiem domain users or explicit allowlisted test emails.
+ */
 export function isInternalEmail(email: string): boolean {
-  const normalized = normalizeEmail(email);
-  return normalized.endsWith(INTERNAL_EMAIL_DOMAIN) || isInternalTestEmail(normalized);
+  const normalized = normalizeEmail(email);
+  return normalized.endsWith(INTERNAL_EMAIL_DOMAIN) || isInternalTestEmail(normalized);
 }

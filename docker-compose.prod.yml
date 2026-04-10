@@ -1,88 +1,46 @@
-services:
-  # Production PostgreSQL service with persistent storage.
-  database:
-    image: postgres:16-alpine
-    # Restart policy for improved resiliency in production demos.
-    restart: unless-stopped
-    environment:
-      POSTGRES_DB: appdb
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
-    command:
-      [
-        "postgres",
-        "-c",
-        "shared_buffers=16MB",
-        "-c",
-        "work_mem=1MB",
-        "-c",
-        "maintenance_work_mem=16MB",
-        "-c",
-        "max_connections=20"
-      ]
-    # DB readiness gate used by dependent services.
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres -d appdb"]
-      interval: 5s
-      timeout: 3s
-      retries: 10
-      start_period: 5s
-    ports:
-      - "5432:5432"
-    # Persist production database files.
-    volumes:
-      - postgres_data_prod:/var/lib/postgresql/data
-    networks:
-      - app_net_prod
-    # Tight resource budget for low-footprint production run.
-    mem_limit: 64m
-    cpus: 0.20
+version: "3.9"
 
-  # Production backend API service.
+services:
+
   backend:
-    build:
-      context: .
-      dockerfile: Dockerfile.prod
-    # Keep service up unless manually stopped.
+    image: anagarden007/backend:latest
     restart: unless-stopped
+    env_file:
+      - ./.env
     environment:
       NODE_ENV: production
       NODE_OPTIONS: --max-old-space-size=96
-      DATABASE_URL: postgresql://postgres:postgres@database:5432/appdb
       PORT: 3000
-    # Backend starts only after DB becomes healthy.
-    depends_on:
-      database:
-        condition: service_healthy
     ports:
       - "3000:3000"
     networks:
       - app_net_prod
-    mem_limit: 32m
-    cpus: 0.20
+    mem_limit: 64m
 
-  # Production frontend static server.
-  frontend:
-    build:
-      context: ./src/presentation/web
-      dockerfile: Dockerfile.prod
+  worker:
+    image: anagarden007/backend:latest
     restart: unless-stopped
-    # Frontend should start after backend container is created.
+    env_file:
+      - ./.env
+    environment:
+      NODE_ENV: production
+      NODE_OPTIONS: --max-old-space-size=96
+    command: ["node", "dist/worker.cjs"]
+    networks:
+      - app_net_prod
+    mem_limit: 64m
+
+  frontend:
+    image: anagarden007/frontend:latest
+    restart: unless-stopped
     depends_on:
-      backend:
-        condition: service_started
+      - backend
     ports:
       - "8080:8080"
     networks:
       - app_net_prod
     mem_limit: 32m
-    cpus: 0.10
-
-volumes:
-  # Named volume for production database persistence.
-  postgres_data_prod:
 
 networks:
-  # Isolated bridge network for production stack.
   app_net_prod:
     driver: bridge
